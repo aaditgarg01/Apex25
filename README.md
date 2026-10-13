@@ -159,3 +159,21 @@ extras; conditions choose between Normal / dry, Intermediate / damp, and Wet / r
 The selected values and preview update immediately and are saved like manual choices.
 Both solo and multiplayer room creation use the displayed setup; all online drivers
 share the host's circuit and surface. Gameplay tests were omitted at the user's request.
+
+
+## Final race gaps and 2025 team liveries (2.7.0)
+
+The results screen retains each finisher's penalty-adjusted gap to the winner, with
+their total race time underneath. The winner shows total race time. Gaps also stay
+on the race leaderboard after completion. Drivers still racing after the leader
+finishes show a clearly marked approximate arrival gap until their final time is
+recorded; retired drivers continue to show DNF.
+
+Driver and car now offers all ten 2025 teams: Ferrari, Mercedes, Williams, McLaren,
+Red Bull Racing, Racing Bulls, Alpine, Aston Martin, Haas, and Kick Sauber. The game's
+original car model uses team-style body panels, wings, accent stripes and lettering
+based on the [2025 launch liveries](https://www.formula1.com/en/latest/article/in-photos-every-2025-f1-car-livery-after-their-spectacular-f1-75-live.2BZTh37ifdxAASqub3X1HK).
+The menu preview changes immediately, the choice is saved, and the server shares
+each driver's validated selection through qualifying and races. These are procedural
+paint schemes, not official licensed models or sponsor artwork. Tests were omitted
+at the user's request. Refresh every player's browser after deployment.

@@ -94,3 +94,7 @@ body.racing #timing #leaderboard li .driver-name-text{display:block}body.racing 
 
 /* Shuffle controls share the selector row to keep setup compact. */
 .random-select{display:flex;align-items:stretch;gap:8px}.random-select select{flex:1;min-width:0;width:0}.randomise{flex-shrink:0;border:1px solid #ffffff2b;border-radius:3px;background:#ffffff0b;padding:0 12px;font-size:12px;color:#c7d5dc;min-height:46px}.randomise:hover{background:#ffffff19;color:#fff}
+
+/* Team selection stays in the existing expandable driver section. */
+.setup-details .driver-settings{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.driver-settings select{padding-left:8px;padding-right:8px;font-size:13px}.livery-preview{display:flex;align-items:center;gap:9px;font-size:11px;color:#aebbc4;margin-top:9px}#livery-swatches{display:flex;gap:3px}#livery-swatches i{display:block;width:22px;height:8px;border:1px solid #ffffff30;border-radius:2px}
+#results li>span.result-time{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto;min-width:105px;margin-left:8px;font-variant-numeric:tabular-nums}#results li .result-time .result-gap{flex:none;min-width:0;font-size:14px;white-space:nowrap;color:#e1ebef}#results li .result-time small{color:#90a1ab;font-size:10px;white-space:nowrap}#results li>span:first-child{min-width:0;overflow-wrap:anywhere}#result-gap-key{font-size:11px;margin:14px 0 0}

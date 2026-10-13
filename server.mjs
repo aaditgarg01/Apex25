@@ -1,3 +1,4 @@
+import {normalizeLiveryIndex} from './shared/liveries.mjs';
 import {normalizeConditions} from './shared/conditions.mjs';
 import http from 'node:http';
 import {resolveCarContacts} from './shared/collisions.mjs';
@@ -27,7 +28,7 @@ wss.on('connection',(ws)=>{if(clients.size>=80){ws.close(1013,'Server full');ret
  if(c.room)return error('Leave your current room first.');
  const name=String(m.name||'Driver').replace(/[<>\x00-\x1f]/g,'').slice(0,18).trim()||'Driver';let r;
  if(m.type==='create'){if(rooms.size>=12)return error('All rooms are busy. Please try later.');let code;do{code=randomBytes(4).toString('hex').slice(0,6).toUpperCase();}while(rooms.has(code));r={code,host:id,track:tracks.find(t=>t.id===m.trackId)||tracks[15],laps:normalizeLapCount(m.laps),mode:SESSION_MODES.includes(m.mode)?m.mode:'weekend',conditions:normalizeConditions(m.conditions),practiceStart:['start','sector2','sector3','eau-rouge'].includes(m.practiceStart)?m.practiceStart:'start',aiCount:Math.min(7,Math.max(0,Math.floor(Number(m.aiCount)||0))),players:new Map(),state:'lobby'};rooms.set(code,r);}else{r=rooms.get(String(m.code).toUpperCase());if(!r)return error('Room not found. Check the six-character code.');if(r.state!=='lobby')return error('This race has started. Ask the host to return to the lobby.');if(r.players.size>=8)return error('This room is full.');}
- c.room=r.code;r.players.set(id,{id,name,inputVersion:m.inputVersion===INPUT_VERSION?INPUT_VERSION:1,stateVersion:m.stateVersion===2?2:1,colorId:typeof m.colorId==='number'?m.colorId:undefined,ws});lobby(r);
+ c.room=r.code;r.players.set(id,{id,name,inputVersion:m.inputVersion===INPUT_VERSION?INPUT_VERSION:1,stateVersion:m.stateVersion===2?2:1,colorId:normalizeLiveryIndex(m.colorId,r.players.size),ws});lobby(r);
  }else if(m.type==='leave')leave(ws);
  else if(m.type==='ping')send(ws,{type:'pong',time:m.time});
  else{const r=rooms.get(c.room);if(!r)return;

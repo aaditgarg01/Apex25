@@ -1,9 +1,10 @@
+import {LIVERIES,normalizeLiveryIndex} from './liveries.mjs';
 import {sampleGuide} from './racing-line.mjs';
 import {conditionProfile,normalizeConditions,yawRate} from './conditions.mjs';
 import {sample,nearest,wrap,clamp,angleDiff,targetSpeed,terrainHeight} from './tracks.mjs';
 import {resolveCarContacts} from './collisions.mjs';
-export const COLORS=['#ff502d','#37dcca','#67a5ff','#f9d648','#db78ff','#eef3f7','#ff85b2','#78da5b'];
-export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const s=-12-Math.floor(index/2)*10,offset=index%2?3.1:-3.1,p=sample(track,s,offset);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:colorId!==null&&colorId!==undefined?colorId:index%8,color:COLORS[colorId!==null&&colorId!==undefined?colorId:index%8],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
+export const COLORS=LIVERIES.map(livery=>livery.marker);
+export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const s=-12-Math.floor(index/2)*10,offset=index%2?3.1:-3.1,p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
 export const QUALIFYING_RESTARTS=3;
 export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
