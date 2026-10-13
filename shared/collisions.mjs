@@ -27,7 +27,7 @@ export function resolveCarContacts(cars,movingId=null){
   a.x-=n.x*push*wa/total;a.z-=n.z*push*wa/total;b.x+=n.x*push*wb/total;b.z+=n.z*push*wb/total;
   // Inelastic impact: remove closing speed rather than letting a faster car
   // drive through the one ahead. Cars keep their heading and manual steering.
-  const af={x:Math.sin(a.heading),z:Math.cos(a.heading)},bf={x:Math.sin(b.heading),z:Math.cos(b.heading)};
+  const ah=a.motionHeading??a.heading,bh=b.motionHeading??b.heading,af={x:Math.sin(ah),z:Math.cos(ah)},bf={x:Math.sin(bh),z:Math.cos(bh)};
   const an=dot(af,n),bn=dot(bf,n),closing=a.v*an-b.v*bn;
   if(closing>0){const impulse=closing/total;a.v=Math.max(-12,Math.min(102,a.v-impulse*an*wa));b.v=Math.max(-12,Math.min(102,b.v+impulse*bn*wb));}
   contacts++;

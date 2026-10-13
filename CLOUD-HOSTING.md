@@ -79,3 +79,16 @@ sectors participate before lap completion; comparisons use displayed millisecond
 Green marks a personal best when another driver holds a faster sector. Invalid lap
 and out-lap sectors do not establish purple records. Tests omitted at user request.
 Deployment: `3b1e0b89-6b04-48c2-8659-d655b58a5982`.
+
+
+## Conditions — 2.5.0
+
+Added Normal / dry, Intermediate / damp and Wet / rain presets for all session modes.
+The server normalizes the host's choice, includes it in lobby and session state, and
+preserves it through qualifying, restarts and rematches. Physics and client replay
+share traction, braking, cornering grip and sideways-slip calculations. Opponent
+motion and collision impulses account for travel direction during sliding.
+
+Rain and tyre spray each use one small rendering batch; road materials, lighting,
+visibility, AI braking/pace and guide colours adapt to conditions. No gameplay
+tests or browser test sessions were run, per the user's instruction.

@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.4.1**. Includes scenery and stylized landmarks for all
+Current source version: **2.5.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -94,3 +94,18 @@ and all players in a room must connect to the same process.
 
 Sector colours: purple is the fastest valid sector across the session; green is a
 personal best when another driver is faster; yellow is slower or invalid.
+
+
+## Track conditions (2.5.0)
+
+Choose **Normal / dry**, **Intermediate / damp**, or **Wet / rain** in race setup.
+The choice applies to practice, qualifying and races. In multiplayer the host's
+choice applies to every driver and carries into the race and rematches.
+
+Normal keeps the original dry handling. Intermediate lowers acceleration traction
+and braking grip with mild sliding; wet reduces them further, limits cornering grip
+and gives the car more sideways slip. Wet kerbs and grass have less grip. AI slows
+down and anticipates braking; the racing-line colours account for lower grip.
+Rain, tyre spray, shinier asphalt, cloudy lighting and reduced visibility accompany
+the damp/wet presets. These are arcade tuning presets, not measured tyre simulation.
+Gameplay tests for this update were omitted at the user's request.

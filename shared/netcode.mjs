@@ -1,3 +1,4 @@
+import {yawRate} from './conditions.mjs';
 import {stepCar,draftStrength} from './physics.mjs';
 import {resolveCarContacts} from './collisions.mjs';
 import {INPUT_DT,encodeInput,decodeInput} from './input-stream.mjs';
@@ -8,12 +9,11 @@ const lerp=(a,b,t)=>a+(b-a)*t;
 // A straight tangent would put a turning rival across the player's path.
 export function advanceRemote(c,dt){
  if(c.finished)return;
- const speed=Math.abs(c.v),rate=speed>1?Math.min(speed/9,1)*(1.9/(1+speed*.025)):0;
- const yaw=(c.v>=0?1:-1)*(c.steer||0)*rate;
- const middle=c.heading+yaw*dt/2,distance=c.v*dt;
+ const yaw=yawRate(c),travel=Number.isFinite(c.motionHeading)?c.motionHeading:c.heading,motionYaw=Number.isFinite(c.motionYawRate)?c.motionYawRate:yaw;
+ const middle=travel+motionYaw*dt/2,distance=c.v*dt;
  c.x+=Math.sin(middle)*distance*Math.cos(c.pitch||0);
  c.z+=Math.cos(middle)*distance*Math.cos(c.pitch||0);
- c.y+=Math.sin(c.pitch||0)*distance;c.heading+=yaw*dt;
+ c.y+=Math.sin(c.pitch||0)*distance;c.heading+=yaw*dt;c.motionHeading=travel+motionYaw*dt;
  c.progress+=distance;
 }
 const active=s=>['race','qualifying','practice'].includes(s.phase)&&s.elapsed>=0;
@@ -32,7 +32,7 @@ export class NetworkMotion {
   this.clockOffset=Math.min(...this.arrivals);
   if(this.arrivals.length>=6){const jitter=[...this.arrivals].sort((a,b)=>a-b),spread=jitter[Math.floor(jitter.length*.9)]-jitter[0];this.delay+=(Math.min(180,75+spread)-this.delay)*.1;}
   this.frames.push({at:s.elapsed*1000,cars:s.cars});if(this.frames.length>24)this.frames.shift();
-  this.session=s;this.lastAt=now;this.local=copyCar(car);this.others=s.cars.filter(c=>c.id!==this.id).map(copyCar);this.predictionTime=0;
+  this.session=s;this.lastAt=now;this.local=copyCar(car);this.local.conditions=s.conditions||car.conditions||'normal';this.others=s.cars.filter(c=>c.id!==this.id).map(copyCar);this.predictionTime=0;
   // Replay the actual unacknowledged controls, in order. Never estimate them
   // from RTT or apply today's steering to an old authoritative position.
   this.pending=this.pending.filter(command=>command[0]>(car.inputAck||0));
@@ -71,7 +71,7 @@ export class NetworkMotion {
    if(c.id===this.id)return this.visual;
    const ca=a.cars.find(x=>x.id===c.id)||c,cb=b.cars.find(x=>x.id===c.id)||c;
    if(c.finished||cb.restarts!==ca.restarts||cb.resetTimer>ca.resetTimer+.3||Math.hypot(cb.x-ca.x,cb.z-ca.z)>30)return {...c,smoothMotion:true};
-   const out={...c,smoothMotion:true};for(const k of ['x','y','z','v','steer','pitch'])out[k]=lerp(ca[k],cb[k],t);out.heading=ca.heading+angleDiff(cb.heading,ca.heading)*t;
+   const out={...c,smoothMotion:true};for(const k of ['x','y','z','v','steer','pitch'])out[k]=lerp(ca[k],cb[k],t);out.heading=ca.heading+angleDiff(cb.heading,ca.heading)*t;out.motionHeading=(ca.motionHeading??ca.heading)+angleDiff(cb.motionHeading??cb.heading,ca.motionHeading??ca.heading)*t;
    // Bridge a missing packet briefly; never extrapolate indefinitely after a disconnect.
    if(target>b.at&&active(s))advanceRemote(out,Math.min((target-b.at)/1000,.1));
    // Nearby cars must be shown at the same predicted time as the player, or
@@ -79,7 +79,7 @@ export class NetworkMotion {
    if(s.phase==='race'||s.phase==='practice'){
     const other=this.others.find(o=>o.id===c.id),distance=Math.hypot(other.x-this.local.x,other.z-this.local.z),blend=Math.max(0,Math.min(1,(30-distance)/15));
     for(const key of ['x','y','z','v','pitch'])out[key]=lerp(out[key],other[key],blend);
-    out.heading+=angleDiff(other.heading,out.heading)*blend;
+    out.heading+=angleDiff(other.heading,out.heading)*blend;out.motionHeading+=angleDiff(other.motionHeading??other.heading,out.motionHeading)*blend;
    }
    return out;
   });

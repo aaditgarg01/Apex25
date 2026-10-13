@@ -62,3 +62,7 @@
 @media(max-width:800px){.volume-wrap{padding:6px 9px;gap:6px}.volume-slider{width:64px}.volume-val{display:none}}
 @media(max-width:480px){.volume-slider{width:50px}}
 
+
+#conditions-description{font-size:12px;line-height:1.4;color:#aab9c3;margin:6px 0 0}
+.conditions-label{display:inline-block;margin-top:0;font-size:11px;letter-spacing:.3px;color:#b7d1df}
+.conditions-label.wet{color:#8ccaf4}.conditions-label.intermediate{color:#72d5b8}
