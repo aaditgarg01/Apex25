@@ -5,7 +5,7 @@
   "terrain": "SRTM 90m via https://api.opentopodata.org/v1/srtm90m",
   "underpassReference": "https://stage.vit.ac.in/campuslife/otheramenities",
   "constructionReference": "https://www.paschalindia.com/english/news/article/railway-underpass-vellore.php",
-  "dimensions": "Race road widened to 14 m; local tunnel depths, clearances and fine slopes reconstructed, not surveyed",
+  "dimensions": "Race road widened to 16 m; local tunnel depths, clearances and fine slopes reconstructed, not surveyed",
   "retrieved": "2026-10-13",
   "routeRevision": "Fleming approach follows the mapped road westbound once; tangent roundabout joins; curve-only Jimmy Carter detour"
 }

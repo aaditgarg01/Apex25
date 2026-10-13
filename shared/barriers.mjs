@@ -1,5 +1,6 @@
 import {ribbonOffset} from './surface.mjs';
 import {campusLocal} from './campus.mjs';
+import {campusTunnelLayout,campusWallHeight} from './campus-geometry.mjs';
 const cache=new WeakMap(),CELL=12,HALF_WIDTH=1.24,HALF_LENGTH=2.6;
 const wrap=(n,m)=>((n%m)+m)%m,angle=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];return {x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,y:a.y+(b.y-a.y)*t,groundY:a.groundY+(b.groundY-a.groundY)*t,heading:a.heading+angle(b.heading,a.heading)*t};}
@@ -17,7 +18,8 @@ export function trackBarriers(track){
   const next=(i+1)%track.points.length,inner=half+(track.campus?1.8:track.id==='mc-1929'?.35:6.5),outer=half+(track.campus?2.3:track.id==='mc-1929'?.8:7.2);
   const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*inner),bo=edge(track,next,side*outer),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
   const cx=(track.points[i].x+track.points[next].x)/2,cz=(track.points[i].z+track.points[next].z)/2,nx=cx-(a.x+b.x)/2,nz=cz-(a.z+b.z)/2,n=Math.hypot(nx,nz);
-  add(a,b,Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2),.76,'track',n?{x:nx/n,z:nz/n}:null);
+  const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2),height=campusWallHeight(track,a,b,width,.76,(i+.5)*track.step);
+  if(height>=.18)add(a,b,width,height,'track',n?{x:nx/n,z:nz/n}:null);
   if(!track.campus){const fa=edge(track,i,side*(half+(track.urban?3.2:8))),fb=edge(track,next,side*(half+(track.urban?3.2:8)));add(fa,fb,.12,3.5,'fence',n?{x:nx/n,z:nz/n}:null);}
  }
  function wallPair(s,length,offset,width,height,kind){
@@ -25,7 +27,7 @@ export function trackBarriers(track){
   for(const side of [-1,1]){const x=p.x+rx*offset*side,z=p.z+rz*offset*side;add({x:x-tx*length/2,z:z-tz*length/2,y:p.y},{x:x+tx*length/2,z:z+tz*length/2,y:p.y},width,height,kind,{x:-rx*side,z:-rz*side});}
  }
  if(track.campus){
-  for(const tunnel of track.campus.tunnels){const reach=tunnel.covered/2+tunnel.approach;for(let d=-reach;d<reach;d+=4){const s=tunnel.center+d+2,p=roadPoint(track,s);wallPair(s,4.5,half+.8,.55,Math.max(.65,p.groundY-p.y+.7),'tunnel');}for(const side of [-1,1])wallPair(tunnel.center+side*(tunnel.covered/2+1),1.1,half+.7,.8,6.9,'portal');}
+  for(const tunnel of track.campus.tunnels){const layout=campusTunnelLayout(track,tunnel);for(const w of [...layout.walls,...layout.portals])add(w.a,w.b,w.width,w.height,w.kind,w.inward);}
   for(const island of track.campus.roundabouts){const p=campusLocal(track,island.location);let closest=track.points[0],distance=Infinity;for(const point of track.points){const d=Math.hypot(point.x-p.x,point.z-p.z);if(d<distance){distance=d;closest=point;}}const y=closest.groundY-.975;for(let i=0;i<32;i++){const a=i*Math.PI/16,b=(i+1)*Math.PI/16;add({x:p.x+Math.cos(a)*island.radius,z:p.z+Math.sin(a)*island.radius,y},{x:p.x+Math.cos(b)*island.radius,z:p.z+Math.sin(b)*island.radius,y},.12,1.4,'island');}}
  }
  if(track.id==='mc-1929'){const p=campusLocal(track,[7.4293,43.7382]);let center=0,best=Infinity;track.points.forEach((q,i)=>{const d=Math.hypot(p.x-q.x,p.z-q.z);if(d<best){best=d;center=i*track.step;}});for(let s=center-90;s<center+90;s+=8)wallPair(s,8.4,half+1,.5,5.5,'tunnel');}

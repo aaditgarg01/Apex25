@@ -221,3 +221,16 @@ Server simulation, local driving, client prediction and remote presentation all
 apply the same barrier contacts. Car contact separation also respects track walls.
 The racing line leaves space for the car inside narrowed corner boundaries.
 Gameplay tests were omitted at the user's request. All players should refresh.
+
+
+## VIT subway wall clearance and wider road (2.8.3)
+
+The VIT race road is now 16 m wide. Retaining walls, yellow coping, portal pillars
+and track barriers are trimmed below crossing road decks or removed where they
+would intrude into another part of the race route. Tunnel walls follow the same
+corner edge geometry as the road and are rendered vertically, with sloping bases.
+
+The renderer and collision system share the tunnel wall layout, so visible walls
+still block cars and removed sections leave no invisible obstacle. Ground banks
+also keep more clearance from neighboring roads. The traced route is unchanged.
+Gameplay tests were omitted at the user's request. All players should refresh.
