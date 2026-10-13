@@ -1,0 +1,11 @@
+*
+!Dockerfile
+!package.json
+!package-lock.json
+!server.mjs
+!public/
+!public/**
+!shared/
+!shared/**
+!scripts/
+!scripts/build.mjs

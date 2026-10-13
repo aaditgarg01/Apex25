@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: apex-25
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev && npm run build
+    startCommand: node server.mjs
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22
+      - key: HOST
+        value: 0.0.0.0
