@@ -91,3 +91,6 @@ body.racing #timing #leaderboard li .driver-name-text{display:block}body.racing 
 #results li span.finisher-flag{min-width:0;text-align:left;display:inline-flex}
 @media(max-width:800px){body.racing #drive-stack{bottom:82px;max-width:70vw}body.racing #drive-stack #telemetry{width:145px}}
 @media(max-height:540px) and (orientation:landscape){body.racing #drive-stack{bottom:8px;max-width:55vw}body.racing #drive-stack #telemetry{width:145px}}
+
+/* Shuffle controls share the selector row to keep setup compact. */
+.random-select{display:flex;align-items:stretch;gap:8px}.random-select select{flex:1;min-width:0;width:0}.randomise{flex-shrink:0;border:1px solid #ffffff2b;border-radius:3px;background:#ffffff0b;padding:0 12px;font-size:12px;color:#c7d5dc;min-height:46px}.randomise:hover{background:#ffffff19;color:#fff}

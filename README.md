@@ -149,3 +149,13 @@ gap against a stopped car. Finishers show recorded, penalty-adjusted time differ
 Live distance-derived gaps are marked approximate. Results remain provisional until
 the field finishes; spectators follow only cars still racing. Tests were omitted at
 the user's request.
+
+
+## Random circuit and conditions (2.6.3)
+
+Use Randomise beside Circuit or Track Conditions to choose a different option
+before starting. Circuit selection includes every available circuit, including
+extras; conditions choose between Normal / dry, Intermediate / damp, and Wet / rain.
+The selected values and preview update immediately and are saved like manual choices.
+Both solo and multiplayer room creation use the displayed setup; all online drivers
+share the host's circuit and surface. Gameplay tests were omitted at the user's request.
