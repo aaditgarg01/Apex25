@@ -19,7 +19,12 @@ export class RaceScene{
  box(w,h,d,color,x=0,y=0,z=0,parent=this.group){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));m.position.set(x,y,z);m.userData.batchBox=true;parent.add(m);return m;}
  ribbon(track,left,right,color,y=.03,alternating=false){const pos=[],colors=[],indices=[],n=track.points.length,c1=new THREE.Color(color),c2=new THREE.Color(track.id==='be-1925'?'#e9c927':track.campus?'#ece6d1':'#edeee7');for(let i=0;i<=n;i++){const p=track.points[i%n];for(const edge of [left,right]){const offset=ribbonOffset(track,i%n,edge);pos.push(p.x+Math.cos(p.heading)*offset,p.y+y,p.z-Math.sin(p.heading)*offset);const col=alternating&&Math.floor(i/2)%2?c2:c1;colors.push(col.r,col.g,col.b);}if(i<n){const k=i*2;indices.push(k,k+2,k+1,k+1,k+2,k+3);}}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();const m=new THREE.Mesh(geo,mat(alternating?'#ffffff':color,{side:THREE.DoubleSide,vertexColors:alternating}));m.userData.roadBand={left,right,y};m.receiveShadow=true;this.group.add(m);return m;}
  buildBarriers(track){
- return this.wallMesh(trackBarriers(track).walls.filter(w=>w.kind==='track'),'#8c9e9f');
+ const walls=trackBarriers(track).walls;
+ this.wallMesh(walls.filter(w=>w.kind==='track'),'#8c9e9f');
+ // Short red/white apex barriers use the shared solid collision geometry.
+ const corners=walls.filter(w=>w.kind==='corner');
+ this.wallMesh(corners.filter((w,i)=>i%2===0),'#d14a37');
+ this.wallMesh(corners.filter((w,i)=>i%2!==0),'#edeee7');
  }
  wallMesh(walls,color){
  const positions=[],add=(a,b,c,d)=>{for(const p of [a,b,c,a,c,d])positions.push(p.x,p.y,p.z);};

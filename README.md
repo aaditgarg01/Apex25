@@ -271,3 +271,18 @@ and tunnel entrances, with the physical curb around the roundabout island.
 Rendering and collision logic use the same selection, so removed roadside walls
 do not leave invisible obstacles. The 16 m road width and subway clearance fixes
 are retained. Gameplay tests were omitted at the user's request. Refresh to update.
+
+
+## Smoother VIT corners and short apex barriers (2.8.5)
+
+Rounded campus road joins with tangent circular arcs, removing unnecessary
+collinear survey points so short map segments cannot force pointed corner kinks.
+The PRP return onto Jimmy Carter Road now follows a smooth bend. The original
+traced loop, start/finish and 16 m road width are retained; the lap is about 3.45 km.
+Cached terrain anchors and campus scenery are aligned with the revised geometry.
+
+Short red/white barriers protect the inside of substantial tight bends to block
+corner shortcuts. Their visible meshes and collisions share the same layout and
+retain clearance below crossing road decks. Ordinary roads and outside runoff
+remain open; subway infrastructure and the roundabout island retain their walls.
+Gameplay tests were omitted at the user's request. All players should refresh.
