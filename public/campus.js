@@ -61,7 +61,7 @@ export function addCampus(scene,track){
  for(const tunnel of track.campus.tunnels)buildTunnel(scene,track,tunnel);
  buildRailway(scene,track);
  for(const island of track.campus.roundabouts){
-  const p=campusLocal(track,island.location),y=terrainHeight(track,p.x,p.z),base=new THREE.Mesh(new THREE.CylinderGeometry(island.radius,island.radius,.45,24),mat('#e8dfbf'));base.position.set(p.x,y+.2,p.z);group.add(base);
+  const p=campusLocal(track,island.location),y=terrainHeight(track,p.x,p.z),apron=new THREE.Mesh(new THREE.CylinderGeometry(5.3,5.3,1,32),mat('#7a8b62'));apron.position.set(p.x,y-.45,p.z);group.add(apron);const base=new THREE.Mesh(new THREE.CylinderGeometry(island.radius,island.radius,1.4,24),mat('#e8dfbf'));base.position.set(p.x,y-.275,p.z);group.add(base);
   const garden=new THREE.Mesh(new THREE.CylinderGeometry(island.radius-.3,island.radius-.3,.2,24),mat('#497744'));garden.position.set(p.x,y+.48,p.z);group.add(garden);
   const shrubs=new THREE.Mesh(new THREE.IcosahedronGeometry(1.2,1),mat('#436836'));shrubs.position.set(p.x,y+1.2,p.z);group.add(shrubs);
  }

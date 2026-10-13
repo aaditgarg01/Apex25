@@ -3,7 +3,17 @@ import {angleDiff,terrainHeight,wrap} from './tracks.mjs';
 // An offset beyond the inside bend radius folds a strip back across the road.
 // Use the tightest nearby radius to keep barriers and runoff ordered at hairpins.
 export function ribbonOffset(track,index,offset){
- let limit=Math.min(Math.abs(offset),track.id==='mc-1929'||track.campus?track.width/2+.8:Infinity);
+ // Keep campus bands ordered at tight bends. Clamping each edge separately
+ // collapsed kerbs, edge paint and barriers onto the same line.
+ if(track.campus){
+  let scale=1;const outer=track.width/2+2.3;
+  for(let d=-3;d<=3;d++){
+   const i=wrap(index+d,track.points.length),a=track.points[i],b=track.points[(i+1)%track.points.length],curvature=angleDiff(b.heading,a.heading)/track.step;
+   if(curvature*offset>0)scale=Math.min(scale,.8/(Math.abs(curvature)*outer));
+  }
+  return offset*scale;
+ }
+ let limit=Math.min(Math.abs(offset),track.id==='mc-1929'?track.width/2+.8:Infinity);
  for(let d=-3;d<=3;d++){
   const i=wrap(index+d,track.points.length),a=track.points[i],b=track.points[(i+1)%track.points.length];
   const curvature=angleDiff(b.heading,a.heading)/track.step;

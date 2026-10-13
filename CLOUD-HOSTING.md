@@ -186,3 +186,18 @@ multiplayer and circuit randomisation. Fine elevations and tunnel dimensions are
 a playable reconstruction rather than a measured survey. Sources and attribution
 are saved in public/data/vit-vellore-sources.json. No gameplay tests were run, per
 the user's preference.
+
+
+## VIT junction corrections (2.8.1)
+
+Removed the duplicated straight section across the Jimmy Carter Road landscaped
+loop. Drivers now enter the curved detour from the east and exit to the west
+without retracing the bypass. The minimap, racing line, lap progress and AI use
+the same corrected geometry. Fleming Road roundabout entry and exit use continuous
+tangent joins rather than short reversing connectors. The revised lap is about
+3.6 km; cached terrain heights and campus footprints are remapped to it.
+
+Campus road edges now shrink together on the inside of tight bends so kerbs,
+edge paint and barriers stay ordered and do not collapse onto one another. Map
+attribution sits below the timing panel. Gameplay tests were omitted at the
+user's request.
