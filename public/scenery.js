@@ -1,3 +1,4 @@
+import {addCampus} from './campus.js';
 import {addLandmarks} from './landmarks.js';
 import {batchMapped} from './batching.js';
 import {safeSite,roadClearance} from '/shared/venues.mjs';
@@ -8,10 +9,11 @@ const material=(color,extras={})=>new THREE.MeshStandardMaterial({color,roughnes
 const nightIds=['sg-2008','us-2023','sa-2021','ae-2009','bh-2002','qa-2004'];
 const desertIds=['bh-2002','sa-2021','qa-2004','ae-2009','us-2023'];
 const forestIds=['it-1922','be-1925','de-1927','de-1932','it-1953','at-1969','us-1956'];
-const tropicalIds=['my-1999','sg-2008','br-1940','us-2022','au-1953'];
-export function venueProfile(track){return {night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),ground:desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
+const tropicalIds=['my-1999','sg-2008','br-1940','us-2022','au-1953','in-vit-vellore'];
+export function venueProfile(track){return {night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),ground:track.campus?'#7a8b62':desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
 function nearestDistance(track,x,z){let best=Infinity;for(let i=0;i<track.points.length;i+=4){const p=track.points[i];best=Math.min(best,Math.hypot(p.x-x,p.z-z));}return best;}
 export function addVenue(scene,track){
+ if(track.campus)return addCampus(scene,track);
  const profile=venueProfile(track),group=scene.group,half=track.width/2,dummy=new THREE.Object3D();
  // Rounded deciduous canopies, cypress trees and palms replace universal cones.
  const count=Math.ceil(track.length/(profile.forest?15:profile.desert?160:48))*2;
@@ -65,7 +67,7 @@ export async function addMappedScenery(scene,track){
  const features=[...data.features].sort((a,b)=>a.kind==='building'&&b.kind!=='building'?1:-1);
  for(const f of features){if(added>800)break;if(f.kind==='forest')continue;const shape=new THREE.Shape();f.points.forEach(([x,z],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));shape.closePath();let mesh;
  if(f.kind==='building'){
-  const cx=f.points.reduce((s,p)=>s+p[0],0)/f.points.length,cz=f.points.reduce((s,p)=>s+p[1],0)/f.points.length;const radius=Math.max(...f.points.map(([x,z])=>Math.hypot(x-cx,z-cz)));if(roadClearance(track,cx,cz)<radius+4)continue;
+  const cx=f.points.reduce((s,p)=>s+p[0],0)/f.points.length,cz=f.points.reduce((s,p)=>s+p[1],0)/f.points.length;const radius=Math.max(...f.points.map(([x,z])=>Math.hypot(x-cx,z-cz)));if(track.campus?f.points.some(([x,z])=>roadClearance(track,x,z)<2):roadClearance(track,cx,cz)<radius+4)continue;
   mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:f.height,bevelEnabled:false}),buildingMat);
  }else mesh=new THREE.Mesh(new THREE.ShapeGeometry(shape),f.kind==='water'?waterMat:forestMat);
  mesh.rotation.x=-Math.PI/2;const cx=f.points.reduce((s,p)=>s+p[0],0)/f.points.length,cz=f.points.reduce((s,p)=>s+p[1],0)/f.points.length;mesh.position.y=terrainHeight(track,cx,cz)+(f.kind==='building'?-.3:-.045);mesh.userData.mappedStatic=true;mesh.castShadow=f.kind==='building';mesh.receiveShadow=true;originalGroup.add(mesh);added++;

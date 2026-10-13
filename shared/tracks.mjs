@@ -1,10 +1,11 @@
+import {prepareCampus} from './campus.mjs';
 import {racingSpeedAt} from './racing-line.mjs';
 import {applyElevation} from './elevation.mjs';
 export const CALENDAR = [
 ['au-1953','Australia','Melbourne','AU',14],['cn-2004','China','Shanghai','CN',16],['jp-1962','Japan','Suzuka','JP',18],['bh-2002','Bahrain','Sakhir','BH',15],['sa-2021','Saudi Arabia','Jeddah','SA',27],['us-2022','Miami','Miami','US',19],['it-1953','Emilia-Romagna','Imola','IT',19],['mc-1929','Monaco','Monte Carlo','MC',19],['es-1991','Spain','Barcelona','ES',14],['ca-1978','Canada','Montréal','CA',14],['at-1969','Austria','Spielberg','AT',10],['gb-1948','Great Britain','Silverstone','GB',18],['be-1925','Belgium','Spa-Francorchamps','BE',19],['hu-1986','Hungary','Budapest','HU',14],['nl-1948','Netherlands','Zandvoort','NL',14],['it-1922','Italy','Monza','IT',11],['az-2016','Azerbaijan','Baku','AZ',20],['sg-2008','Singapore','Marina Bay','SG',19],['us-2012','United States','Austin','US',20],['mx-1962','Mexico','Mexico City','MX',17],['br-1940','Brazil','São Paulo','BR',15],['us-2023','Las Vegas','Las Vegas','US',17],['qa-2004','Qatar','Lusail','QA',16],['ae-2009','Abu Dhabi','Yas Marina','AE',16]
 ];
 export const EXTRAS = [
-['fr-1969','France','Paul Ricard','FR',15],['de-1932','Germany','Hockenheim','DE',17],['ru-2014','Russia','Sochi','RU',18],['de-1927','Germany','Nürburgring GP','DE',15],['pt-2008','Portugal','Portimão','PT',15],['it-1914','Italy','Mugello','IT',15],['my-1999','Malaysia','Sepang','MY',15],['tr-2005','Türkiye','Istanbul Park','TR',14],['fr-1960','France','Magny-Cours','FR',17],['pt-1972','Portugal','Estoril','PT',13],['br-1977','Brazil','Jacarepaguá (historic)','BR',11],['es-2026','Spain','Madrid','ES',22],['us-1909','United States','Indianapolis · F1 2000–2007','US',13],['ar-1952','Argentina','Buenos Aires · F1 1995–1998','AR',16],['za-1961','South Africa','Kyalami','ZA',16],['us-1956','United States','Watkins Glen','US',11],['in-2011','India','Buddh · Indian GP','IN',16]
+['fr-1969','France','Paul Ricard','FR',15],['de-1932','Germany','Hockenheim','DE',17],['ru-2014','Russia','Sochi','RU',18],['de-1927','Germany','Nürburgring GP','DE',15],['pt-2008','Portugal','Portimão','PT',15],['it-1914','Italy','Mugello','IT',15],['my-1999','Malaysia','Sepang','MY',15],['tr-2005','Türkiye','Istanbul Park','TR',14],['fr-1960','France','Magny-Cours','FR',17],['pt-1972','Portugal','Estoril','PT',13],['br-1977','Brazil','Jacarepaguá (historic)','BR',11],['es-2026','Spain','Madrid','ES',22],['us-1909','United States','Indianapolis · F1 2000–2007','US',13],['ar-1952','Argentina','Buenos Aires · F1 1995–1998','AR',16],['za-1961','South Africa','Kyalami','ZA',16],['us-1956','United States','Watkins Glen','US',11],['in-2011','India','Buddh · Indian GP','IN',16],['in-vit-vellore','India','VIT Vellore · Campus Circuit','IN',27]
 ];
 export const wrap=(n,m)=>((n%m)+m)%m;
 export const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -23,6 +24,7 @@ export function makeTracks(data,elevations={}){
  points.forEach((p,i)=>{const a=points[wrap(i-2,n)],b=points[(i+2)%n];p.heading=Math.atan2(b.x-a.x,b.z-a.z);p.y=0;});
  const elevation=applyElevation(id,points,length,elevations);
  points.forEach(p=>p.groundY=p.y);
+ const campus=f.properties.campus?JSON.parse(JSON.stringify(f.properties.campus)):null;if(campus)prepareCampus({campus,origin:{lon,lat},points,length,step,elevation});
  // Suzuka's two branches must remain physically and visually separate at the crossover.
  if(id==='jp-1962'){
   let pair=null;outer:for(let i=0;i<n;i+=2)for(let j=i+80;j<n-80;j+=2){if(Math.hypot(points[i].x-points[j].x,points[i].z-points[j].z)<9){pair=[i,j];break outer;}}
@@ -45,8 +47,8 @@ export function makeTracks(data,elevations={}){
   points.forEach((p,i)=>{const d=(p.x-x)**2+(p.z-z)**2;if(d<best){best=d;index=i;}});points=[...points.slice(index),...points.slice(0,index)];
  }
  const arid=['bh-2002','sa-2021','qa-2004','ae-2009','us-2023'].includes(id);
- const urban=['mc-1929','sg-2008','az-2016','us-2023','sa-2021'].includes(id);
- return {id,country,city,code,turns,round:round<24?round+1:null,category:round<24?'2025 season':'More circuits',origin:{lon,lat},name:f.properties.Name,officialLength:f.properties.length,elevation,length,step,points,width:id==='mc-1929'?13:17,arid,urban};
+ const urban=['mc-1929','sg-2008','az-2016','us-2023','sa-2021','in-vit-vellore'].includes(id);
+ return {id,country,city,code,turns,round:round<24?round+1:null,category:campus?'Campus circuit':round<24?'2025 season':'More circuits',origin:{lon,lat},name:f.properties.Name,officialLength:f.properties.length,elevation,length,step,points,width:f.properties.width||(id==='mc-1929'?13:17),arid,urban,campus};
  });
 }
 export function sample(track,s,offset=0){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];const heading=a.heading+angleDiff(b.heading,a.heading)*t;return {x:a.x+(b.x-a.x)*t+Math.cos(heading)*offset,z:a.z+(b.z-a.z)*t-Math.sin(heading)*offset,y:a.y+(b.y-a.y)*t,pitch:a.pitch+(b.pitch-a.pitch)*t,grade:a.grade+(b.grade-a.grade)*t,heading};}

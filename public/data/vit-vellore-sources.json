@@ -1,0 +1,10 @@
+{
+  "route": "User-provided traced screenshot, aligned to OpenStreetMap road geometry",
+  "mapSource": "https://www.openstreetmap.org/#map=17/12.9719/79.1601",
+  "mapLicense": "OpenStreetMap \u00a9 contributors \u00b7 ODbL",
+  "terrain": "SRTM 90m via https://api.opentopodata.org/v1/srtm90m",
+  "underpassReference": "https://stage.vit.ac.in/campuslife/otheramenities",
+  "constructionReference": "https://www.paschalindia.com/english/news/article/railway-underpass-vellore.php",
+  "dimensions": "Race road widened to 14 m; local tunnel depths, clearances and fine slopes reconstructed, not surveyed",
+  "retrieved": "2026-10-13"
+}

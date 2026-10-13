@@ -190,3 +190,26 @@ Race gaps display with a plain + sign. Live gaps remain estimates while cars are
 still driving; finished drivers keep their recorded, penalty-adjusted time gaps.
 The results legend explains when a live gap becomes final. Gameplay tests were
 omitted at the user's request.
+
+
+## VIT Vellore campus circuit (2.8.0)
+
+A new Campus circuit entry follows the user's traced route around VIT Vellore,
+aligned to mapped campus roads. The roughly 3.7 km loop starts westbound on Jimmy
+Carter Road and includes Fleming Road's roundabout, Main Subway, Lee/Lehn/Planck
+roads, Kissinger Road, the M-block loop, and the PRP/SJT underpass and outside return
+hairpin. Road width is 14 m; the smallest turn radii are rounded for racing.
+
+SRTM terrain samples supply gentle campus elevation changes. The railway underpasses
+use separate reconstructed descents, level covered floors, climbs, retaining walls,
+portal markings, and roofs. Chase-camera clearance follows the lowered road;
+overhead view moves under the ceiling inside a covered section. Rain is hidden
+under the cover. Tight-turn shoulders and lowered terrain prevent road clipping.
+
+The scenery includes locally cached OpenStreetMap building footprints, VIT Lake,
+campus signs, palms, lamp poles, and both railway tracks. There are no map-data
+requests during play. The circuit is available in practice, qualifying, races,
+multiplayer and circuit randomisation. Fine elevations and tunnel dimensions are
+a playable reconstruction rather than a measured survey. Sources and attribution
+are saved in public/data/vit-vellore-sources.json. No gameplay tests were run, per
+the user's preference.
