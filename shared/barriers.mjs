@@ -1,6 +1,6 @@
 import {ribbonOffset} from './surface.mjs';
 import {campusLocal} from './campus.mjs';
-import {campusTunnelLayout,campusWallHeight} from './campus-geometry.mjs';
+import {campusTunnelLayout} from './campus-geometry.mjs';
 const cache=new WeakMap(),CELL=12,HALF_WIDTH=1.24,HALF_LENGTH=2.6;
 const wrap=(n,m)=>((n%m)+m)%m,angle=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];return {x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,y:a.y+(b.y-a.y)*t,groundY:a.groundY+(b.groundY-a.groundY)*t,heading:a.heading+angle(b.heading,a.heading)*t};}
@@ -14,13 +14,15 @@ export function trackBarriers(track){
   const id=walls.length;walls.push(wall);const pad=width/2+.1;
   for(let x=Math.floor((Math.min(a.x,b.x)-pad)/CELL);x<=Math.floor((Math.max(a.x,b.x)+pad)/CELL);x++)for(let z=Math.floor((Math.min(a.z,b.z)-pad)/CELL);z<=Math.floor((Math.max(a.z,b.z)+pad)/CELL);z++){const key=x+':'+z;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(id);}
  }
- for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
-  const next=(i+1)%track.points.length,inner=half+(track.campus?1.8:track.id==='mc-1929'?.35:6.5),outer=half+(track.campus?2.3:track.id==='mc-1929'?.8:7.2);
+ // Campus streets have open verges. Their only solid walls come from the actual
+ // subway retaining walls, portal pillars and roundabout island below.
+ if(!track.campus)for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
+  const next=(i+1)%track.points.length,inner=half+(track.id==='mc-1929'?.35:6.5),outer=half+(track.id==='mc-1929'?.8:7.2);
   const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*inner),bo=edge(track,next,side*outer),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
   const cx=(track.points[i].x+track.points[next].x)/2,cz=(track.points[i].z+track.points[next].z)/2,nx=cx-(a.x+b.x)/2,nz=cz-(a.z+b.z)/2,n=Math.hypot(nx,nz);
-  const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2),height=campusWallHeight(track,a,b,width,.76,(i+.5)*track.step);
-  if(height>=.18)add(a,b,width,height,'track',n?{x:nx/n,z:nz/n}:null);
-  if(!track.campus){const fa=edge(track,i,side*(half+(track.urban?3.2:8))),fb=edge(track,next,side*(half+(track.urban?3.2:8)));add(fa,fb,.12,3.5,'fence',n?{x:nx/n,z:nz/n}:null);}
+  const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2);
+  add(a,b,width,.76,'track',n?{x:nx/n,z:nz/n}:null);
+  const fa=edge(track,i,side*(half+(track.urban?3.2:8))),fb=edge(track,next,side*(half+(track.urban?3.2:8)));add(fa,fb,.12,3.5,'fence',n?{x:nx/n,z:nz/n}:null);
  }
  function wallPair(s,length,offset,width,height,kind){
   const p=roadPoint(track,s),tx=Math.sin(p.heading),tz=Math.cos(p.heading),rx=Math.cos(p.heading),rz=-Math.sin(p.heading);

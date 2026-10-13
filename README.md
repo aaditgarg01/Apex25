@@ -261,3 +261,13 @@ The renderer and collision system share the tunnel wall layout, so visible walls
 still block cars and removed sections leave no invisible obstacle. Ground banks
 also keep more clearance from neighboring roads. The traced route is unchanged.
 Gameplay tests were omitted at the user's request. All players should refresh.
+
+
+## Selective VIT barriers (2.8.4)
+
+Removed the continuous track-side walls from the VIT campus circuit, leaving
+normal streets and verges open. Solid walls remain only at the two subway ramps
+and tunnel entrances, with the physical curb around the roundabout island.
+Rendering and collision logic use the same selection, so removed roadside walls
+do not leave invisible obstacles. The 16 m road width and subway clearance fixes
+are retained. Gameplay tests were omitted at the user's request. Refresh to update.
