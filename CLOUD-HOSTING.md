@@ -111,3 +111,14 @@ angle-dependent effective mass and capped positional correction. Final rendered
 separation never applies another velocity impulse. Qualifying remains ghosted.
 
 No automated game tests or browser gameplay checks were run, per user preference.
+
+
+## Finish handling and display fixes — 2.6.2
+
+Finish state now removes cars from rendering, minimap, contacts, drafting, and
+spectator targets while preserving timing/classification data. Retirement rejects
+finished drivers in both shared logic and the UI. Finish badges appear next to race
+finishers; unfinished followers display RACING after a leader finishes, and completed
+gaps use recorded finish times. Provisional results update as the field completes.
+The guide legend and status/speed card use layout flow to avoid overlap. No gameplay
+tests or browser test sessions were run, following the user's preference.

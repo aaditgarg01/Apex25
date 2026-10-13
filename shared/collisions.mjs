@@ -3,6 +3,7 @@ const HALF_WIDTH=1.24,HALF_LENGTH=2.6,CENTER_OFFSET=.3;
 const dot=(a,b)=>a.x*b.x+a.z*b.z;
 function body(c){const forward={x:Math.sin(c.heading),z:Math.cos(c.heading)},right={x:forward.z,z:-forward.x};return {forward,right,x:c.x+forward.x*CENTER_OFFSET,z:c.z+forward.z*CENTER_OFFSET};}
 export function carContact(a,b){
+ if(a.finished||b.finished||a.retired||b.retired)return null;
  if(Math.abs(a.y-b.y)>1.5||Math.abs(a.x-b.x)>7||Math.abs(a.z-b.z)>7)return null;
  const A=body(a),B=body(b),delta={x:B.x-A.x,z:B.z-A.z};if(Math.hypot(delta.x,delta.z)>6)return null;
  let depth=Infinity,normal;
@@ -15,7 +16,7 @@ export function carContact(a,b){
 }
 function nearbyPairs(cars,movingId){
  const grid=new Map(),pairs=[];
- for(let i=0;i<cars.length;i++){const c=cars[i];if(c.retired)continue;const x=Math.floor(c.x/8),z=Math.floor(c.z/8);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const j of grid.get(`${x+dx},${z+dz}`)||[])if(movingId===null||c.id===movingId||cars[j].id===movingId)pairs.push([j,i]);const key=`${x},${z}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(i);}
+ for(let i=0;i<cars.length;i++){const c=cars[i];if(c.retired||c.finished)continue;const x=Math.floor(c.x/8),z=Math.floor(c.z/8);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const j of grid.get(`${x+dx},${z+dz}`)||[])if(movingId===null||c.id===movingId||cars[j].id===movingId)pairs.push([j,i]);const key=`${x},${z}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(i);}
  return pairs;
 }
 export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrection=.8}={}){

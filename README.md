@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.6.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.6.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -134,3 +134,18 @@ Race/practice cars remain solid and qualifying remains ghosted.
 
 Gameplay tests were omitted at the user's request. All players should refresh after
 deployment to use the new guide, display and multiplayer client.
+
+
+## Finish handling and display fixes (2.6.2)
+
+The racing-line legend sits inside the timing card, and session messages stack above
+the speed card so expanded telemetry cannot cover them. Finishing cars disappear
+from the scene and minimap immediately and no longer collide or create drafting.
+Their records stay in the classification, with a 🏁 beside each race finisher. DNF
+drivers do not receive a finish flag. Finished drivers cannot retire afterwards.
+
+Once the leader finishes, unfinished drivers display RACING rather than a distance
+gap against a stopped car. Finishers show recorded, penalty-adjusted time differences.
+Live distance-derived gaps are marked approximate. Results remain provisional until
+the field finishes; spectators follow only cars still racing. Tests were omitted at
+the user's request.
