@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.5.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.6.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -109,3 +109,28 @@ down and anticipates braking; the racing-line colours account for lower grip.
 Rain, tyre spray, shinier asphalt, cloudy lighting and reduced visibility accompany
 the damp/wet presets. These are arcade tuning presets, not measured tyre simulation.
 Gameplay tests for this update were omitted at the user's request.
+
+
+## Display, guide and multiplayer refinements (2.6.0)
+
+The race display starts compact. Press **H**, choose **Details**, or use the race
+menu checkbox to reveal full timing, all drivers, the minimap and extra controls.
+Camera (C), recovery (R) and Menu (Escape) remain keyboard shortcuts. The setup
+screen folds driver/car appearance options to reduce clutter.
+
+The guide follows a bounded outside-entry/apex/exit path, with curvature smoothing
+and a forward/backward acceleration/braking speed plan. Colour responds to approach
+speed, available boost and surface conditions; it no longer labels every slow target
+with fixed red thresholds. It is a computed arcade guide, not a measured professional
+line. AI follows the new path/speed plan. Only the next ~300 m of markers is rendered.
+
+Rain moves in world space with wind; pooled soft wheel spray trails, grows and fades.
+Multiplayer rivals are aligned by their input delay before replay, remote render time
+never runs backwards, and snapshots publish up to 30 times/second. New clients omit
+unchanged lap-history arrays between periodic/event updates; older clients still
+receive full history. Broad-phase contact pairs and early exits avoid repeated work.
+Collision response uses impact angle and separate presentation-only separation.
+Race/practice cars remain solid and qualifying remains ghosted.
+
+Gameplay tests were omitted at the user's request. All players should refresh after
+deployment to use the new guide, display and multiplayer client.

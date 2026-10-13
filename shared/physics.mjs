@@ -1,8 +1,9 @@
+import {sampleGuide} from './racing-line.mjs';
 import {conditionProfile,normalizeConditions,yawRate} from './conditions.mjs';
 import {sample,nearest,wrap,clamp,angleDiff,targetSpeed,terrainHeight} from './tracks.mjs';
 import {resolveCarContacts} from './collisions.mjs';
 export const COLORS=['#ff502d','#37dcca','#67a5ff','#f9d648','#db78ff','#eef3f7','#ff85b2','#78da5b'];
-export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const s=-12-Math.floor(index/2)*10,offset=index%2?3.1:-3.1,p=sample(track,s,offset);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:colorId!==null&&colorId!==undefined?colorId:index%8,color:COLORS[colorId!==null&&colorId!==undefined?colorId:index%8],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
+export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const s=-12-Math.floor(index/2)*10,offset=index%2?3.1:-3.1,p=sample(track,s,offset);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:colorId!==null&&colorId!==undefined?colorId:index%8,color:COLORS[colorId!==null&&colorId!==undefined?colorId:index%8],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
 export const QUALIFYING_RESTARTS=3;
 export function retireCar(c){c.retired=true;c.finished=true;c.finishTime=null;c.v=0;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
@@ -16,11 +17,12 @@ export function resetCar(c,track,isQualifying=false,elapsed=0){
 }
 export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.finished)return;
+ if(c.ai)c.inputLag=0;
  if(c.resetTimer>0)c.resetTimer-=dt;
  const prev=c.s,conditions=conditionProfile(c.conditions);
  let throttle=input.throttle?1:0,brake=input.brake?1:0,steer=clamp(Number(input.steer)||0,-1,1);
- if(c.ai){const look=sample(track,c.s+Math.max(track.width<15?8:15,c.v*(track.width<15?.38:.6)),Math.sin(c.index*2+c.s*.003)*1.2);const aim=Math.atan2(look.x-c.x,look.z-c.z);steer=clamp(angleDiff(aim,c.heading)*3,-1,1);const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;const desired=Math.min(targetSpeed(track,c.s),targetSpeed(track,c.s+brakingLook))*conditions.pace*(track.width<15?.65+c.index*.01:.78+c.index*.018);throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;}
- const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;
+ if(c.ai){const look=sampleGuide(track,c.s+Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)));const lane=Math.sin(c.index*2+c.s*.003)*.35;look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;const aim=Math.atan2(look.x-c.x,look.z-c.z);steer=clamp(angleDiff(aim,c.heading)*3,-1,1);const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;const desired=Math.min(targetSpeed(track,c.s,c.conditions),targetSpeed(track,c.s+brakingLook,c.conditions))*(track.width<15?.65+c.index*.01:.78+c.index*.018);throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;}
+ const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
  const road=sample(track,c.s);
  const roadOffset=conditions.wetness?nearest(track,c.x,c.z,c.s).offset:0;
@@ -89,7 +91,6 @@ export function stepRace(cars,inputs,track,dt,elapsed,laps,stepDriver=stepCar){
  for(const c of cars){
   c.slipstream=draftStrength(c,cars);
   stepDriver(c,inputs[c.id]||{},track,dt,elapsed,laps);
-  resolveCarContacts(cars,c.id);
  }
  resolveCarContacts(cars);
 }

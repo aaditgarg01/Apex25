@@ -72,3 +72,17 @@ Their terrain platforms have an additional 45 m road-clearance margin, covering 
 24 m terrain-cell diagonal. Pit buildings and generic stands also check their whole
 footprint against all branches, including hairpins. Existing mapped OSM data retains
 its own attribution. No commercial game assets or photos were copied.
+
+
+## Computed racing guide (2.6.0)
+
+The guide uses circuit geometry, a road-width constraint, entry/apex/exit seeds and
+curvature smoothing. A closed-loop forward/backward speed plan accounts for braking,
+acceleration, elevation and surface presets. Display colour also considers approach
+speed. It is an arcade approximation rather than surveyed telemetry or a guaranteed
+minimum-time trajectory. No professional racing-line dataset was copied.
+
+Background references: Stanford Dynamic Design Lab, [A Sequential Two-step Algorithm
+for Fast Generation of Vehicle Racing Trajectories](https://ddl.stanford.edu/publications/conference-proceeding/sequential-two-step-algorithm-fast-generation-vehicle-racing),
+and Formula 1's [Silverstone aerodynamic-efficiency discussion](https://www.formula1.com/en/latest/article/tech-tuesday-why-aerodynamic-efficiency-now-rules-at-silverstone.65XAovu8LiK7IEqysQ4Sx0).
+The game implementation is a simpler bounded heuristic, not the research solver.

@@ -8,7 +8,7 @@ export const encodeInput=(seq,c)=>[seq,Math.max(-1,Math.min(1,Number(c.steer)||0
 // Each command represents exactly one simulation step. Server time pays for
 // those steps; a fast or malicious client cannot purchase extra movement.
 export class InputStream {
- constructor(car){this.queue=[];this.credit=0;this.received=0;this.lastCommandAt=null;car.inputAck=0;car.inputEpoch=0;}
+ constructor(car){this.queue=[];this.credit=0;this.received=0;this.lastCommandAt=null;car.inputAck=0;car.inputEpoch=0;car.inputLag=0;}
  accept(car,epoch,commands,elapsed){
   if(epoch!==car.inputEpoch||!Array.isArray(commands)||commands.length>8)return false;
   let previous=this.received;
@@ -20,7 +20,7 @@ export class InputStream {
   if(commands.length){this.queue.push(...commands);this.received=previous;this.lastCommandAt=elapsed;}
   return true;
  }
- reset(car){this.queue=[];this.credit=0;car.inputAck=this.received;car.inputEpoch++;}
+ reset(car){this.queue=[];this.credit=0;car.inputAck=this.received;car.inputEpoch++;car.inputLag=0;}
  step(car,input,track,dt,elapsed,laps,afterStep=()=>{}){
   this.credit=Math.min(1,this.credit+dt);
   // A disconnected/background client eventually brakes on the server. Invalidate
@@ -28,7 +28,7 @@ export class InputStream {
   if(this.lastCommandAt!==null&&elapsed-this.lastCommandAt>1&&this.queue.length===0){
    this.reset(car);this.lastCommandAt=null;
   }
-  if(this.lastCommandAt===null){stepCar(car,{brake:true,park:true},track,dt,elapsed,laps);afterStep();return;}
+  if(this.lastCommandAt===null){stepCar(car,{brake:true,park:true},track,dt,elapsed,laps);afterStep();car.inputLag=this.credit;return;}
   const slipstream=car.slipstream;
   let count=0;
   while(this.queue.length&&this.credit+1e-9>=INPUT_DT&&count<8){
@@ -38,5 +38,6 @@ export class InputStream {
    afterStep();
    car.inputAck=command[0];
   }
+  car.inputLag=this.credit;
  }
 }

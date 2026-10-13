@@ -1,3 +1,4 @@
+import {racingSpeedAt} from './racing-line.mjs';
 import {applyElevation} from './elevation.mjs';
 export const CALENDAR = [
 ['au-1953','Australia','Melbourne','AU',14],['cn-2004','China','Shanghai','CN',16],['jp-1962','Japan','Suzuka','JP',18],['bh-2002','Bahrain','Sakhir','BH',15],['sa-2021','Saudi Arabia','Jeddah','SA',27],['us-2022','Miami','Miami','US',19],['it-1953','Emilia-Romagna','Imola','IT',19],['mc-1929','Monaco','Monte Carlo','MC',19],['es-1991','Spain','Barcelona','ES',14],['ca-1978','Canada','Montréal','CA',14],['at-1969','Austria','Spielberg','AT',10],['gb-1948','Great Britain','Silverstone','GB',18],['be-1925','Belgium','Spa-Francorchamps','BE',19],['hu-1986','Hungary','Budapest','HU',14],['nl-1948','Netherlands','Zandvoort','NL',14],['it-1922','Italy','Monza','IT',11],['az-2016','Azerbaijan','Baku','AZ',20],['sg-2008','Singapore','Marina Bay','SG',19],['us-2012','United States','Austin','US',20],['mx-1962','Mexico','Mexico City','MX',17],['br-1940','Brazil','São Paulo','BR',15],['us-2023','Las Vegas','Las Vegas','US',17],['qa-2004','Qatar','Lusail','QA',16],['ae-2009','Abu Dhabi','Yas Marina','AE',16]
@@ -54,7 +55,7 @@ export function nearest(track,x,z,previous=0){
  for(let d=-24;d<=24;d++){const i=wrap(center+d,n),a=track.points[i],b=track.points[(i+1)%n],dx=b.x-a.x,dz=b.z-a.z,t=clamp(((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz),0,1),px=a.x+dx*t,pz=a.z+dz*t,dist=Math.hypot(x-px,z-pz);if(dist<best.distance){const h=a.heading+angleDiff(b.heading,a.heading)*t;best={s:wrap((i+t)*track.step,track.length),distance:dist,offset:(x-px)*Math.cos(h)-(z-pz)*Math.sin(h),heading:h};}}
  return best;
 }
-export function targetSpeed(track,s){let curvature=0;const h=sample(track,s).heading;for(const ahead of [20,45,75,110])curvature=Math.max(curvature,Math.abs(angleDiff(sample(track,s+ahead).heading,h))/(ahead+15));return clamp(Math.sqrt(9.4/(curvature+.001)),23,94);}
+export function targetSpeed(track,s,conditions='normal'){return racingSpeedAt(track,s,conditions);}
 
 export function terrainHeight(track,x,z){
  let nearest=Infinity,closest=track.points[0],second=Infinity,other=closest;

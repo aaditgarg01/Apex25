@@ -92,3 +92,22 @@ motion and collision impulses account for travel direction during sliding.
 Rain and tyre spray each use one small rendering batch; road materials, lighting,
 visibility, AI braking/pace and guide colours adapt to conditions. No gameplay
 tests or browser test sessions were run, per the user's instruction.
+
+
+## Display, guide, weather and multiplayer — 2.6.0
+
+Compact/default HUD with optional H/Details expansion; cached map backgrounds and
+nearby-driver rows reduce UI work. A computed road-bounded racing path replaces the
+centre line, with curvature-based speed planning and approach-speed colours. AI uses
+the same path/condition speed profiles. Rain is world anchored with wind; soft wheel
+spray uses pooled particles. No additional rain/spray drawing batches are required.
+
+Input-stream credit estimates per-car input lag for client time alignment. Snapshot
+publication changes from 20 Hz to 30 Hz. New clients request stateVersion 2, permitting
+unchanged lap histories to be omitted, with complete event/periodic refreshes; old
+clients retain full snapshots. Remote interpolation time is monotonic and small
+correction errors use a dead zone. Contacts use a spatial broad phase, early exit,
+angle-dependent effective mass and capped positional correction. Final rendered
+separation never applies another velocity impulse. Qualifying remains ghosted.
+
+No automated game tests or browser gameplay checks were run, per user preference.
