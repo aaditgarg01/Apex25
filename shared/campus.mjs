@@ -1,6 +1,7 @@
 // Campus infrastructure is tied to positions on the geographic race route.
 const mod=(n,m)=>((n%m)+m)%m;
-export const campusLocal=(track,location)=>({x:(location[0]-track.origin.lon)*111320*Math.cos(track.origin.lat*Math.PI/180),z:-(location[1]-track.origin.lat)*111320});
+export const campusScale=track=>track.campus?.raceScale||1;
+export const campusLocal=(track,location)=>({x:(location[0]-track.origin.lon)*111320*Math.cos(track.origin.lat*Math.PI/180)*campusScale(track),z:-(location[1]-track.origin.lat)*111320*campusScale(track)});
 export const campusDistance=(track,s,center)=>Math.abs(mod(s-center+track.length/2,track.length)-track.length/2);
 export function prepareCampus(track){
  if(!track.campus)return;

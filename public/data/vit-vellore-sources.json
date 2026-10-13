@@ -5,7 +5,13 @@
   "terrain": "SRTM 90m via https://api.opentopodata.org/v1/srtm90m",
   "underpassReference": "https://stage.vit.ac.in/campuslife/otheramenities",
   "constructionReference": "https://www.paschalindia.com/english/news/article/railway-underpass-vellore.php",
-  "dimensions": "Race road widened to 16 m; local tunnel depths, clearances and fine slopes reconstructed, not surveyed",
+  "dimensions": "16 m road; racing layout enlarged 1.30\u00d7 for longer straights (about 4.44 km), with mapped building centres aligned to that layout; individual building footprints and storey heights retain their original proportions; tunnel dimensions reconstructed, not surveyed",
   "retrieved": "2026-10-13",
-  "routeRevision": "Dense small-radius bends rebuilt from street entry/exit tangents with 28 m target corner radii; expanded Fleming and PRP round curves; traced loop and start/finish retained; no artificial apex walls"
+  "routeRevision": "Dense small-radius bends rebuilt from street entry/exit tangents with 28 m target corner radii; expanded Fleming and PRP round curves; traced loop and start/finish retained; no artificial apex walls",
+  "buildingReferences": [
+    "https://vit.ac.in/academic-block-geo-tagged-photos",
+    "https://vit.ac.in/about/infrastructure/prp-block",
+    "https://vit.ac.in/campuslife/hostels"
+  ],
+  "buildingAppearance": "VIT-inspired academic, hostel, research, auditorium and shop facades; architectural details are artistic approximations, with estimated heights where map data is missing"
 }

@@ -276,3 +276,22 @@ Every circuit now uses 13 m between starting-grid rows (previously 10 m) and
 7.2 m between side-by-side car centres (previously 6.2 m). The shared car placement
 applies to solo races, weekend grids and multiplayer. Gameplay tests were omitted
 at the user's request. All players should refresh.
+
+
+## Longer VIT straights and detailed campus buildings (2.8.7)
+
+Enlarged the VIT racing layout by 30%, extending its straights and retaining the
+traced shape and rounded bends. The racing lap is now about 4.44 km; road width
+remains 16 m. This is a gameplay enlargement, not a surveyed campus distance.
+Railway crossings, subway walls, landmarks and lake placement follow the same
+coordinate transform. Individual building footprints keep their original sizes.
+
+Replaced plain campus building extrusions with VIT-inspired academic, hostel,
+research, auditorium and shop facades. Buildings have repeated window bays and
+floor bands, entrances, name boards, roof parapets, solar panels and water tanks.
+Named OpenStreetMap footprints and available heights are retained; missing
+heights and architectural details are approximate. VIT's academic-block gallery
+and hostel/PRP pages are listed in the source credits. Placement checks the whole
+footprint against the road, while windows and static details share materials and
+are batched to limit rendering cost. Gameplay tests were omitted at the user's
+request. All players should refresh.

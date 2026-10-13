@@ -12,9 +12,9 @@ export const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const angleDiff=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 export function makeTracks(data,elevations={}){
  return [...CALENDAR,...EXTRAS].map(([id,country,city,code,turns],round)=>{
- const f=data.features.find(f=>f.properties.id===id), coords=f.geometry.coordinates;
+ const f=data.features.find(f=>f.properties.id===id), coords=f.geometry.coordinates,scale=f.properties.campus?.raceScale||1;
  const lon=coords.reduce((a,c)=>a+c[0],0)/coords.length,lat=coords.reduce((a,c)=>a+c[1],0)/coords.length;
- let pts=coords.map(([x,y])=>({x:(x-lon)*111320*Math.cos(lat*Math.PI/180),z:-(y-lat)*111320}));
+ let pts=coords.map(([x,y])=>({x:(x-lon)*111320*Math.cos(lat*Math.PI/180)*scale,z:-(y-lat)*111320*scale}));
  if(Math.hypot(pts[0].x-pts.at(-1).x,pts[0].z-pts.at(-1).z)<1)pts.pop();
  const ds=[0];for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];ds.push(ds.at(-1)+Math.hypot(b.x-a.x,b.z-a.z));}
  const length=ds.at(-1);if(!Number.isFinite(length)||length<100||length>30000)throw new Error(`Invalid circuit geometry: ${id}`);const n=Math.ceil(length/3),step=length/n;let j=0;
@@ -48,7 +48,7 @@ export function makeTracks(data,elevations={}){
  }
  const arid=['bh-2002','sa-2021','qa-2004','ae-2009','us-2023'].includes(id);
  const urban=['mc-1929','sg-2008','az-2016','us-2023','sa-2021','in-vit-vellore'].includes(id);
- return {id,country,city,code,turns,round:round<24?round+1:null,category:campus?'Campus circuit':round<24?'2025 season':'More circuits',origin:{lon,lat},name:f.properties.Name,officialLength:f.properties.length,elevation,length,step,points,width:f.properties.width||(id==='mc-1929'?13:17),arid,urban,campus};
+ return {id,country,city,code,turns,round:round<24?round+1:null,category:campus?'Campus circuit':round<24?'2025 season':'More circuits',origin:{lon,lat},name:f.properties.Name,officialLength:f.properties.length*scale,elevation,length,step,points,width:f.properties.width||(id==='mc-1929'?13:17),arid,urban,campus};
  });
 }
 export function sample(track,s,offset=0){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];const heading=a.heading+angleDiff(b.heading,a.heading)*t;return {x:a.x+(b.x-a.x)*t+Math.cos(heading)*offset,z:a.z+(b.z-a.z)*t-Math.sin(heading)*offset,y:a.y+(b.y-a.y)*t,pitch:a.pitch+(b.pitch-a.pitch)*t,grade:a.grade+(b.grade-a.grade)*t,heading};}

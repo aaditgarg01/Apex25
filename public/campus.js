@@ -80,7 +80,8 @@ export function addCampus(scene,track){
  }
  for(const landmark of track.campus.landmarks){
   if(landmark.name==='VIT Lake')continue;const p=campusLocal(track,landmark.location);if(roadClearance(track,p.x,p.z)<5)continue;
-  const sign=campusSign(landmark.name.toUpperCase(),landmark.name==='VIT VELLORE'?18:10,1.8);sign.position.set(p.x,terrainHeight(track,p.x,p.z)+5,p.z);group.add(sign);
+  const width=landmark.name==='VIT VELLORE'?12:7,y=terrainHeight(track,p.x,p.z),sign=campusSign(landmark.name.toUpperCase(),width,1.2);sign.position.set(p.x,y+3.3,p.z);group.add(sign);
+  for(const side of [-1,1])scene.box(.14,3.5,.14,'#56645a',p.x+side*width*.38,y+1.75,p.z);
  }
  return scene.profile;
 }

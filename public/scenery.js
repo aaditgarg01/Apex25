@@ -1,10 +1,12 @@
 import {addCampus} from './campus.js';
+import {CampusBuildings} from './campus-buildings.js';
 import {addLandmarks} from './landmarks.js';
 import {batchMapped} from './batching.js';
 import {safeSite,roadClearance} from '/shared/venues.mjs';
 import * as THREE from '/vendor/three.module.js';
 import {sample,terrainHeight} from '/shared/tracks.mjs';
 import {ribbonOffset} from '/shared/surface.mjs';
+import {campusScale} from '/shared/campus.mjs';
 const material=(color,extras={})=>new THREE.MeshStandardMaterial({color,roughness:.85,...extras});
 const nightIds=['sg-2008','us-2023','sa-2021','ae-2009','bh-2002','qa-2004'];
 const desertIds=['bh-2002','sa-2021','qa-2004','ae-2009','us-2023'];
@@ -61,17 +63,20 @@ function monaco(scene,track){
 export async function addMappedScenery(scene,track){
  const originalGroup=scene.group;
  try{const files=await (await fetch('/data/scenery/index.json')).json();if(!files.includes(track.id)||scene.group!==originalGroup)return false;const r=await fetch(`/data/scenery/${track.id}.json`);if(!r.ok)return false;const data=await r.json();if(scene.group!==originalGroup)return false;
- const color=scene.profile?.night?'#698193':'#b5b7ae';const buildingMat=material(color),waterMat=material('#397f90',{metalness:.45,roughness:.28}),forestMat=material('#526b45');
+ const color=scene.profile?.night?'#698193':'#b5b7ae';const buildingMat=track.campus?null:material(color),waterMat=material('#397f90',{metalness:.45,roughness:.28}),forestMat=material('#526b45'),campusBuildings=track.campus?new CampusBuildings(scene,track):null;
  let added=0;
  // Cap only rendering, retaining the full open geographic data on disk.
  const features=[...data.features].sort((a,b)=>a.kind==='building'&&b.kind!=='building'?1:-1);
- for(const f of features){if(added>800)break;if(f.kind==='forest')continue;const shape=new THREE.Shape();f.points.forEach(([x,z],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));shape.closePath();let mesh;
+ for(const original of features){if(added>800)break;if(original.kind==='forest')continue;
+ if(campusBuildings&&original.kind==='building'){if(campusBuildings.add(original))added++;continue;}
+ const scale=campusScale(track),f=track.campus?{...original,points:original.points.map(([x,z])=>[x*scale,z*scale])}:original;
+ const shape=new THREE.Shape();f.points.forEach(([x,z],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));shape.closePath();let mesh;
  if(f.kind==='building'){
   const cx=f.points.reduce((s,p)=>s+p[0],0)/f.points.length,cz=f.points.reduce((s,p)=>s+p[1],0)/f.points.length;const radius=Math.max(...f.points.map(([x,z])=>Math.hypot(x-cx,z-cz)));if(track.campus?f.points.some(([x,z])=>roadClearance(track,x,z)<2):roadClearance(track,cx,cz)<radius+4)continue;
   mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:f.height,bevelEnabled:false}),buildingMat);
  }else mesh=new THREE.Mesh(new THREE.ShapeGeometry(shape),f.kind==='water'?waterMat:forestMat);
  mesh.rotation.x=-Math.PI/2;const cx=f.points.reduce((s,p)=>s+p[0],0)/f.points.length,cz=f.points.reduce((s,p)=>s+p[1],0)/f.points.length;mesh.position.y=terrainHeight(track,cx,cz)+(f.kind==='building'?-.3:-.045);mesh.userData.mappedStatic=true;mesh.castShadow=f.kind==='building';mesh.receiveShadow=true;originalGroup.add(mesh);added++;
  }
- batchMapped(originalGroup);const credit=document.getElementById('map-credit');if(credit)credit.hidden=!added;return added>0;
+ campusBuildings?.finish();batchMapped(originalGroup);const credit=document.getElementById('map-credit');if(credit)credit.hidden=!added;return added>0;
  }catch{return false;}
 }
