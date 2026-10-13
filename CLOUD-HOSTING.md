@@ -201,3 +201,23 @@ Campus road edges now shrink together on the inside of tight bends so kerbs,
 edge paint and barriers stay ordered and do not collapse onto one another. Map
 attribution sits below the timing panel. Gameplay tests were omitted at the
 user's request.
+
+
+## Fleming approach and solid barriers (2.8.2)
+
+Corrected the direction of the Fleming Road approach: it now travels westbound
+once before joining the roundabout. The previous reversed way recreated
+overlapping passes even after the roundabout joins were smoothed. The roughly
+3.5 km route, scenery origin and terrain profile are updated together.
+
+Track walls and fences now collide with the car's full oriented footprint in every
+session, including ghost qualifying. Monaco tunnel walls, VIT retaining walls and
+portal pillars, and the roundabout island also have contacts. Movement is swept
+through short steps to catch fast impacts; collisions block the normal movement
+and allow sliding along the wall. Vertical checks keep separate road levels apart.
+Visible primary barriers use the same geometry as shared collision logic.
+
+Server simulation, local driving, client prediction and remote presentation all
+apply the same barrier contacts. Car contact separation also respects track walls.
+The racing line leaves space for the car inside narrowed corner boundaries.
+Gameplay tests were omitted at the user's request. All players should refresh.

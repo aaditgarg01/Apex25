@@ -1,3 +1,4 @@
+import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
 import {LIVERIES,normalizeLiveryIndex} from './liveries.mjs';
 import {sampleGuide} from './racing-line.mjs';
 import {conditionProfile,normalizeConditions,yawRate} from './conditions.mjs';
@@ -21,7 +22,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.finished)return;
  if(c.ai)c.inputLag=0;
  if(c.resetTimer>0)c.resetTimer-=dt;
- const prev=c.s,conditions=conditionProfile(c.conditions);
+ const prev=c.s,previousPose={x:c.x,z:c.z,heading:c.heading},conditions=conditionProfile(c.conditions);
  let throttle=input.throttle?1:0,brake=input.brake?1:0,steer=clamp(Number(input.steer)||0,-1,1);
  if(c.ai){const look=sampleGuide(track,c.s+Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)));const lane=Math.sin(c.index*2+c.s*.003)*.35;look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;const aim=Math.atan2(look.x-c.x,look.z-c.z);steer=clamp(angleDiff(aim,c.heading)*3,-1,1);const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;const desired=Math.min(targetSpeed(track,c.s,c.conditions),targetSpeed(track,c.s+brakingLook,c.conditions))*(track.width<15?.65+c.index*.01:.78+c.index*.018);throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
@@ -55,6 +56,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  c.motionYawRate=angleDiff(c.motionHeading,oldMotion)/dt;
  c.sliding=conditions.wetness>0&&speed>8&&Math.abs(angleDiff(c.heading,c.motionHeading))>.10;
  c.x+=Math.sin(c.motionHeading)*c.v*Math.cos(road.pitch)*dt;c.z+=Math.cos(c.motionHeading)*c.v*Math.cos(road.pitch)*dt;
+ moveWithBarriers(c,track,previousPose);
  const near=nearest(track,c.x,c.z,c.s);let delta=near.s-prev;if(delta>track.length/2)delta-=track.length;if(delta<-track.length/2)delta+=track.length;
  // No teleports or shortcuts: progress advances only near the expected ribbon.
  if(Math.abs(delta)<40&&near.distance<track.width/2+40){c.s=near.s;c.progress+=delta;}
@@ -97,5 +99,6 @@ export function stepRace(cars,inputs,track,dt,elapsed,laps,stepDriver=stepCar){
   stepDriver(c,inputs[c.id]||{},track,dt,elapsed,laps);
  }
  resolveCarContacts(cars);
+ for(const c of cars)resolveBarrierContacts(c,track);
 }
 export function standings(cars){return [...cars].sort((a,b)=>!!a.retired!==!!b.retired?(a.retired?1:-1):a.retired?b.progress-a.progress:a.finished&&b.finished?a.finishTime-b.finishTime:a.finished?-1:b.finished?1:b.progress-a.progress);}

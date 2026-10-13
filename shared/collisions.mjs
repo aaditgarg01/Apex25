@@ -32,7 +32,7 @@ export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrecti
     const ah=a.motionHeading??a.heading,bh=b.motionHeading??b.heading,af={x:Math.sin(ah),z:Math.cos(ah)},bf={x:Math.sin(bh),z:Math.cos(bh)},an=dot(af,n),bn=dot(bf,n),closing=(wa?a.v:0)*an-(wb?b.v:0)*bn;
     // Effective mass depends on impact angle. A glancing touch removes closing
     // speed rather than braking both drivers as if it were a head-on impact.
-    if(closing>0){const mass=wa*an*an+wb*bn*bn;if(mass>.001){const impulse=Math.min(30,closing/mass);a.v=Math.max(-12,Math.min(102,a.v-impulse*an*wa));b.v=Math.max(-12,Math.min(102,b.v+impulse*bn*wb));}}
+    if(closing>0){const mass=wa*an*an+wb*bn*bn;if(mass>.001){const impulse=Math.min(30,closing/mass);a.v=Math.max(-12,Math.min(115,a.v-impulse*an*wa));b.v=Math.max(-12,Math.min(115,b.v+impulse*bn*wb));}}
    }
    contacts++;
   }

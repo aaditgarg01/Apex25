@@ -1,3 +1,4 @@
+import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
 import {yawRate} from './conditions.mjs';
 import {stepCar,draftStrength} from './physics.mjs';
 import {resolveCarContacts} from './collisions.mjs';
@@ -7,13 +8,14 @@ const copyCar=c=>({...c,sectors:[...c.sectors],lastSectors:[...c.lastSectors],be
 const lerp=(a,b,t)=>a+(b-a)*t;
 // Dead reckoning follows the same yaw model as physics, including reverse.
 // A straight tangent would put a turning rival across the player's path.
-export function advanceRemote(c,dt){
- if(c.finished)return;
+export function advanceRemote(c,dt,track=null){
+ if(c.finished)return;const previousPose={x:c.x,z:c.z,heading:c.heading};
  const yaw=yawRate(c),travel=Number.isFinite(c.motionHeading)?c.motionHeading:c.heading,motionYaw=Number.isFinite(c.motionYawRate)?c.motionYawRate:yaw;
  const middle=travel+motionYaw*dt/2,distance=c.v*dt;
  c.x+=Math.sin(middle)*distance*Math.cos(c.pitch||0);
  c.z+=Math.cos(middle)*distance*Math.cos(c.pitch||0);
  c.y+=Math.sin(c.pitch||0)*distance;c.heading+=yaw*dt;c.motionHeading=travel+motionYaw*dt;
+ if(track&&dt>0)moveWithBarriers(c,track,previousPose);
  c.progress+=distance;
 }
 const active=s=>['race','qualifying','practice'].includes(s.phase)&&s.elapsed>=0;
@@ -35,7 +37,7 @@ export class NetworkMotion {
   this.session=s;this.lastAt=now;this.local=copyCar(car);this.local.conditions=s.conditions||car.conditions||'normal';this.others=s.cars.filter(c=>c.id!==this.id).map(copyCar);this.predictionTime=0;
   // Align each rival to the local authoritative simulation time before replay.
   // Human states lag their input transit; AI is already at server time.
-  for(const other of this.others)advanceRemote(other,Math.max(-.5,Math.min(.5,(other.inputLag||0)-(car.inputLag||0))));
+  for(const other of this.others)advanceRemote(other,Math.max(-.5,Math.min(.5,(other.inputLag||0)-(car.inputLag||0))),this.track);
   // Replay the actual unacknowledged controls, in order. Never estimate them
   // from RTT or apply today's steering to an old authoritative position.
   this.pending=this.pending.filter(command=>command[0]>(car.inputAck||0));
@@ -47,11 +49,12 @@ export class NetworkMotion {
  lapLimit(){return this.session.phase==='practice'?Infinity:this.session.phase==='qualifying'?1:this.session.laps;}
  predict(command,elapsed){
   const solid=this.session.phase==='race'||this.session.phase==='practice';
-  if(solid&&this.predictionTime<.75)for(const other of this.others)advanceRemote(other,INPUT_DT);
+  if(solid&&this.predictionTime<.75)for(const other of this.others)advanceRemote(other,INPUT_DT,this.track);
   this.local.slipstream=solid?draftStrength(this.local,this.others):0;
   this.predictionTime+=INPUT_DT;
   stepCar(this.local,decodeInput(command),this.track,INPUT_DT,elapsed,this.lapLimit());
   if(solid)resolveCarContacts([this.local,...this.others],this.id);
+  resolveBarrierContacts(this.local,this.track);
  }
  takeCommands(){if(!this.outgoing.length)return null;return {type:'commands',epoch:this.epoch,commands:this.outgoing.splice(0,8)};}
  frame(now,dt,control){
@@ -76,7 +79,7 @@ export class NetworkMotion {
    if(c.finished||cb.restarts!==ca.restarts||cb.resetTimer>ca.resetTimer+.3||Math.hypot(cb.x-ca.x,cb.z-ca.z)>30)return {...c,smoothMotion:true};
    const out={...c,smoothMotion:true};for(const k of ['x','y','z','v','steer','pitch'])out[k]=lerp(ca[k],cb[k],t);out.heading=ca.heading+angleDiff(cb.heading,ca.heading)*t;out.motionHeading=(ca.motionHeading??ca.heading)+angleDiff(cb.motionHeading??cb.heading,ca.motionHeading??ca.heading)*t;
    // Bridge a missing packet briefly; never extrapolate indefinitely after a disconnect.
-   if(target>b.at&&active(s))advanceRemote(out,Math.min((target-b.at)/1000,.1));
+   if(target>b.at&&active(s))advanceRemote(out,Math.min((target-b.at)/1000,.1),this.track);
    // Nearby cars must be shown at the same predicted time as the player, or
    // visible contact happens behind the actual collision. Blend at the boundary.
    if(s.phase==='race'||s.phase==='practice'){
@@ -88,6 +91,7 @@ export class NetworkMotion {
   });
   // Position correction smoothing must not draw cars inside each other.
   if(active(s)&&s.phase!=='qualifying')resolveCarContacts(rendered,null,{impulses:false,maxCorrection:.35});
+  for(const c of rendered)resolveBarrierContacts(c,this.track,{impulses:false});
   return rendered;
  }
 }
