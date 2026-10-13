@@ -1,6 +1,6 @@
 import {ribbonOffset} from './surface.mjs';
 import {campusLocal} from './campus.mjs';
-import {campusTunnelLayout,campusCornerWalls} from './campus-geometry.mjs';
+import {campusTunnelLayout} from './campus-geometry.mjs';
 const cache=new WeakMap(),CELL=12,HALF_WIDTH=1.24,HALF_LENGTH=2.6;
 const wrap=(n,m)=>((n%m)+m)%m,angle=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];return {x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,y:a.y+(b.y-a.y)*t,groundY:a.groundY+(b.groundY-a.groundY)*t,heading:a.heading+angle(b.heading,a.heading)*t};}
@@ -15,7 +15,7 @@ export function trackBarriers(track){
   for(let x=Math.floor((Math.min(a.x,b.x)-pad)/CELL);x<=Math.floor((Math.max(a.x,b.x)+pad)/CELL);x++)for(let z=Math.floor((Math.min(a.z,b.z)-pad)/CELL);z<=Math.floor((Math.max(a.z,b.z)+pad)/CELL);z++){const key=x+':'+z;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(id);}
  }
  // Campus streets have open verges. Their only solid walls come from the actual
- // subway infrastructure, roundabout island and selected tight corners below.
+ // subway retaining walls, portal pillars and roundabout island below.
  if(!track.campus)for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
   const next=(i+1)%track.points.length,inner=half+(track.id==='mc-1929'?.35:6.5),outer=half+(track.id==='mc-1929'?.8:7.2);
   const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*inner),bo=edge(track,next,side*outer),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
@@ -29,7 +29,6 @@ export function trackBarriers(track){
   for(const side of [-1,1]){const x=p.x+rx*offset*side,z=p.z+rz*offset*side;add({x:x-tx*length/2,z:z-tz*length/2,y:p.y},{x:x+tx*length/2,z:z+tz*length/2,y:p.y},width,height,kind,{x:-rx*side,z:-rz*side});}
  }
  if(track.campus){
-  for(const w of campusCornerWalls(track))add(w.a,w.b,w.width,w.height,w.kind,w.inward);
   for(const tunnel of track.campus.tunnels){const layout=campusTunnelLayout(track,tunnel);for(const w of [...layout.walls,...layout.portals])add(w.a,w.b,w.width,w.height,w.kind,w.inward);}
   for(const island of track.campus.roundabouts){const p=campusLocal(track,island.location);let closest=track.points[0],distance=Infinity;for(const point of track.points){const d=Math.hypot(point.x-p.x,point.z-p.z);if(d<distance){distance=d;closest=point;}}const y=closest.groundY-.975;for(let i=0;i<32;i++){const a=i*Math.PI/16,b=(i+1)*Math.PI/16;add({x:p.x+Math.cos(a)*island.radius,z:p.z+Math.sin(a)*island.radius,y},{x:p.x+Math.cos(b)*island.radius,z:p.z+Math.sin(b)*island.radius,y},.12,1.4,'island');}}
  }

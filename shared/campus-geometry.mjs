@@ -1,7 +1,7 @@
 import {campusDistance} from './campus.mjs';
 import {ribbonOffset} from './surface.mjs';
 
-const cache=new WeakMap(),cornerCache=new WeakMap();
+const cache=new WeakMap();
 const wrap=(n,m)=>((n%m)+m)%m;
 const cross=(x,z,a,b)=>x*b-z*a;
 function pointDistance(p,a,b){
@@ -61,38 +61,4 @@ export function campusTunnelLayout(track,tunnel){
   if(section)portals.push({...section,direction});
  }
  const layout={walls,portals,ramps};layouts.set(tunnel,layout);return layout;
-}
-
-// Only substantial, tight bends need an inside barrier. Short runs protect the
-// apex rather than lining whole streets or closing the outside runoff area.
-export function campusCornerWalls(track){
- if(!track.campus)return [];
- if(cornerCache.has(track))return cornerCache.get(track);
- const points=track.points,n=points.length,angle=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
- const curvature=points.map((p,i)=>angle(points[wrap(i+2,n)].heading,points[wrap(i-2,n)].heading)/(4*track.step));
- const groups=[];let group=[];
- for(let i=0;i<=n;i++){
-  const k=i<n?curvature[i]:0;
-  if(Math.abs(k)>1/26&&(!group.length||Math.sign(k)===Math.sign(curvature[group[0]])))group.push(i);
-  else{if(group.length)groups.push(group);group=Math.abs(k)>1/26?[i]:[];}
- }
- const selected=new Map();
- for(const bend of groups){
-  const turn=bend.reduce((sum,i)=>sum+curvature[i]*track.step,0);
-  if(Math.abs(turn)<.65)continue;
-  const side=Math.sign(turn);
-  for(let i=bend[0]-1;i<=bend.at(-1)+1;i++)selected.set(wrap(i,n),side);
- }
- const walls=[];
- for(const [i,side] of selected){
-  const s=(i+.5)*track.step,p=edge(track,s,0);
-  if(track.campus.tunnels.some(t=>campusDistance(track,s,t.center)<t.covered/2+t.approach+5))continue;
-  if(track.campus.roundabouts.some(island=>{
-   const x=(island.location[0]-track.origin.lon)*111320*Math.cos(track.origin.lat*Math.PI/180),z=-(island.location[1]-track.origin.lat)*111320;
-   return Math.hypot(p.x-x,p.z-z)<track.width/2+island.radius+8;
-  }))continue;
-  const w=wall(track,s,track.step,track.width/2+.55,.4,.8,'corner',side);
-  if(w)walls.push(w);
- }
- cornerCache.set(track,walls);return walls;
 }

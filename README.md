@@ -286,3 +286,20 @@ corner shortcuts. Their visible meshes and collisions share the same layout and
 retain clearance below crossing road decks. Ordinary roads and outside runoff
 remain open; subway infrastructure and the roundabout island retain their walls.
 Gameplay tests were omitted at the user's request. All players should refresh.
+
+
+## Broader VIT bends and roomier starting grids (2.8.6)
+
+Rebuilt dense mapped bend sections from their entry/exit street tangents, letting
+multiple campus corners use broad circular joins with a 28 m target radius.
+Adjacent bends share their available space. Enlarged the Fleming round curve and
+PRP turnaround; improved the hostel loop, M-block turns, Q-block approach and
+Jimmy Carter detour. Removed the artificial red/white apex walls and their
+colliders. Subway infrastructure and the physical roundabout island retain walls.
+The 16 m road, traced loop and start/finish are preserved; the lap is about 3.41 km.
+Geographic campus scenery and cached terrain anchors are updated together.
+
+Every circuit now uses 13 m between starting-grid rows (previously 10 m) and
+7.2 m between side-by-side car centres (previously 6.2 m). The shared car placement
+applies to solo races, weekend grids and multiplayer. Gameplay tests were omitted
+at the user's request. All players should refresh.

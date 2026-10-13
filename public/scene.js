@@ -1,7 +1,7 @@
 import {trackBarriers} from '/shared/barriers.mjs';
 import {campusTunnelAt} from '/shared/campus.mjs';
 import {liveryProfile,normalizeLiveryIndex} from '/shared/liveries.mjs';
-import {TOP_SPEED,BOOST_TOP_SPEED} from '/shared/physics.mjs';
+import {TOP_SPEED,BOOST_TOP_SPEED,gridSlot} from '/shared/physics.mjs';
 import {isOnTrack} from '/shared/race-display.mjs';
 import {sampleGuide,racingSpeedAt,prepareRacingLine} from '/shared/racing-line.mjs';
 import {conditionProfile} from '/shared/conditions.mjs';
@@ -19,12 +19,7 @@ export class RaceScene{
  box(w,h,d,color,x=0,y=0,z=0,parent=this.group){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));m.position.set(x,y,z);m.userData.batchBox=true;parent.add(m);return m;}
  ribbon(track,left,right,color,y=.03,alternating=false){const pos=[],colors=[],indices=[],n=track.points.length,c1=new THREE.Color(color),c2=new THREE.Color(track.id==='be-1925'?'#e9c927':track.campus?'#ece6d1':'#edeee7');for(let i=0;i<=n;i++){const p=track.points[i%n];for(const edge of [left,right]){const offset=ribbonOffset(track,i%n,edge);pos.push(p.x+Math.cos(p.heading)*offset,p.y+y,p.z-Math.sin(p.heading)*offset);const col=alternating&&Math.floor(i/2)%2?c2:c1;colors.push(col.r,col.g,col.b);}if(i<n){const k=i*2;indices.push(k,k+2,k+1,k+1,k+2,k+3);}}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();const m=new THREE.Mesh(geo,mat(alternating?'#ffffff':color,{side:THREE.DoubleSide,vertexColors:alternating}));m.userData.roadBand={left,right,y};m.receiveShadow=true;this.group.add(m);return m;}
  buildBarriers(track){
- const walls=trackBarriers(track).walls;
- this.wallMesh(walls.filter(w=>w.kind==='track'),'#8c9e9f');
- // Short red/white apex barriers use the shared solid collision geometry.
- const corners=walls.filter(w=>w.kind==='corner');
- this.wallMesh(corners.filter((w,i)=>i%2===0),'#d14a37');
- this.wallMesh(corners.filter((w,i)=>i%2!==0),'#edeee7');
+ return this.wallMesh(trackBarriers(track).walls.filter(w=>w.kind==='track'),'#8c9e9f');
  }
  wallMesh(walls,color){
  const positions=[],add=(a,b,c,d)=>{for(const p of [a,b,c,a,c,d])positions.push(p.x,p.y,p.z);};
@@ -48,7 +43,7 @@ export class RaceScene{
  const start=sample(track,0),gantry=new THREE.Group();gantry.position.set(start.x,start.y,start.z);gantry.rotation.y=start.heading;this.group.add(gantry);for(const x of [-half-2,half+2])this.box(.5,7.5,.5,'#5a6265',x,3.75,0,gantry);this.box(track.width+5,1.5,.6,'#202c35',0,7,0,gantry);
  const tc=document.createElement('canvas');tc.width=1024;tc.height=128;const ctx=tc.getContext('2d');ctx.fillStyle='#202c35';ctx.fillRect(0,0,1024,128);ctx.fillStyle='#ff5936';ctx.font='italic 900 76px Arial';ctx.textAlign='center';ctx.fillText(track.campus?'VIT VELLORE':'APEX 25',512,93);const tex=new THREE.CanvasTexture(tc),sign=new THREE.Mesh(new THREE.PlaneGeometry(track.width+3,1.4),new THREE.MeshBasicMaterial({map:tex}));sign.position.set(0,7,.32);gantry.add(sign);const back=sign.clone();back.rotation.y=Math.PI;back.position.z=-.32;gantry.add(back);
  for(let row=0;row<2;row++)for(let col=0;col<16;col++)this.box(track.width/16,.035,1,(row+col)%2?'#dce1dc':'#252d33',-half+(col+.5)*track.width/16,.12,row-1,gantry);
- for(let i=0;i<8;i++){const p=sample(track,-12-Math.floor(i/2)*10,i%2?3.1:-3.1),m=this.box(2.5,.02,.12,'#d5d8cb',p.x,p.y+.11,p.z);m.rotation.y=p.heading;}
+ for(let i=0;i<8;i++){const {s,offset}=gridSlot(i),p=sample(track,s,offset),m=this.box(2.5,.02,.12,'#d5d8cb',p.x,p.y+.11,p.z);m.rotation.y=p.heading;}
  for(let s=100;s<track.length;s+=120)if(targetSpeed(track,s+70)<45){const p=sample(track,s,half+4),g=new THREE.Group();g.position.set(p.x,p.y+1.8,p.z);g.rotation.y=p.heading;this.group.add(g);this.box(1.2,1.6,.12,'#e9e9dd',0,0,0,g);}
  this.batchStats=batchBoxes(this.group);this.setConditions(this.conditions);
  }
