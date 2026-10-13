@@ -150,3 +150,16 @@ The menu preview changes immediately, the choice is saved, and the server shares
 each driver's validated selection through qualifying and races. These are procedural
 paint schemes, not official licensed models or sponsor artwork. Tests were omitted
 at the user's request. Refresh every player's browser after deployment.
+
+
+## Faster cars and clean gap labels (2.7.1)
+
+Higher engine pull and lower straight-line drag let dry cars reach substantially
+higher speeds, with a 106 m/s normal limit and a 115 m/s overtake limit. Wet
+conditions retain their lower traction. The racing-line speed profile and guide
+forecast use the new pace so fast straights are not painted as automatic braking.
+
+Race gaps display with a plain + sign. Live gaps remain estimates while cars are
+still driving; finished drivers keep their recorded, penalty-adjusted time gaps.
+The results legend explains when a live gap becomes final. Gameplay tests were
+omitted at the user's request.

@@ -1,4 +1,5 @@
 import {liveryProfile,normalizeLiveryIndex} from '/shared/liveries.mjs';
+import {TOP_SPEED,BOOST_TOP_SPEED} from '/shared/physics.mjs';
 import {isOnTrack} from '/shared/race-display.mjs';
 import {sampleGuide,racingSpeedAt,prepareRacingLine} from '/shared/racing-line.mjs';
 import {conditionProfile} from '/shared/conditions.mjs';
@@ -49,7 +50,7 @@ export class RaceScene{
  if(!this.guide||!car||!this.showLine||now-this.guideAt<80)return;
  this.guideAt=now;const dummy=new THREE.Object3D(),color=new THREE.Color(),condition=conditionProfile(this.conditions),speed=Math.max(0,car.v);
  for(let i=0;i<this.guide.count;i++){
-  const distance=i*4-8,s=car.s+distance,p=sampleGuide(this.track,s),limit=racingSpeedAt(this.track,s,this.conditions),forecast=Math.min(car.boostActive?102:Math.max(94,speed),Math.sqrt(speed*speed+2*8*condition.traction*Math.min(70,Math.max(0,distance))));
+  const distance=i*4-8,s=car.s+distance,p=sampleGuide(this.track,s),limit=racingSpeedAt(this.track,s,this.conditions),forecast=Math.min(car.boostActive?BOOST_TOP_SPEED:Math.max(TOP_SPEED,speed),Math.sqrt(speed*speed+2*8*condition.traction*Math.min(70,Math.max(0,distance))));
   const next=racingSpeedAt(this.track,s+12,this.conditions),overspeed=forecast-limit;
   const tint=overspeed>3?'#ff4230':overspeed>-.8&&next<limit-.8?'#ffca00':'#52ff2e';
   dummy.position.set(p.x,p.y+.16,p.z);dummy.rotation.set(-p.pitch,p.heading,0,'YXZ');dummy.scale.set(.9,1,.9);dummy.updateMatrix();this.guide.setMatrixAt(i,dummy.matrix);this.guide.setColorAt(i,color.set(tint));

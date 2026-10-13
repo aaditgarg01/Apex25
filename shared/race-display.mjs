@@ -13,10 +13,10 @@ export function raceGapLabel(car,leader,trackLength,elapsed){
  if(isRaceFinisher(leader)){
   if(!Number.isFinite(elapsed))return 'RACING';
   const remaining=Math.max(0,leader.progress-car.progress),pace=Math.max(20,Math.abs(car.v));
-  return '≈+'+Math.max(0,elapsed+(car.penalty||0)+remaining/pace-leader.finishTime).toFixed(1);
+  return '+'+Math.max(0,elapsed+(car.penalty||0)+remaining/pace-leader.finishTime).toFixed(1);
  }
  if(!leader||car.id===leader.id)return 'LEAD';
  const distance=Math.max(0,leader.progress-car.progress),laps=Math.floor(distance/trackLength);
  if(laps>0)return `+${laps}L`;
- return '≈+'+(distance/Math.max(20,Math.abs(car.v))).toFixed(1);
+ return '+'+(distance/Math.max(20,Math.abs(car.v))).toFixed(1);
 }

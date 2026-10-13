@@ -25,7 +25,7 @@ export function prepareRacingLine(track){
 export function sampleGuide(track,s){const line=prepareRacingLine(track),f=wrap(s,line.length)/line.step,i=Math.floor(f),t=f-i,a=line.points[i],b=line.points[(i+1)%line.points.length];return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,pitch:a.pitch+(b.pitch-a.pitch)*t,heading:a.heading+angle(b.heading,a.heading)*t,offset:a.offset+(b.offset-a.offset)*t};}
 function speedProfile(track,value){
  const line=prepareRacingLine(track),condition=conditionProfile(value);if(line.speeds.has(condition.id))return line.speeds.get(condition.id);
- const wet=condition.wetness,base=20-10.5*wet,aero=.0042-.00255*wet,max=102*(1-.10*wet),n=line.points.length;
+ const wet=condition.wetness,base=20-10.5*wet,aero=.0042-.00255*wet,max=110*(1-.10*wet),n=line.points.length;
  const speeds=line.curvature.map(k=>{const corner=k>aero?Math.sqrt(base/(k-aero)):max;const steering=k>.025?3.8*condition.steering/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;return clamp(Math.min(corner,steering),8,max);});
  // Backward braking and forward acceleration passes link corners to straights,
  // including the seam of the closed lap and uphill/downhill braking distances.

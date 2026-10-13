@@ -3,6 +3,7 @@ import {sampleGuide} from './racing-line.mjs';
 import {conditionProfile,normalizeConditions,yawRate} from './conditions.mjs';
 import {sample,nearest,wrap,clamp,angleDiff,targetSpeed,terrainHeight} from './tracks.mjs';
 import {resolveCarContacts} from './collisions.mjs';
+export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
 export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const s=-12-Math.floor(index/2)*10,offset=index%2?3.1:-3.1,p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
 export const QUALIFYING_RESTARTS=3;
@@ -30,15 +31,15 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>track.width/2-.8?conditions.curbGrip:1):1;
  c.cornerGrip=1-conditions.wetness*(brake*.24+throttle*.10);
  const traction=conditions.traction*c.surfaceGrip,braking=33*conditions.braking*c.surfaceGrip;
- const accel=(boost?18:13)*traction*Math.max(.18,1-c.v/110),slip=c.slipstream||0,drag=(.6+c.v*c.v*.0012)*(1-slip*0.3)+(c.offtrack?c.v*.5:0);
+ const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032)*(1-slip*0.3)+(c.offtrack?c.v*.5:0);
  c.slipstream=0;
  const gravity=-9.81*Math.sin(road.pitch);
  if(input.park){if(c.v>0)c.v=Math.max(0,c.v-(braking+drag)*dt);else if(c.v<0)c.v=Math.min(0,c.v+(braking+drag)*dt);}
  else if(c.v>=0){
   if(c.v<=.2&&brake&&!throttle&&!c.ai){c.v=Math.max(-12,c.v-(7.5*traction-gravity)*dt);}
-  else{const newV=c.v+(throttle*accel-brake*braking-drag+gravity)*dt;if(newV<0&&brake&&!throttle&&!c.ai)c.v=Math.max(-12,newV*.25);else c.v=Math.max(0,Math.min(boost?102:94,newV));}
+  else{const newV=c.v+(throttle*accel-brake*braking-drag+gravity)*dt;if(newV<0&&brake&&!throttle&&!c.ai)c.v=Math.max(-12,newV*.25);else c.v=Math.max(0,Math.min(boost?BOOST_TOP_SPEED:TOP_SPEED,newV));}
  }else{
-  if(throttle){const newV=c.v+(braking+drag+gravity)*dt;c.v=newV>0?Math.min(boost?102:94,newV):newV;}
+  if(throttle){const newV=c.v+(braking+drag+gravity)*dt;c.v=newV>0?Math.min(boost?BOOST_TOP_SPEED:TOP_SPEED,newV):newV;}
   else if(brake){const revDrag=.8+Math.abs(c.v)*.25;c.v=Math.max(-12,c.v-(7.5*traction+revDrag-gravity)*dt);}
   else{const revDrag=2.5+Math.abs(c.v)*.5;c.v=Math.min(0,c.v+(revDrag+gravity)*dt);}
  }
