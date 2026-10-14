@@ -48,10 +48,27 @@
     {
       "feature": "Shanghai lotus-leaf side stands and lantern-inspired main architecture",
       "url": "https://english.jiading.gov.cn/2013-07/12/c_709347.htm"
+    },
+    {
+      "feature": "Suzuka Circuit Wheel and amusement park landmarks",
+      "url": "https://www.suzukacircuit.jp/eng/park/attraction/"
+    },
+    {
+      "feature": "Suzuka park and race course map",
+      "url": "https://www.suzukacircuit.jp/map_s/pdf/suzuka_mp_guide_en.pdf"
+    },
+    {
+      "feature": "Suzuka Ferris wheel placement",
+      "url": "https://www.openstreetmap.org/way/184107083"
+    },
+    {
+      "feature": "Suzuka V1/V2 main grandstand footprints",
+      "url": "https://www.openstreetmap.org/way/183394522"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
   "date": "2026-10-14",
   "albertPark": "Mapped lake and islands; approximate Melbourne skyline silhouettes and event dressing, with golden-hour lighting per the user brief. Tree species are represented by generic broadleaf and palm artwork.",
-  "shanghai": "Corrected using the two user-supplied photographs and mapped roof/building outlines: cream funnel canopies at H/K, enclosed viewing bridges over the main straight, and pit/main-stand sides aligned with the map. Procedural cladding, crowds, windows and branding remain approximations; original track and rain effects are unchanged."
+  "shanghai": "Corrected using the two user-supplied photographs and mapped roof/building outlines: cream funnel canopies at H/K, enclosed viewing bridges over the main straight, and pit/main-stand sides aligned with the map. Procedural cladding, crowds, windows and branding remain approximations; original track and rain effects are unchanged.",
+  "suzuka": "Mapped Circuit Wheel, main stand and pit positions; original procedural wheel, rides, tiered stands, hillside crowds, crossover structure, hills, gravel, trees and event props. Terrain between sampled track elevations, ride silhouettes and architectural detailing are artistic approximations; centreline, driving surface, car and physics are unchanged."
 }

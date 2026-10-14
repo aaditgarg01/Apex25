@@ -44,3 +44,8 @@ H/K stands: https://www.openstreetmap.org/way/1372223261 and
 https://www.openstreetmap.org/way/1372223262 .
 The 3D detailing is original procedural geometry based on the user's supplied
 photographs; no photographic textures are redistributed.
+
+
+## Suzuka landmark positions and footprints
+
+`public/data/suzuka-landmarks.js` contains selected mapped landmark/building outlines from © OpenStreetMap contributors, retrieved 2026-10-14, licensed under ODbL 1.0: https://www.openstreetmap.org/copyright . Each source way ID is retained. Circuit Wheel: https://www.openstreetmap.org/way/184107083 . V2 main stand: https://www.openstreetmap.org/way/183394522 . Pit building: https://www.openstreetmap.org/way/184422099 . Procedural architectural detailing, terrain between track elevations, amusement ride silhouettes and vegetation are original artistic approximations, not scanned assets.

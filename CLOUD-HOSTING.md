@@ -449,3 +449,9 @@ is merged in spatial batches; crowds remain instanced.
 
 Syntax and undefined-variable checks passed. Gameplay testing and test suites
 were omitted at the user's request. Refresh all players' browsers.
+
+## Suzuka environment (2.12.0)
+
+Suzuka now has a dedicated environment: mapped main stand/pit and Circuit Wheel locations, a slowly rotating white Ferris wheel with upright coloured cabins, amusement park ride silhouettes, dense broadleaf/evergreen planting, rolling grass terrain and hillside bleachers with Japanese flags and fan hats. A concrete soffit and piers support the existing crossover, outside the lower roadway. White Armco, raked beige gravel, black tyre banks, Honda/Rolex/DHL dressing, steel gantries, green TV towers, white camera poles, warning panels and white-suited marshals add trackside detail. Dry lighting is crisp early afternoon; existing wet/intermediate weather remains available.
+
+The track centreline, driving mesh, car model and physics are unchanged. Landmarks use attributed OpenStreetMap positions; terrain away from the track, building details and amusement ride artwork are procedural approximations. Crowds, vegetation and animated wheel cabins use instancing. Static syntax and undefined-variable checks passed; gameplay and multiplayer tests were not run, as requested.
