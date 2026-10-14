@@ -1,6 +1,6 @@
 import * as THREE from '/vendor/three.module.js';
 import {sampleGuide,prepareRacingLine} from '/shared/racing-line.mjs';
-import {angleDiff,wrap} from '/shared/tracks.mjs';
+import {angleDiff,wrap,sample} from '/shared/tracks.mjs';
 import {VENUES} from '/shared/venues.mjs';
 
 export function trackAppearance(track){
@@ -13,9 +13,11 @@ function noiseTexture(kind){
  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');let seed=1979;
  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
  const image=x.createImageData(256,256),base=kind==='asphalt'?86:kind==='gravel'?184:kind==='armco'?215:235;
- for(let i=0;i<image.data.length;i+=4){const n=(random()-.5)*(kind==='asphalt'?35:kind==='gravel'?65:24),v=base+n;image.data[i]=v;image.data[i+1]=v+(kind==='gravel'? -6:0);image.data[i+2]=v+(kind==='gravel'?-18:0);image.data[i+3]=255;}x.putImageData(image,0,0);
+ for(let i=0;i<image.data.length;i+=4){const u=(i/4)%256,vv=Math.floor(i/1024),patch=kind==='grass'?(Math.sin(u*Math.PI*4/256)*Math.cos(vv*Math.PI*6/256)+Math.sin((u+vv)*Math.PI*2/256))*.035:0,n=(random()-.5)*(kind==='asphalt'?35:kind==='gravel'?65:kind==='grass'?45:24),v=base+n;image.data[i]=v*(1+patch);image.data[i+1]=v*(1+patch)+(kind==='gravel'?-6:0);image.data[i+2]=v*(1+patch)+(kind==='gravel'?-18:0);image.data[i+3]=255;}x.putImageData(image,0,0);
  if(kind==='asphalt'){
   for(let i=0;i<160;i++){const a=random()*256,b=random()*256;x.strokeStyle='rgba(26,29,31,.07)';x.lineWidth=.3+random()*.7;x.beginPath();x.moveTo(a,b);x.lineTo(a+random()*16-8,b+random()*45);x.stroke();}
+ }else if(kind==='grass'){
+  for(let i=0;i<2600;i++){const px=random()*256,py=random()*256;x.strokeStyle=i%2?'rgba(78,84,63,.12)':'rgba(255,253,209,.14)';x.lineWidth=.5;x.beginPath();x.moveTo(px,py);x.lineTo(px+random()*3-1.5,py-2-random()*3);x.stroke();}
  }else if(kind==='armco'){
   for(let y=0;y<256;y+=85){const g=x.createLinearGradient(0,y,0,y+85);g.addColorStop(0,'rgba(255,255,255,.25)');g.addColorStop(.3,'rgba(0,0,0,.20)');g.addColorStop(.7,'rgba(255,255,255,.32)');g.addColorStop(1,'rgba(0,0,0,.16)');x.fillStyle=g;x.fillRect(0,y,256,85);}
  }else if(kind==='paint'){
@@ -42,7 +44,7 @@ export class TrackSurfaces{
  texture(kind){if(!this.textures.has(kind))this.textures.set(kind,kind==='fence'?meshTexture():noiseTexture(kind));return this.textures.get(kind);}
  material(kind,color='#ffffff',vertexColors=false){
   const key=[kind,color,vertexColors].join(':');if(this.materials.has(key))return this.materials.get(key);
-  const texture=this.texture(kind==='grass'?'paint':kind),m=kind==='asphalt'?new THREE.MeshPhysicalMaterial({color,map:texture,bumpMap:texture,bumpScale:.018,roughness:.86,clearcoat:0,clearcoatRoughness:.2}):new THREE.MeshStandardMaterial({color,map:texture,bumpMap:kind==='fence'?null:texture,bumpScale:kind==='gravel'?.045:.008,roughness:kind==='armco'?.46:.9,metalness:kind==='armco'?.45:0,vertexColors,side:THREE.DoubleSide,alphaTest:kind==='fence'?.35:0});
+  const texture=this.texture(kind),m=kind==='asphalt'?new THREE.MeshPhysicalMaterial({color,map:texture,bumpMap:texture,bumpScale:.018,roughness:.86,clearcoat:0,clearcoatRoughness:.2}):new THREE.MeshStandardMaterial({color,map:texture,bumpMap:kind==='fence'?null:texture,bumpScale:kind==='gravel'?.045:.008,roughness:kind==='armco'?.46:.9,metalness:kind==='armco'?.45:0,vertexColors,side:THREE.DoubleSide,alphaTest:kind==='fence'?.35:0});
   m.userData.surfaceKind=kind;this.materials.set(key,m);return m;
  }
  build(){
@@ -63,7 +65,27 @@ export class TrackSurfaces{
   if(track.id==='fr-1969')for(const side of [-1,1])for(let band=0;band<4;band++){
    const p=side*(half+2.2+band),q=side*(half+3.2+band);scene.ribbon(track,Math.min(p,q),Math.max(p,q),band<3?'#316a9e':'#a74037',.055,false,{kind:'paint',mask:this.outsideMask[side]});
   }
-  this.rubber();
+  this.rubber();this.repairs();
+ }
+ repairs(){
+  // Flush surface decals follow the sampled road height; they add no obstacles.
+  const positions=[],colors=[],indices=[],track=this.track,half=track.width/2;
+  const strip=(s,length,offset,width,color)=>{
+   const start=positions.length/3,steps=Math.ceil(length/2);
+   for(let i=0;i<=steps;i++)for(const side of [-1,1]){
+    const p=sample(track,s+i*length/steps,offset+side*width/2);positions.push(p.x,p.y+.079,p.z);
+    const fade=Math.min(1,i/2,(steps-i)/2),c=new THREE.Color(color);c.multiplyScalar(.94+fade*.06);colors.push(c.r,c.g,c.b);
+    if(i<steps&&side===-1){const n=start+i*2;indices.push(n,n+2,n+1,n+1,n+2,n+3);}
+   }
+  };
+  for(let s=95;s<track.length;s+=310){
+   const p=sample(track,s),q=sample(track,s+18);if(Math.abs(angleDiff(q.heading,p.heading))>.07)continue;
+   const side=Math.sin(s*.41)>0?1:-1,offset=side*half*.58;
+   strip(s,12+(s%17),offset,.8,'#45494a');strip(s-3,35,side*half*.83,.028,'#2c3132');
+  }
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();
+  const m=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.94,transparent:true,opacity:.3,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1});
+  const mesh=new THREE.Mesh(g,m);mesh.receiveShadow=true;this.scene.group.add(mesh);
  }
  rubber(){
   const track=this.track,line=prepareRacingLine(track),n=Math.ceil(track.length/4),step=track.length/n,positions=[],uv=[],indices=[];

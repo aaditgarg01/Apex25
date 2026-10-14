@@ -1,3 +1,4 @@
+import {addVegetation} from './vegetation.js';
 import {addCampus} from './campus.js';
 import {CampusBuildings} from './campus-buildings.js';
 import {addLandmarks} from './landmarks.js';
@@ -15,21 +16,10 @@ const desertIds=['bh-2002','sa-2021','qa-2004','ae-2009','us-2023'];
 const forestIds=['it-1922','be-1925','de-1927','de-1932','it-1953','at-1969','us-1956'];
 const tropicalIds=['my-1999','sg-2008','br-1940','us-2022','au-1953','in-vit-vellore'];
 export function venueProfile(track){return {night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),ground:track.campus?'#7a8b62':desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
-function nearestDistance(track,x,z){let best=Infinity;for(let i=0;i<track.points.length;i+=4){const p=track.points[i];best=Math.min(best,Math.hypot(p.x-x,p.z-z));}return best;}
 export function addVenue(scene,track){
  if(track.campus)return addCampus(scene,track);
  const profile=venueProfile(track),group=scene.group,half=track.width/2,dummy=new THREE.Object3D();
- // Rounded deciduous canopies, cypress trees and palms replace universal cones.
- const count=Math.ceil(track.length/(profile.forest?15:profile.desert?160:48))*2;
- const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.28,.55,5,6),material('#655a48'),count);
- const crowns=new THREE.InstancedMesh(new THREE.SphereGeometry(1,10,6),material(profile.desert?'#7c8860':'#31533a'),count*3);
- let k=0,j=0;
- for(let s=0;s<track.length;s+=(profile.forest?15:profile.desert?160:48))for(const side of [-1,1]){
-  const p=sample(track,s,side*(half+23+Math.abs(Math.sin(s*.37))*64));if(nearestDistance(track,p.x,p.z)<half+15)continue;
-  const scale=.75+Math.abs(Math.sin(s*3))*.65;const groundY=terrainHeight(track,p.x,p.z);dummy.position.set(p.x,groundY+2.5*scale,p.z);dummy.scale.set(scale,scale,scale);dummy.rotation.set(0,s,0);dummy.updateMatrix();trunks.setMatrixAt(k++,dummy.matrix);
-  for(let layer=0;layer<3;layer++){dummy.position.set(p.x+Math.sin(layer*2.1)*1.7, groundY+(profile.tropical?8:6+layer*1.4)*scale,p.z+Math.cos(layer*2.1)*1.7);dummy.scale.set((profile.tropical?6:3.8)*scale,(profile.tropical?.85:2.8)*scale,(profile.tropical?2:3.5)*scale);dummy.rotation.y=layer*2.1+s;dummy.updateMatrix();crowns.setMatrixAt(j,dummy.matrix);crowns.setColorAt(j++,new THREE.Color().setHSL(.25+(s%5)*.009,.26, .17+(layer*.023)));}
- }
- trunks.count=k;crowns.count=j;trunks.castShadow=true;crowns.castShadow=true;crowns.receiveShadow=true;trunks.computeBoundingSphere();crowns.computeBoundingSphere();group.add(trunks,crowns);
+ addVegetation(scene,track,profile);
  // Safety barriers, catch fencing, pit garages and distance boards add depth.
  const postsCount=Math.ceil(track.length/18)*2,posts=new THREE.InstancedMesh(new THREE.CylinderGeometry(.06,.07,3.5,4),material('#6f777c'),postsCount);let f=0;
  for(let s=0;s<track.length;s+=18)for(const side of [-1,1]){const p=sample(track,s,ribbonOffset(track,Math.floor(s/track.step),side*(half+(track.urban?3.2:8))));dummy.position.set(p.x,p.y+1.75,p.z);dummy.scale.set(1,1,1);dummy.rotation.set(0,0,0);dummy.updateMatrix();posts.setMatrixAt(f++,dummy.matrix);}posts.count=f;group.add(posts);
@@ -45,7 +35,15 @@ export function addVenue(scene,track){
   const p=safeSite(track,location/track.length,40,-1),g=new THREE.Group();g.position.set(p.x,p.y,p.z);g.rotation.y=p.heading;group.add(g);
   for(let r=0;r<7;r++)scene.box(1.5,.7,62,['#526779','#d1cec0','#427e8b'][r%3],-r*1.35,.6+r*.75,0,g);
   scene.box(12,.35,65,'#d8dacf',-4,7.8,0,g);for(const z of [-30,0,30])scene.box(.2,8,.2,'#6c7b7e',-9,4,z,g);
-  const crowd=new THREE.InstancedMesh(new THREE.BoxGeometry(.45,.65,.4),material('#ffffff'),245);for(let i=0;i<245;i++){let r=Math.floor(i/35);dummy.position.set(-r*1.35,.95+r*.75,-29+(i%35)*1.7);dummy.scale.setScalar(1);dummy.rotation.set(0,0,0);dummy.updateMatrix();crowd.setMatrixAt(i,dummy.matrix);crowd.setColorAt(i,new THREE.Color(['#df543c','#d8dcd8','#2c556b','#f0d265','#355470'][i%5]));}g.add(crowd);
+  const crowd=new THREE.InstancedMesh(new THREE.CapsuleGeometry(.18,.3,2,6),material('#ffffff'),245),heads=new THREE.InstancedMesh(new THREE.SphereGeometry(.115,8,6),material('#ffffff'),245);
+  for(let i=0;i<245;i++){
+   const r=Math.floor(i/35),x=-r*1.35,z=-29+(i%35)*1.7;
+   dummy.position.set(x,1.28+r*.75,z);dummy.scale.set(1,1,.85);dummy.rotation.set(0,0,.06*Math.sin(i));dummy.updateMatrix();crowd.setMatrixAt(i,dummy.matrix);crowd.setColorAt(i,new THREE.Color(['#df543c','#d8dcd8','#2c556b','#f0d265','#355470'][i%5]));
+   dummy.position.set(x,1.73+r*.75,z);dummy.scale.setScalar(1);dummy.rotation.set(0,0,0);dummy.updateMatrix();heads.setMatrixAt(i,dummy.matrix);heads.setColorAt(i,new THREE.Color(['#c69b79','#e0b994','#926f55','#cca183'][i%4]));
+  }
+  crowd.computeBoundingSphere();heads.computeBoundingSphere();g.add(crowd,heads);
+  for(const z of [-30,-15,0,15,30]){scene.box(10,.15,.15,'#7d8a8f',-4,7.55,z,g);const brace=scene.box(.1,2.3,.1,'#7d8a8f',-8.1,6.9,z,g);brace.rotation.z=-.75;}
+
  }
  addBrakingBoards(scene,track);addStreetFrontages(scene,track);
  if(profile.night){

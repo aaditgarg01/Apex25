@@ -323,3 +323,27 @@ are unchanged. These are artistic visual representations rather than 1:1 scanned
 replicas of the official game. Primary references are listed in
 public/data/track-visual-references.json. Gameplay tests were omitted at the user's
 request. All players should refresh.
+
+
+## Driver-view realism (2.9.1)
+
+Replaced flat tree crowns with individual drooping palm leaflets and irregular
+leaf-textured canopies, using instanced meshes across the circuits. VIT retains
+open verges, widened roads, rounded bends and its existing subway boundaries.
+Grass gains blade/patch detail and asphalt gains sparse, flush repair seams that
+follow road height. Added occasional trackside marshal huts and equipment, plus
+shaped spectators and roof supports in grandstands. These are procedural artistic
+surroundings, not surveyed positions or new gameplay barriers.
+
+The original car now has rounded sidepods, a tapered nose and engine cover,
+carbon details, rounded tyre shoulders, wishbones, mirrors and a halo. Cockpit
+mode keeps the nose and front wheels visible and attaches the camera directly to
+the displayed car. Only the driver's helmet/visor are hidden in this view. A
+moving steering wheel displays gear, speed and battery, replacing the duplicate
+external speed panel in cockpit mode. Static car details are batched; the display
+updates at most 12.5 times per second, only for the viewed cockpit.
+
+Layouts, elevations, vehicle physics and multiplayer messages are unchanged.
+The scenery remains an artistic approximation rather than scanned official-game
+assets. Syntax checks were run; gameplay and test suites were omitted at the
+user's request. Refresh all clients to receive the visual update.

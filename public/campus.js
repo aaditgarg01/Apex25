@@ -1,3 +1,4 @@
+import {addVegetation} from './vegetation.js';
 import * as THREE from '/vendor/three.module.js';
 import {sample,terrainHeight} from '/shared/tracks.mjs';
 import {campusLocal,campusDistance} from '/shared/campus.mjs';
@@ -57,14 +58,8 @@ function buildRailway(scene,track){
  sleeperGeometry.dispose();sleeperMat.dispose();
 }
 export function addCampus(scene,track){
- const group=scene.group,half=track.width/2,dummy=new THREE.Object3D(),count=Math.ceil(track.length/32)*2;
- const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.2,.3,7,6),mat('#806c4c'),count),crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),mat('#3e683c'),count*3);let n=0,m=0;
- for(let s=0;s<track.length;s+=32)for(const side of [-1,1]){
-  const p=sample(track,s,side*(half+16+Math.abs(Math.sin(s*.017))*10));if(roadClearance(track,p.x,p.z)<5)continue;
-  const y=terrainHeight(track,p.x,p.z);dummy.position.set(p.x,y+3.5,p.z);dummy.rotation.set(0,s*.03,0);dummy.scale.set(1,1,1);dummy.updateMatrix();trunks.setMatrixAt(n++,dummy.matrix);
-  for(let leaf=0;leaf<3;leaf++){dummy.position.set(p.x,y+7.3,p.z);dummy.rotation.set(0,s*.03+leaf*Math.PI/3,.12);dummy.scale.set(5,.65,1.5);dummy.updateMatrix();crowns.setMatrixAt(m++,dummy.matrix);}
- }
- trunks.count=n;crowns.count=m;group.add(trunks,crowns);
+ const group=scene.group,half=track.width/2;
+ addVegetation(scene,track,scene.profile);
  for(const tunnel of track.campus.tunnels)buildTunnel(scene,track,tunnel);
  buildRailway(scene,track);
  for(const island of track.campus.roundabouts){
