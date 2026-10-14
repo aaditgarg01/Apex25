@@ -498,3 +498,11 @@ Spa has dedicated rolling valley terrain, steep grassy and rocky banks around th
 Expanded asphalt/gravel runoff uses a shared envelope for guardrails and collision, capped to avoid buildings and other road branches. White Armco, matching catch fences, multi-layer black tyres and protective belts, Rolex/Heineken/MSC dressing, steel gantries, LED panels, orange safety gates/marshals, camera towers, recovery cranes and tractors complete the scenery. The driving mesh, centreline, official track elevation anchors and car are unchanged. Landscape between track samples, architecture details, forest distribution and event dressing are procedural approximations, not scanned official-game assets.
 
 Syntax and undefined-variable checks passed. Gameplay and multiplayer tests were skipped as requested.
+
+## Monaco Riviera environment (2.15.0)
+
+Monaco now uses a mapped Mediterranean coastline, Port Hercule shoreline and 210 city building footprints. Road-clear render rings protect the narrow streets and hairpin; the Fairmont's lower volume clears the original tunnel cover. Pastel facades, shutters and balconies, bougainvillea, spectators, Casino clock towers and roof domes, hotel architecture, potted palms, topiary, hillside vegetation and limestone ridges provide a dense Riviera setting.
+
+The harbor has reflective rippling water and 24 detailed superyachts with deck crowds, layered glazed cabins, teak decks and pools. Boat geometry is batched locally to retain gentle movement. Temporary harbor stands, mapped quay cranes, compressed marshal pockets, luxury sponsor wall decals and pedestrian bridges add event dressing. Dry lighting is clear midday with near-vertical sunlight; existing wet/intermediate weather remains supported. Reflection rendering is throttled and facade geometry is batched by material and location.
+
+The road mesh, centreline, elevations, barrier collision layout, original curved tunnel cover/walls and car model are unchanged. Buildings/coastline use attributed OpenStreetMap data; heights where missing, architectural detailing, skyline terrain, yachts and event dressing are procedural approximations, not scanned official-game assets. Syntax and undefined-variable checks passed. Gameplay and multiplayer testing were skipped as requested.

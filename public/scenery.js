@@ -1,3 +1,4 @@
+import {addMonaco} from './monaco.js';
 import {addSpa} from './spa.js';
 import {addBahrain} from './bahrain.js';
 import {addSuzuka} from './suzuka.js';
@@ -20,7 +21,7 @@ const nightIds=['sg-2008','us-2023','sa-2021','ae-2009','bh-2002','qa-2004'];
 const desertIds=['bh-2002','sa-2021','qa-2004','ae-2009','us-2023'];
 const forestIds=['it-1922','be-1925','de-1927','de-1932','it-1953','at-1969','us-1956'];
 const tropicalIds=['my-1999','sg-2008','br-1940','us-2022','au-1953','in-vit-vellore'];
-export function venueProfile(track){return {night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),goldenHour:track.id==='au-1953',industrialHaze:track.id==='cn-2004',clearHills:track.id==='jp-1962',desertTwilight:track.id==='bh-2002',ardennes:track.id==='be-1925',ground:track.campus?'#7a8b62':desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
+export function venueProfile(track){return {night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),goldenHour:track.id==='au-1953',industrialHaze:track.id==='cn-2004',clearHills:track.id==='jp-1962',desertTwilight:track.id==='bh-2002',ardennes:track.id==='be-1925',riviera:track.id==='mc-1929',ground:track.campus?'#7a8b62':desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
 export function addVenue(scene,track){
  if(track.campus)return addCampus(scene,track);
  if(track.id==='au-1953')return addAlbertPark(scene,track);
@@ -28,6 +29,7 @@ export function addVenue(scene,track){
  if(track.id==='jp-1962')return addSuzuka(scene,track);
  if(track.id==='bh-2002')return addBahrain(scene,track);
  if(track.id==='be-1925')return addSpa(scene,track);
+ if(track.id==='mc-1929')return addMonaco(scene,track);
  const profile=venueProfile(track),group=scene.group,half=track.width/2,dummy=new THREE.Object3D();
  addVegetation(scene,track,profile);
  // Safety barriers, catch fencing, pit garages and distance boards add depth.
@@ -60,18 +62,7 @@ export function addVenue(scene,track){
   for(let s=0;s<track.length;s+=75){for(const side of [-1,1]){const p=sample(track,s,side*(half+11));scene.box(.2,15,.2,'#667689',p.x,p.y+7.5,p.z);const lamp=new THREE.Mesh(new THREE.BoxGeometry(3,.25,1.3),new THREE.MeshBasicMaterial({color:'#f2f7ff',toneMapped:false}));lamp.userData.batchBox=true;lamp.position.set(p.x,p.y+15,p.z);lamp.rotation.y=p.heading;group.add(lamp);}}
  }
  addLandmarks(scene,track);
- if(track.id==='mc-1929')monaco(scene,track);
  return profile;
-}
-function geo(track,lon,lat){return{x:(lon-track.origin.lon)*111320*Math.cos(track.origin.lat*Math.PI/180),z:-(lat-track.origin.lat)*111320};}
-function sign(text,w,h){const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle='#f1f0e5';x.fillRect(0,0,512,256);x.fillStyle='#15222c';x.font='bold 145px Arial';x.textAlign='center';x.fillText(text,256,181);return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),side:THREE.DoubleSide}));}
-function ferris(scene,track,lon,lat){const p=geo(track,lon,lat),g=new THREE.Group();g.position.set(p.x,terrainHeight(track,p.x,p.z)+25,p.z);scene.group.add(g);g.rotation.y=.25;const ring=new THREE.Mesh(new THREE.TorusGeometry(21,.35,6,48),material('#d7e0db'));g.add(ring);for(let i=0;i<16;i++){const a=i/16*Math.PI*2,spoke=scene.box(.15,42,.15,'#cbd1c9',0,0,0,g);spoke.rotation.z=a;scene.box(2.4,2.8,2.2,['#e67938','#43a7b8','#d64c4f'][i%3],Math.sin(a)*21,Math.cos(a)*21,0,g);}for(const x of [-8,8]){const leg=scene.box(.7,31,.7,'#b3bebc',x,-14,0,g);leg.rotation.z=x/40;}}
-function monaco(scene,track){
- // The shoreline scenery is intentionally stylized; the OSM layer supplies actual footprints.
- const p=geo(track,7.4266,43.7359),water=new THREE.Mesh(new THREE.PlaneGeometry(300,230),material('#277e8d',{metalness:.5,roughness:.24}));water.rotation.x=-Math.PI/2;water.position.set(p.x,-.035,p.z);scene.group.add(water);
- for(let i=0;i<12;i++){const boat=new THREE.Group();boat.position.set(p.x-110+(i%6)*42,0,p.z-55+Math.floor(i/6)*75);boat.rotation.y=.2;scene.group.add(boat);scene.box(9,2.5,28,'#eae6d9',0,1,0,boat);scene.box(6,3,12,'#d5e2e2',0,3,0,boat);scene.box(5,.8,7,'#314f61',0,4.4,1,boat);}
- // Tunnel cover follows the actual southeast coastal segment rather than a straight slab.
- const center=geo(track,7.4293,43.7382);let idx=0,d=Infinity;track.points.forEach((p,i)=>{const v=Math.hypot(p.x-center.x,p.z-center.z);if(v<d){d=v;idx=i;}});for(let s=idx*track.step-90;s<idx*track.step+90;s+=8){const p=sample(track,s),g=new THREE.Group();g.position.set(p.x,p.y,p.z);g.rotation.y=p.heading;scene.group.add(g);scene.box(track.width+3,.7,8.4,'#b0b1a6',0,5.5,0,g);for(const x of [-track.width/2-1,track.width/2+1])scene.box(.5,5.5,8.4,'#b7b8b0',x,2.75,0,g);}
 }
 export async function addMappedScenery(scene,track){
  const originalGroup=scene.group;

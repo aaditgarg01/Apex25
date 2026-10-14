@@ -7,7 +7,7 @@ export function trackAppearance(track){
  const theme=track.campus?'campus':VENUES[track.id]?.theme||'fields',street=track.urban&&!track.campus;
  const sand=['desert','dunes'].includes(theme),forest=['forest','alpine'].includes(theme);
  const colors={desert:'#aaa18b',dunes:'#929174',forest:'#596d4b',alpine:'#657451',tropical:'#657d51',coast:'#78876b',fields:'#79815b',campus:'#738360',skyline:'#777e78',city:'#78806c',neon:'#717579',marina:'#728681'};
- return {theme,street,sand,forest,ground:track.id==='be-1925'?'#526f43':track.id==='bh-2002'?'#cdbb9b':track.id==='jp-1962'?'#567448':colors[theme]||'#74815a',kerb:track.id==='be-1925'?['#bd3729','#e8ba2d']:track.campus?['#35383a','#dfdccd']:['#bd3730','#e8e5dc'],runoff:track.id==='fr-1969'?'#376b9c':track.id==='ae-2009'?'#609ba5':track.id==='us-2012'?'#a34b40':'#548475',gravel:track.id==='jp-1962'||forest||theme==='fields',fog:street?.00044:sand?.00055:.00036};
+ return {theme,street,sand,forest,ground:track.id==='mc-1929'?'#b5af9c':track.id==='be-1925'?'#526f43':track.id==='bh-2002'?'#cdbb9b':track.id==='jp-1962'?'#567448':colors[theme]||'#74815a',kerb:track.id==='be-1925'?['#bd3729','#e8ba2d']:track.campus?['#35383a','#dfdccd']:['#bd3730','#e8e5dc'],runoff:track.id==='fr-1969'?'#376b9c':track.id==='ae-2009'?'#609ba5':track.id==='us-2012'?'#a34b40':'#548475',gravel:track.id==='jp-1962'||forest||theme==='fields',fog:street?.00044:sand?.00055:.00036};
 }
 function noiseTexture(kind){
  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');let seed=1979;

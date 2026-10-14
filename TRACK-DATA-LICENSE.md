@@ -59,3 +59,8 @@ photographs; no photographic textures are redistributed.
 ## Spa environment landmark footprints
 
 `shared/spa-landmarks.mjs` contains selected building and grandstand outlines from © OpenStreetMap contributors, retrieved 2026-10-14, licensed under ODbL 1.0: https://www.openstreetmap.org/copyright . Source way IDs are retained. Eau Rouge chalet: https://www.openstreetmap.org/way/1509741652 . Endurance grandstand: https://www.openstreetmap.org/way/1353159436 . Raidillon grandstand: https://www.openstreetmap.org/way/1134053908 . Terrain away from the existing official track elevation anchors, conifers, architecture details and event props are original procedural approximations, not scanned or photographic assets.
+
+
+## Monaco coastline and city footprints
+
+`public/data/monaco-city.js` contains coastline, marina and building outlines from © OpenStreetMap contributors, retrieved 2026-10-14, under ODbL 1.0: https://www.openstreetmap.org/copyright . Source way/relation/node IDs are retained. Port Hercule: https://www.openstreetmap.org/relation/2221179 . Casino: https://www.openstreetmap.org/way/161769674 . Fairmont: https://www.openstreetmap.org/relation/2093796 . Derived render rings are clipped against the existing road for visual clearance, with the tunnel separately protected. Procedural facades, yachts, architecture/terrain details and event dressing are original artwork; no photographic textures are redistributed.
