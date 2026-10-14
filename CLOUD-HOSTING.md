@@ -463,3 +463,11 @@ Bahrain has dedicated mapped Sakhir Tower, main/Oasis/first-turn/University/Vict
 Sunset fades to night over six minutes. All 495 visible floodlight pylons are batched; six nearby active spotlights are pooled, two with shadows. The driving surface, centreline, elevation profile and car model are unchanged. Wider runoff walls use shared geometry for rendering and collision, capped to avoid buildings and other road branches. Landmarks use attributed OpenStreetMap positions; scenery, branding illustrations and distant horizon details remain artistic approximations.
 
 Syntax and undefined-variable checks passed. Gameplay and multiplayer testing were skipped as requested.
+
+## Spa Ardennes environment (2.14.0)
+
+Spa has dedicated rolling valley terrain, steep grassy and rocky banks around the existing official elevation profile, thousands of spatially batched conifers, mossy verges, mapped Eau Rouge chalet/venue and F1/Endurance pits, mapped Endurance/Raidillon/F1/Silver stands, hillside Pouhon/Kemmel terraces, dense spectators and Belgian/European/orange flags. Modern curved roofs contrast with the red-and-white timbered chalet and stepped valley pit buildings. Low directional sunlight varies beneath drifting heavy clouds; occasional orange smoke stays on the spectator hillsides.
+
+Expanded asphalt/gravel runoff uses a shared envelope for guardrails and collision, capped to avoid buildings and other road branches. White Armco, matching catch fences, multi-layer black tyres and protective belts, Rolex/Heineken/MSC dressing, steel gantries, LED panels, orange safety gates/marshals, camera towers, recovery cranes and tractors complete the scenery. The driving mesh, centreline, official track elevation anchors and car are unchanged. Landscape between track samples, architecture details, forest distribution and event dressing are procedural approximations, not scanned official-game assets.
+
+Syntax and undefined-variable checks passed. Gameplay and multiplayer tests were skipped as requested.

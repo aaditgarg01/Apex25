@@ -80,6 +80,22 @@
     {
       "feature": "Bahrain main grandstand footprint",
       "url": "https://www.openstreetmap.org/way/187123419"
+    },
+    {
+      "feature": "Spa Endurance and Raidillon modern covered stands and natural terraces",
+      "url": "https://www.spa-francorchamps.be/en/news/325_the-endurance-grandstand-and-terraces-are-open-to-the-public"
+    },
+    {
+      "feature": "Historic Eau Rouge venue at the foot of Raidillon",
+      "url": "https://www.spa-francorchamps.be/en/evenement-locationdesalles"
+    },
+    {
+      "feature": "Spa Endurance grandstand mapped footprint",
+      "url": "https://www.openstreetmap.org/way/1353159436"
+    },
+    {
+      "feature": "Eau Rouge chalet footprint",
+      "url": "https://www.openstreetmap.org/way/1509741652"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
@@ -87,5 +103,6 @@
   "albertPark": "Mapped lake and islands; approximate Melbourne skyline silhouettes and event dressing, with golden-hour lighting per the user brief. Tree species are represented by generic broadleaf and palm artwork.",
   "shanghai": "Corrected using the two user-supplied photographs and mapped roof/building outlines: cream funnel canopies at H/K, enclosed viewing bridges over the main straight, and pit/main-stand sides aligned with the map. Procedural cladding, crowds, windows and branding remain approximations; original track and rain effects are unchanged.",
   "suzuka": "Mapped Circuit Wheel, main stand and pit positions; original procedural wheel, rides, tiered stands, hillside crowds, crossover structure, hills, gravel, trees and event props. Terrain between sampled track elevations, ride silhouettes and architectural detailing are artistic approximations; centreline, driving surface, car and physics are unchanged.",
-  "bahrain": "Mapped Sakhir Tower, paddock and stand positions; procedural sail shades, LED bands, desert terrain, oasis gardens, blue/white wave runoff, regional branding and 495 visual floodlight poles. Six nearby pooled lights illuminate the scene; two cast shadows. Twilight fades to night over six minutes. Runoff walls share rendering/collision boundaries. Distant city/oilfield silhouettes, runoff decorations and architecture details are artistic approximations; track mesh and car are unchanged."
+  "bahrain": "Mapped Sakhir Tower, paddock and stand positions; procedural sail shades, LED bands, desert terrain, oasis gardens, blue/white wave runoff, regional branding and 495 visual floodlight poles. Six nearby pooled lights illuminate the scene; two cast shadows. Twilight fades to night over six minutes. Runoff walls share rendering/collision boundaries. Distant city/oilfield silhouettes, runoff decorations and architecture details are artistic approximations; track mesh and car are unchanged.",
+  "spa": "Mapped Eau Rouge venue, pits, Endurance/Raidillon/F1/Silver stands. Original procedural pine forest, steep rolling terrain around the existing official elevation profile, rocky banks, chalet detailing, terraces, cranes, tractors, safety gates, LED panels, tyres and brand artwork. Shifting cloud sky and sunlight; occasional hillside smoke. Shared runoff envelope keeps visible guardrails and collision aligned. No track centreline, elevation or car changes. Terrain away from the track and building/forest/event details are artistic approximations."
 }
