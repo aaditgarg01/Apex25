@@ -49,3 +49,8 @@ photographs; no photographic textures are redistributed.
 ## Suzuka landmark positions and footprints
 
 `public/data/suzuka-landmarks.js` contains selected mapped landmark/building outlines from © OpenStreetMap contributors, retrieved 2026-10-14, licensed under ODbL 1.0: https://www.openstreetmap.org/copyright . Each source way ID is retained. Circuit Wheel: https://www.openstreetmap.org/way/184107083 . V2 main stand: https://www.openstreetmap.org/way/183394522 . Pit building: https://www.openstreetmap.org/way/184422099 . Procedural architectural detailing, terrain between track elevations, amusement ride silhouettes and vegetation are original artistic approximations, not scanned assets.
+
+
+## Bahrain landmark footprints
+
+`shared/bahrain-landmarks.mjs` contains selected building and grandstand outlines from © OpenStreetMap contributors, retrieved 2026-10-14, licensed under ODbL 1.0: https://www.openstreetmap.org/copyright . Each way ID is retained. Sakhir Tower: https://www.openstreetmap.org/way/187123438 . Main Grandstand: https://www.openstreetmap.org/way/187123419 . Architectural detailing, branding illustrations, desert landscaping and distant skyline/industrial silhouettes are original procedural approximations; no photographic textures are redistributed.

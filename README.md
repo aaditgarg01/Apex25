@@ -482,3 +482,11 @@ were omitted at the user's request. Refresh all players' browsers.
 Suzuka now has a dedicated environment: mapped main stand/pit and Circuit Wheel locations, a slowly rotating white Ferris wheel with upright coloured cabins, amusement park ride silhouettes, dense broadleaf/evergreen planting, rolling grass terrain and hillside bleachers with Japanese flags and fan hats. A concrete soffit and piers support the existing crossover, outside the lower roadway. White Armco, raked beige gravel, black tyre banks, Honda/Rolex/DHL dressing, steel gantries, green TV towers, white camera poles, warning panels and white-suited marshals add trackside detail. Dry lighting is crisp early afternoon; existing wet/intermediate weather remains available.
 
 The track centreline, driving mesh, car model and physics are unchanged. Landmarks use attributed OpenStreetMap positions; terrain away from the track, building details and amusement ride artwork are procedural approximations. Crowds, vegetation and animated wheel cabins use instancing. Static syntax and undefined-variable checks passed; gameplay and multiplayer tests were not run, as requested.
+
+## Bahrain desert and night environment (2.13.0)
+
+Bahrain has dedicated mapped Sakhir Tower, main/Oasis/first-turn/University/Victory stands and paddock buildings. Procedural tent canopies, occupied terraces, Bahraini flags, tower LED bands and sun shades, oasis lawns and date palms, desert shrubs/rocks, distant highway/oilfield/city silhouettes, blue-white wave aprons, red-white geometric runoff decorations, gravel beds, white safety walls, dark fencing, regional sponsor dressing, camera poles, LED flag gantries and orange-suited marshals provide event atmosphere.
+
+Sunset fades to night over six minutes. All 495 visible floodlight pylons are batched; six nearby active spotlights are pooled, two with shadows. The driving surface, centreline, elevation profile and car model are unchanged. Wider runoff walls use shared geometry for rendering and collision, capped to avoid buildings and other road branches. Landmarks use attributed OpenStreetMap positions; scenery, branding illustrations and distant horizon details remain artistic approximations.
+
+Syntax and undefined-variable checks passed. Gameplay and multiplayer testing were skipped as requested.

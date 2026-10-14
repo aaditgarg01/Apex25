@@ -64,11 +64,28 @@
     {
       "feature": "Suzuka V1/V2 main grandstand footprints",
       "url": "https://www.openstreetmap.org/way/183394522"
+    },
+    {
+      "feature": "Sakhir Tower circular form, eight levels, sail canopy and illuminated bands",
+      "url": "https://www.bahraingp.com/blog/news/f1-fans-first-to-witness-bahrains-iconic-bic-tower-in-a-whole-new-light/"
+    },
+    {
+      "feature": "Bahrain circuit facilities and 495 floodlight poles",
+      "url": "https://www.fia.com/sites/default/files/2018_fia_f1_bahrain_grand_prix_media_kit.pdf"
+    },
+    {
+      "feature": "Sakhir Tower footprint",
+      "url": "https://www.openstreetmap.org/way/187123438"
+    },
+    {
+      "feature": "Bahrain main grandstand footprint",
+      "url": "https://www.openstreetmap.org/way/187123419"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
   "date": "2026-10-14",
   "albertPark": "Mapped lake and islands; approximate Melbourne skyline silhouettes and event dressing, with golden-hour lighting per the user brief. Tree species are represented by generic broadleaf and palm artwork.",
   "shanghai": "Corrected using the two user-supplied photographs and mapped roof/building outlines: cream funnel canopies at H/K, enclosed viewing bridges over the main straight, and pit/main-stand sides aligned with the map. Procedural cladding, crowds, windows and branding remain approximations; original track and rain effects are unchanged.",
-  "suzuka": "Mapped Circuit Wheel, main stand and pit positions; original procedural wheel, rides, tiered stands, hillside crowds, crossover structure, hills, gravel, trees and event props. Terrain between sampled track elevations, ride silhouettes and architectural detailing are artistic approximations; centreline, driving surface, car and physics are unchanged."
+  "suzuka": "Mapped Circuit Wheel, main stand and pit positions; original procedural wheel, rides, tiered stands, hillside crowds, crossover structure, hills, gravel, trees and event props. Terrain between sampled track elevations, ride silhouettes and architectural detailing are artistic approximations; centreline, driving surface, car and physics are unchanged.",
+  "bahrain": "Mapped Sakhir Tower, paddock and stand positions; procedural sail shades, LED bands, desert terrain, oasis gardens, blue/white wave runoff, regional branding and 495 visual floodlight poles. Six nearby pooled lights illuminate the scene; two cast shadows. Twilight fades to night over six minutes. Runoff walls share rendering/collision boundaries. Distant city/oilfield silhouettes, runoff decorations and architecture details are artistic approximations; track mesh and car are unchanged."
 }

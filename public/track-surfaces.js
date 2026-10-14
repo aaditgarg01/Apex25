@@ -7,17 +7,19 @@ export function trackAppearance(track){
  const theme=track.campus?'campus':VENUES[track.id]?.theme||'fields',street=track.urban&&!track.campus;
  const sand=['desert','dunes'].includes(theme),forest=['forest','alpine'].includes(theme);
  const colors={desert:'#aaa18b',dunes:'#929174',forest:'#596d4b',alpine:'#657451',tropical:'#657d51',coast:'#78876b',fields:'#79815b',campus:'#738360',skyline:'#777e78',city:'#78806c',neon:'#717579',marina:'#728681'};
- return {theme,street,sand,forest,ground:track.id==='jp-1962'?'#567448':colors[theme]||'#74815a',kerb:track.id==='be-1925'?['#bd3729','#e8ba2d']:track.campus?['#35383a','#dfdccd']:['#bd3730','#e8e5dc'],runoff:track.id==='fr-1969'?'#376b9c':track.id==='ae-2009'?'#609ba5':track.id==='us-2012'?'#a34b40':'#548475',gravel:track.id==='jp-1962'||forest||theme==='fields',fog:street?.00044:sand?.00055:.00036};
+ return {theme,street,sand,forest,ground:track.id==='bh-2002'?'#cdbb9b':track.id==='jp-1962'?'#567448':colors[theme]||'#74815a',kerb:track.id==='be-1925'?['#bd3729','#e8ba2d']:track.campus?['#35383a','#dfdccd']:['#bd3730','#e8e5dc'],runoff:track.id==='fr-1969'?'#376b9c':track.id==='ae-2009'?'#609ba5':track.id==='us-2012'?'#a34b40':'#548475',gravel:track.id==='jp-1962'||forest||theme==='fields',fog:street?.00044:sand?.00055:.00036};
 }
 function noiseTexture(kind){
  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');let seed=1979;
  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
- const image=x.createImageData(256,256),base=kind==='asphalt'?86:kind==='gravel'?184:kind==='armco'?215:235;
+ const image=x.createImageData(256,256),base=kind==='asphalt'?86:kind==='gravel'?184:kind==='armco'?215:kind==='sand'?218:235;
  for(let i=0;i<image.data.length;i+=4){const u=(i/4)%256,vv=Math.floor(i/1024),patch=kind==='grass'?(Math.sin(u*Math.PI*4/256)*Math.cos(vv*Math.PI*6/256)+Math.sin((u+vv)*Math.PI*2/256))*.035:0,n=(random()-.5)*(kind==='asphalt'?35:kind==='gravel'?65:kind==='grass'?45:24),v=base+n;image.data[i]=v*(1+patch);image.data[i+1]=v*(1+patch)+(kind==='gravel'?-6:0);image.data[i+2]=v*(1+patch)+(kind==='gravel'?-18:0);image.data[i+3]=255;}x.putImageData(image,0,0);
  if(kind==='asphalt'){
   for(let i=0;i<160;i++){const a=random()*256,b=random()*256;x.strokeStyle='rgba(26,29,31,.07)';x.lineWidth=.3+random()*.7;x.beginPath();x.moveTo(a,b);x.lineTo(a+random()*16-8,b+random()*45);x.stroke();}
  }else if(kind==='gravel'){
   for(let y=0;y<256;y+=7){x.strokeStyle='rgba(81,70,47,.14)';x.lineWidth=1;x.beginPath();x.moveTo(0,y);x.lineTo(256,y);x.stroke();}
+ }else if(kind==='sand'){
+  for(let y=0;y<256;y+=13){x.strokeStyle='rgba(131,111,80,.10)';x.lineWidth=1.5;x.beginPath();x.moveTo(0,y);x.bezierCurveTo(65,y+8,191,y-8,256,y);x.stroke();}
  }else if(kind==='grass'){
   for(let i=0;i<2600;i++){const px=random()*256,py=random()*256;x.strokeStyle=i%2?'rgba(78,84,63,.12)':'rgba(255,253,209,.14)';x.lineWidth=.5;x.beginPath();x.moveTo(px,py);x.lineTo(px+random()*3-1.5,py-2-random()*3);x.stroke();}
  }else if(kind==='armco'){
@@ -55,9 +57,9 @@ export class TrackSurfaces{
  build(){
   const scene=this.scene,track=this.track,half=track.width/2,a=this.appearance;
   for(const side of [-1,1]){
-   const edge=side*half,limit=side*(half+(track.campus?1.8:6.5));scene.ribbon(track,Math.min(edge,limit),Math.max(edge,limit),a.ground,-.08,false,{kind:'grass'});
+   const edge=side*half,limit=side*(half+(track.campus?1.8:6.5));scene.ribbon(track,Math.min(edge,limit),Math.max(edge,limit),a.ground,-.08,false,{kind:track.id==='bh-2002'?'sand':'grass'});
    const shoulder=side*(half+(a.street?.65:track.campus?1.4:1.6));scene.ribbon(track,Math.min(edge,shoulder),Math.max(edge,shoulder),a.street?'#777f80':'#b8b4a7',.015,false,{kind:'paint'});
-   if(!track.campus&&!a.street){
+   if(!track.campus&&!a.street&&track.id!=='bh-2002'){
     const lo=side*(half+1.6),hi=side*(half+6.3),kind=a.gravel?'gravel':'asphalt',color=a.gravel?'#c0b79d':'#a0a09a';scene.ribbon(track,Math.min(lo,hi),Math.max(lo,hi),color,.022,false,{kind,mask:this.outsideMask[side]});
     const p=side*(half+1.6),q=side*(half+3);if(track.id!=='jp-1962')scene.ribbon(track,Math.min(p,q),Math.max(p,q),a.runoff,.04,false,{kind:'paint',mask:this.outsideMask[side]});
    }
