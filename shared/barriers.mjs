@@ -1,3 +1,4 @@
+import {jeddahBoundaryOffset,jeddahTecproBlocks} from './jeddah.mjs';
 import {spaBoundaryOffset} from './spa.mjs';
 import {bahrainBoundaryOffset} from './bahrain.mjs';
 import {shanghaiBoundaryOffset} from './shanghai.mjs';
@@ -10,7 +11,7 @@ function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor
 function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,offset);return {x:p.x+Math.cos(p.heading)*o,z:p.z-Math.sin(p.heading)*o,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
- const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',wideRunoff=shanghai||bahrain||spa,concreteWalls=melbourne||shanghai||bahrain,boundaryOffset=spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
+ const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',jeddah=track.id==='sa-2021',wideRunoff=shanghai||bahrain||spa||jeddah,concreteWalls=melbourne||shanghai||bahrain||jeddah,boundaryOffset=jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
  function add(a,b,width,height,kind,inward=null){
   const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);if(length<.01)return;
   const wall={a,b,width,height,kind,x:(a.x+b.x)/2,z:(a.z+b.z)/2,tx:dx/length,tz:dz/length,length,inward,bottom:Math.min(a.y,b.y),top:Math.max(a.y,b.y)+height};
@@ -27,6 +28,7 @@ export function trackBarriers(track){
   add(a,b,width,concreteWalls?1.05:.76,'track',n?{x:nx/n,z:nz/n}:null);
   const fa=concreteWalls||spa?{...a,y:a.y+(spa?.76:1.05)}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=concreteWalls||spa?{...b,y:b.y+(spa?.76:1.05)}:edge(track,next,side*(half+(track.urban?3.2:8)));add(fa,fb,.12,concreteWalls||spa?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
  }
+ if(jeddah)for(const block of jeddahTecproBlocks(track))add(block.a,block.b,block.width,block.height,'tecpro',block.inward);
  function wallPair(s,length,offset,width,height,kind){
   const p=roadPoint(track,s),tx=Math.sin(p.heading),tz=Math.cos(p.heading),rx=Math.cos(p.heading),rz=-Math.sin(p.heading);
   for(const side of [-1,1]){const x=p.x+rx*offset*side,z=p.z+rz*offset*side;add({x:x-tx*length/2,z:z-tz*length/2,y:p.y},{x:x+tx*length/2,z:z+tz*length/2,y:p.y},width,height,kind,{x:-rx*side,z:-rz*side});}

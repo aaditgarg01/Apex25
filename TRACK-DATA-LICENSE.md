@@ -64,3 +64,8 @@ photographs; no photographic textures are redistributed.
 ## Monaco coastline and city footprints
 
 `public/data/monaco-city.js` contains coastline, marina and building outlines from © OpenStreetMap contributors, retrieved 2026-10-14, under ODbL 1.0: https://www.openstreetmap.org/copyright . Source way/relation/node IDs are retained. Port Hercule: https://www.openstreetmap.org/relation/2221179 . Casino: https://www.openstreetmap.org/way/161769674 . Fairmont: https://www.openstreetmap.org/relation/2093796 . Derived render rings are clipped against the existing road for visual clearance, with the tunnel separately protected. Procedural facades, yachts, architecture/terrain details and event dressing are original artwork; no photographic textures are redistributed.
+
+
+## Jeddah Corniche coastline and landmark positions
+
+`public/data/jeddah-corniche.js` contains Red Sea shoreline coordinates and landmark reference positions from © OpenStreetMap contributors, retrieved 2026-10-14, under ODbL 1.0: https://www.openstreetmap.org/copyright . Source way IDs are retained. Al-Rahmah Floating Mosque (Island Mosque): https://www.openstreetmap.org/way/254891632 . Jeddah Yacht Club & Marina: https://www.openstreetmap.org/way/982415310 . Jeddah Tower: https://www.openstreetmap.org/way/402915628 . Procedural skyscrapers, beach resorts, wave-roofed grandstands, yachts, landscaping, floodlights, fireworks and sponsor/event dressing are original artistic approximations; no photographic textures are redistributed.

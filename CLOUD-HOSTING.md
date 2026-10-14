@@ -479,3 +479,18 @@ Monaco now uses a mapped Mediterranean coastline, Port Hercule shoreline and 210
 The harbor has reflective rippling water and 24 detailed superyachts with deck crowds, layered glazed cabins, teak decks and pools. Boat geometry is batched locally to retain gentle movement. Temporary harbor stands, mapped quay cranes, compressed marshal pockets, luxury sponsor wall decals and pedestrian bridges add event dressing. Dry lighting is clear midday with near-vertical sunlight; existing wet/intermediate weather remains supported. Reflection rendering is throttled and facade geometry is batched by material and location.
 
 The road mesh, centreline, elevations, barrier collision layout, original curved tunnel cover/walls and car model are unchanged. Buildings/coastline use attributed OpenStreetMap data; heights where missing, architectural detailing, skyline terrain, yachts and event dressing are procedural approximations, not scanned official-game assets. Syntax and undefined-variable checks passed. Gameplay and multiplayer testing were skipped as requested.
+
+## Jeddah Corniche night environment (2.16.0)
+
+Jeddah now features a dedicated Red Sea waterfront, northern Corniche lagoon and marina environment hugging the flat coastal strip. The northern Turn 13 loop is framed by a sculpted exterior banking embankment, coastal seawall revetment and animated whitewater surf. The horizon includes the tapered three-winged glass Jeddah Tower, 22 neon-lit coastal skyscrapers in blue, purple and gold, the over-water Al-Rahmah Floating Mosque on stilts with turquoise dome and minaret, the sail-roofed Jeddah Yacht Club, 12 superyachts and four coastal beach resort complexes.
+
+Manicured geometric green lawn islands with animated illuminated water fountains and uplighted date palms contrast against the pale desert sand and dark Red Sea. Runoff zones remain narrow and paved with Aramco green/blue street-circuit stripes and no gravel traps, lined by continuous smooth concrete retaining walls, heavy-duty black debris catch-fencing and corner Tecpro barrier stacks. Saudi Aramco, STC and Rolex branding, seven futuristic live-timing LED gantry arches, wave-roofed grandstands with Saudi flags, VIP hospitality terraces, synchronized fireworks, slender white camera poles, mobile recovery cranes and white-suited marshals with glowing LED vests complete the night-race atmosphere under paired LED floodlight gantries and six pooled point lights.
+
+The track mesh, centreline, elevations and car model are unchanged. Coastline and landmark anchors use attributed OpenStreetMap references; architectural detailing, skyline towers, yachts and event props are original procedural approximations.
+
+
+## Jeddah corrective release (2.16.1)
+
+The Jeddah terrain formula parses correctly, and visible Tecpro blocks now use the same shared positions, dimensions and collision faces in solo play, client prediction and server simulation. Marshal panels read the actual off-track/sliding state. Gantry lap numbers remain one-based and the displayed leader is selected by race progress. Pooled floodlights follow the viewing camera so illumination stays nearby in multiplayer. Required local filenames are restored; the Jeddah waterfront, night scenery and landmark work are retained.
+
+Static syntax, undefined-variable and module dependency checks were performed before deployment. Gameplay and test suites were skipped as requested.

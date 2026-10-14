@@ -112,6 +112,22 @@
     {
       "feature": "Fairmont hotel footprint above the tunnel",
       "url": "https://www.openstreetmap.org/relation/2093796"
+    },
+    {
+      "feature": "Jeddah Corniche Circuit coastal layout, banked Turn 13, marina and floodlit night setting",
+      "url": "https://saudiarabiangp.com/en/circuit"
+    },
+    {
+      "feature": "Al-Rahmah Floating Mosque (Island Mosque) footprint on the Red Sea waterfront",
+      "url": "https://www.openstreetmap.org/way/254891632"
+    },
+    {
+      "feature": "Jeddah Yacht Club & Marina footprint",
+      "url": "https://www.openstreetmap.org/way/982415310"
+    },
+    {
+      "feature": "Jeddah Tower skyscraper footprint",
+      "url": "https://www.openstreetmap.org/way/402915628"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
@@ -121,5 +137,6 @@
   "suzuka": "Mapped Circuit Wheel, main stand and pit positions; original procedural wheel, rides, tiered stands, hillside crowds, crossover structure, hills, gravel, trees and event props. Terrain between sampled track elevations, ride silhouettes and architectural detailing are artistic approximations; centreline, driving surface, car and physics are unchanged.",
   "bahrain": "Mapped Sakhir Tower, paddock and stand positions; procedural sail shades, LED bands, desert terrain, oasis gardens, blue/white wave runoff, regional branding and 495 visual floodlight poles. Six nearby pooled lights illuminate the scene; two cast shadows. Twilight fades to night over six minutes. Runoff walls share rendering/collision boundaries. Distant city/oilfield silhouettes, runoff decorations and architecture details are artistic approximations; track mesh and car are unchanged.",
   "spa": "Mapped Eau Rouge venue, pits, Endurance/Raidillon/F1/Silver stands. Original procedural pine forest, steep rolling terrain around the existing official elevation profile, rocky banks, chalet detailing, terraces, cranes, tractors, safety gates, LED panels, tyres and brand artwork. Shifting cloud sky and sunlight; occasional hillside smoke. Shared runoff envelope keeps visible guardrails and collision aligned. No track centreline, elevation or car changes. Terrain away from the track and building/forest/event details are artistic approximations.",
-  "monaco": "Mapped Mediterranean coastline, Port Hercule, 210 building outlines and hotel/Casino positions. Road-clear building render rings preserve the narrow streets; Fairmont retains overhead tunnel clearance. Procedural pastel facades, balconies, bougainvillea, Casino towers/clocks, superyachts with reflective rippling harbor water, water-supported stands, palms, cliffs, marshals and mapped quay cranes add detail. Clear midday sun; original track, elevations, hairpin, tunnel cover and car unchanged. Architectural detailing, terrain outside the road and event dressing remain artistic approximations."
+  "monaco": "Mapped Mediterranean coastline, Port Hercule, 210 building outlines and hotel/Casino positions. Road-clear building render rings preserve the narrow streets; Fairmont retains overhead tunnel clearance. Procedural pastel facades, balconies, bougainvillea, Casino towers/clocks, superyachts with reflective rippling harbor water, water-supported stands, palms, cliffs, marshals and mapped quay cranes add detail. Clear midday sun; original track, elevations, hairpin, tunnel cover and car unchanged. Architectural detailing, terrain outside the road and event dressing remain artistic approximations.",
+  "jeddah": "Mapped Red Sea Corniche shoreline, Al-Rahmah Floating Mosque (Island Mosque), Jeddah Yacht Club & Marina, and Jeddah Tower horizon anchor. Narrow street-circuit paved runoff without gravel traps shares concrete wall and black catch-fence boundaries between renderer and collision logic. Procedural banked Turn 13 coastal embankment with animated wave foam, neon-lit Corniche skyscrapers, beach resorts, superyachts, uplight palms, illuminated fountains, Tecpro corner blocks, Aramco/stc/Rolex branding, live LED gantry bridges, wave-roofed grandstands, Saudi flags, synchronized fireworks, white camera poles, recovery cranes, and white-suited marshals in LED vests. Track mesh and car model are unchanged."
 }
