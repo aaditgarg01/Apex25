@@ -55,3 +55,14 @@ export function safeSite(track,at,radius,side=1,extra=0,margin=12){
  throw new Error(`No clear scenery location for ${track.id}`);
 }
 export function venuePlan(track){const v=VENUES[track.id];return {...v,...safeSite(track,v.at,v.radius,track.id==='be-1925'?-1:1,0,45)};}
+
+// Rectangular buildings can stand closer to a straight than a bounding circle
+// permits. Check the entire envelope against every road branch before placing it.
+export function safeBoxSite(track,s,halfWidth,halfLength,side=1,margin=8){
+ for(let distance=track.width/2+halfWidth+margin;distance<1200;distance+=10){
+  const p=sample(track,s,side*distance),rx=Math.cos(p.heading),rz=-Math.sin(p.heading),fx=Math.sin(p.heading),fz=Math.cos(p.heading),pad=track.width/2+margin;let clear=true;
+  for(const q of track.points){const x=(q.x-p.x)*rx+(q.z-p.z)*rz,z=(q.x-p.x)*fx+(q.z-p.z)*fz;if(Math.abs(x)<halfWidth+pad&&Math.abs(z)<halfLength+pad){clear=false;break;}}
+  if(clear)return {...p,y:terrainHeight(track,p.x,p.z)};
+ }
+ return safeSite(track,s/track.length,Math.hypot(halfWidth,halfLength),side);
+}

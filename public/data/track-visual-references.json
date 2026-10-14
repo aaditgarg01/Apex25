@@ -1,0 +1,19 @@
+{
+  "scope": "Visual treatment across the existing 42 circuit layouts; scenery placement and many details are artistic approximations, not scanned official-game assets.",
+  "references": [
+    {
+      "feature": "Spa red/yellow kerbs",
+      "url": "https://www.spa-francorchamps.be/en/news/275_the-spa-francorchamps-track-is-decked-out-in-new-colours"
+    },
+    {
+      "feature": "Paul Ricard Blue Line red/blue runoff",
+      "url": "https://www.circuitpaulricard.com/fr/circuit/technologies-et-innovations"
+    },
+    {
+      "feature": "Circuit surface, kerbs and safety fencing context",
+      "url": "https://www.silverstone.co.uk/maintaining-race-track"
+    }
+  ],
+  "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
+  "date": "2026-10-14"
+}

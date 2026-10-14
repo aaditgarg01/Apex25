@@ -5,6 +5,8 @@ import {roadClearance} from '/shared/venues.mjs';
 import {batchBoxes} from './batching.js';
 
 const palettes={
+ urban:{wall:'#c3cbd0',trim:'#899ba5',glass:'#426473',roof:'#adb5b6'},
+ coastal:{wall:'#e4d6c4',trim:'#b99c84',glass:'#58716f',roof:'#b89379'},
  hostel:{wall:'#e5d7b5',trim:'#a88968',glass:'#405f67',roof:'#bcb8aa'},
  academic:{wall:'#e9dfc9',trim:'#b19771',glass:'#527480',roof:'#c5c1b4'},
  research:{wall:'#d5dfdf',trim:'#93a8ab',glass:'#326374',roof:'#adb9b9'},
@@ -19,7 +21,7 @@ function clearFootprint(track,points){
  for(const p of track.points){if(p.x<minX||p.x>maxX||p.z<minZ||p.z>maxZ)continue;if(inside(points,p.x,p.z)||edgeDistance(points,p.x,p.z)<pad)return false;}
  return true;
 }
-function facade(kind){
+export function buildingFacade(kind){
  const p=palettes[kind],c=document.createElement('canvas');c.width=256;c.height=256;const x=c.getContext('2d');
  x.fillStyle=p.wall;x.fillRect(0,0,256,256);
  // One repeated floor and window bay, measured in metres by the wall UVs.
@@ -66,8 +68,8 @@ export class CampusBuildings{
   const points=raw.map(([x,z])=>[cx*scale+x-cx,cz*scale+z-cz]);if(!clearFootprint(this.track,points))return false;
   const area=Math.abs(points.reduce((s,p,i)=>s+p[0]*points[(i+1)%points.length][1]-points[(i+1)%points.length][0]*p[1],0))/2;
   const name=(f.name||'').replace(/^Perl Research Park$/i,'Pearl Research Park'),lower=name.toLowerCase(),north=this.track.origin.lat-cz/111320>12.97235;
-  const kind=/research|pe[ar]*l/.test(lower)?'research':/auditorium|stadium/.test(lower)?'auditorium':/food|bakery|bites|store|laundry|plaza/.test(lower)||['retail','kiosk'].includes(f.buildingType)?'shop':f.buildingType==='dormitory'||north&&area>450?'hostel':'academic';
-  if(!this.styles.has(kind))this.styles.set(kind,{walls:facade(kind),roof:new THREE.MeshStandardMaterial({color:palettes[kind].roof,roughness:.9})});
+  const kind=this.track.campus?(/research|pe[ar]*l/.test(lower)?'research':/auditorium|stadium/.test(lower)?'auditorium':/food|bakery|bites|store|laundry|plaza/.test(lower)||['retail','kiosk'].includes(f.buildingType)?'shop':f.buildingType==='dormitory'||north&&area>450?'hostel':'academic'):(this.scene.appearance?.theme==='coast'?'coastal':'urban');
+  if(!this.styles.has(kind))this.styles.set(kind,{walls:buildingFacade(kind),roof:new THREE.MeshStandardMaterial({color:palettes[kind].roof,roughness:.9})});
   const style=this.styles.get(kind),height=Math.max(3.4,f.heightEstimated&&kind==='shop'?4.2:f.heightEstimated&&kind==='hostel'?Math.max(f.height,20.4):f.height),y=terrainHeight(this.track,cx*scale,cz*scale)-.3;
   const shape=new THREE.Shape();points.forEach(([x,z],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));shape.closePath();
   const body=new THREE.Mesh(sideGeometry(shape,height),style.walls);body.rotation.x=-Math.PI/2;body.position.y=y;body.userData.mappedStatic=true;body.castShadow=true;body.receiveShadow=true;this.group.add(body);

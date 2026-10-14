@@ -1,5 +1,7 @@
 import * as THREE from '/vendor/three.module.js';
 import {venuePlan,safeSite,VENUES} from '/shared/venues.mjs';
+import {addFacadePanels} from './track-furniture.js';
+import {buildingFacade} from './campus-buildings.js';
 const mat=(color,extra={})=>new THREE.MeshStandardMaterial({color,roughness:.78,...extra});
 export function addLandmarks(scene,track){
  const p=venuePlan(track),g=new THREE.Group();g.name=p.name;g.userData.landmark={...p};g.position.set(p.x,p.y,p.z);g.rotation.y=p.heading;scene.group.add(g);
@@ -75,11 +77,12 @@ export function addLandmarks(scene,track){
 }
 function addLandscape(scene,track,v){
  const cities=['city','skyline','neon','marina'],hills=['alpine','forest','hills','tuscany','mediterranean','savanna','dunes'];
+ const facade=cities.includes(v.theme)?buildingFacade('urban'):null;
  // A few clusters on both sides give the whole lap a sense of place.
  for(let i=0;i<10;i++){
   const radius=cities.includes(v.theme)?58:100,p=safeSite(track,(i+.35)/10,radius,i%2?1:-1,100),g=new THREE.Group();g.position.set(p.x,p.y,p.z);scene.group.add(g);
   if(cities.includes(v.theme))for(let j=0;j<5;j++){
-   const h=18+Math.abs(Math.sin(i*8+j*3))*76,x=(j-2)*19,z=Math.sin(j*2)*24,c=['#687c88','#89989c','#a5b2b0'][j%3];scene.box(16,h,20,c,x,h/2,z,g);
+   const h=18+Math.abs(Math.sin(i*8+j*3))*76,x=(j-2)*19,z=Math.sin(j*2)*24,c=['#687c88','#89989c','#a5b2b0'][j%3];const tower=new THREE.Group();tower.position.set(x,0,z);g.add(tower);scene.box(16,h,20,c,0,h/2,0,tower);addFacadePanels(tower,16,h,20,facade);
    for(let y=5;y<h;y+=9)scene.box(16.2,.6,20.2,v.theme==='neon'?['#d97cd5','#54c9d3','#e2b755'][j%3]:'#c4c4a4',x,y,z,g);
   }
   else if(hills.includes(v.theme)||v.theme==='desert'){

@@ -295,3 +295,31 @@ and hostel/PRP pages are listed in the source credits. Placement checks the whol
 footprint against the road, while windows and static details share materials and
 are batched to limit rendering cost. Gameplay tests were omitted at the user's
 request. All players should refresh.
+
+
+## Circuit visual overhaul (2.9.0)
+
+Added textured asphalt, painted kerbs, gravel, grass and ribbed Armco materials
+across all 42 circuits. Kerbs and runoff accents concentrate around bends, with
+subtle tyre rubber along the driving line. Spa retains red/yellow kerbs and Paul
+Ricard has red/blue runoff accents; environment palettes follow each circuit's
+parkland, forest, desert, coastal or city setting. Wire catch fencing now follows
+the same geometry as its existing collision boundaries.
+
+Day/night sky gradients, cloud haze and cached environment lighting improve
+reflections, especially in intermediate and wet conditions. Shadows have more
+local detail without increasing shadow-map resolution. The chase camera sits
+lower, while the existing cockpit and overhead modes remain available.
+
+Pit buildings sit closer to suitable straights using a rectangular placement
+check against all road branches. Garage fronts show team colours and labels;
+braking boards display 150/100/50 near substantial bends. Street circuits gain
+windowed frontage buildings, skyline blocks have facade panels, and existing
+mapped buildings use detailed facades and roof features. Vegetation is rounded
+and casts shadows. Procedural textures are shared and static details are batched.
+
+Track centreline geometry, elevations, car physics and multiplayer simulation
+are unchanged. These are artistic visual representations rather than 1:1 scanned
+replicas of the official game. Primary references are listed in
+public/data/track-visual-references.json. Gameplay tests were omitted at the user's
+request. All players should refresh.
