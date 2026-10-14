@@ -20,6 +20,9 @@ function noiseTexture(kind){
   for(let i=0;i<2600;i++){const px=random()*256,py=random()*256;x.strokeStyle=i%2?'rgba(78,84,63,.12)':'rgba(255,253,209,.14)';x.lineWidth=.5;x.beginPath();x.moveTo(px,py);x.lineTo(px+random()*3-1.5,py-2-random()*3);x.stroke();}
  }else if(kind==='armco'){
   for(let y=0;y<256;y+=85){const g=x.createLinearGradient(0,y,0,y+85);g.addColorStop(0,'rgba(255,255,255,.25)');g.addColorStop(.3,'rgba(0,0,0,.20)');g.addColorStop(.7,'rgba(255,255,255,.32)');g.addColorStop(1,'rgba(0,0,0,.16)');x.fillStyle=g;x.fillRect(0,y,256,85);}
+ }else if(kind==='concrete'){
+  for(let i=0;i<1200;i++){x.fillStyle=i%3?'rgba(68,70,65,.13)':'rgba(245,243,226,.18)';x.fillRect(random()*256,random()*256,1+random()*2,1+random()*2);}
+  x.fillStyle='rgba(57,64,61,.20)';x.fillRect(0,0,2,256);
  }else if(kind==='paint'){
   for(let i=0;i<600;i++){x.fillStyle='rgba(110,107,94,.18)';x.fillRect(random()*256,random()*256,1+random()*3,random()*2);}
  }
@@ -99,18 +102,21 @@ export class TrackSurfaces{
   const material=new THREE.MeshStandardMaterial({color:'#171b1c',map:this.texture('asphalt'),transparent:true,opacity:.17,roughness:.66,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,side:THREE.DoubleSide});material.userData.surfaceKind='rubber';
   const mesh=new THREE.Mesh(geometry,material);mesh.receiveShadow=true;this.scene.group.add(mesh);
  }
- fence(walls){
+ fence(walls,color='#b6bebd'){
   if(!walls.length)return;const positions=[],uv=[];let distance=0;
   for(const w of walls){const a=w.a,b=w.b,h=w.height,len=Math.hypot(b.x-a.x,b.z-a.z),u=distance/.6,v=(distance+len)/.6;distance+=len;
    for(const [p,t,y] of [[a,u,0],[b,v,0],[b,v,h],[a,u,0],[b,v,h],[a,u,h]]){positions.push(p.x,p.y+y,p.z);uv.push(t,y/.6);}
   }
-  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,this.material('fence','#b6bebd'));mesh.receiveShadow=true;this.scene.group.add(mesh);
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,this.material('fence',color));mesh.receiveShadow=true;this.scene.group.add(mesh);
  }
  wet(wetness){
   for(const m of this.materials.values()){
    const kind=m.userData.surfaceKind;
    if(kind==='asphalt'){const coat=wetness*.72;if((m.clearcoat>0)!==(coat>0))m.needsUpdate=true;m.roughness=.86-wetness*.57;m.clearcoat=coat;m.bumpScale=.018-wetness*.01;m.color.set(wetness?'#939b9f':'#ffffff');}
-   else if(kind==='paint'){m.roughness=.9-wetness*.36;}
+   else if(kind==='concrete'){
+  for(let i=0;i<1200;i++){x.fillStyle=i%3?'rgba(68,70,65,.13)':'rgba(245,243,226,.18)';x.fillRect(random()*256,random()*256,1+random()*2,1+random()*2);}
+  x.fillStyle='rgba(57,64,61,.20)';x.fillRect(0,0,2,256);
+ }else if(kind==='paint'){m.roughness=.9-wetness*.36;}
   }
  }
  dispose(){for(const t of this.textures.values())t.dispose();this.textures.clear();this.materials.clear();}

@@ -21,3 +21,12 @@ SOFTWARE.
 ## Revised Buenos Aires centerline
 
 The `ar-1952` feature in `public/data/circuits.geojson` and `public/data/historic-layouts.geojson` is derived from © OpenStreetMap contributors and licensed under the Open Database License 1.0: https://www.openstreetmap.org/copyright . Its way IDs and source are recorded in its properties. Other original circuit features retain the MIT license above; Buddh and mapped scenery retain their existing ODbL attribution.
+
+
+## Albert Park lake shoreline
+
+`public/data/albert-park-lake.js` contains the lake outline and island rings from
+OpenStreetMap relation 346429, retrieved 2026-10-14. © OpenStreetMap contributors,
+licensed under ODbL 1.0: https://www.openstreetmap.org/copyright .
+Source: https://www.openstreetmap.org/relation/346429 .
+The lake data is separate from the original circuit centreline.

@@ -12,8 +12,25 @@
     {
       "feature": "Circuit surface, kerbs and safety fencing context",
       "url": "https://www.silverstone.co.uk/maintaining-race-track"
+    },
+    {
+      "feature": "Albert Park lake, city views and parkland context",
+      "url": "https://www.parks.vic.gov.au/places-to-see/parks/albert-park"
+    },
+    {
+      "feature": "Albert Park Palms Lawn",
+      "url": "https://www.parks.vic.gov.au/places-to-see/sites/palms-lawn"
+    },
+    {
+      "feature": "Jones grandstand at Turn 1; reference rather than exact event placement",
+      "url": "https://www.grandprix.com.au/shop/products/jones-grandstand"
+    },
+    {
+      "feature": "Lake shoreline and island geometry",
+      "url": "https://www.openstreetmap.org/relation/346429"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
-  "date": "2026-10-14"
+  "date": "2026-10-14",
+  "albertPark": "Mapped lake and islands; approximate Melbourne skyline silhouettes and event dressing, with golden-hour lighting per the user brief. Tree species are represented by generic broadleaf and palm artwork."
 }

@@ -37,10 +37,10 @@ function palmGeometry(){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();return g;
 }
-export function addVegetation(scene,track,profile){
- const palms=profile.tropical||profile.desert,spacing=track.campus?38:profile.forest?24:profile.desert?165:55;
- const sites=[];
- for(let s=0;s<track.length;s+=spacing)for(const side of [-1,1]){
+export function addVegetation(scene,track,profile,options={}){
+ const palms=options.palms??(profile.tropical||profile.desert),spacing=track.campus?38:profile.forest?24:profile.desert?165:55;
+ const sites=options.sites||[];
+ if(!options.sites)for(let s=0;s<track.length;s+=spacing)for(const side of [-1,1]){
   const distance=track.width/2+(track.campus?17:25)+Math.abs(Math.sin(s*.017))*(track.campus?12:60),p=sample(track,s,side*distance);
   if(roadClearance(track,p.x,p.z)<(track.campus?6:12))continue;
   sites.push({...p,y:terrainHeight(track,p.x,p.z),scale:.78+Math.abs(Math.sin(s*1.91))*.55,angle:s*.13});

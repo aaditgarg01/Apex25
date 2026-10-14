@@ -347,3 +347,36 @@ Layouts, elevations, vehicle physics and multiplayer messages are unchanged.
 The scenery remains an artistic approximation rather than scanned official-game
 assets. Syntax checks were run; gameplay and test suites were omitted at the
 user's request. Refresh all clients to receive the visual update.
+
+
+## Albert Park environment (2.10.0)
+
+Albert Park has a dedicated environment instead of the generic lake/palm set.
+Its lake shoreline and three island rings use OpenStreetMap relation 346429,
+with a calm blue-gray water shader and reflected trees, sky and structures.
+Reflections render to a 512px target without MSAA, at most once per 140ms when
+visible; graphics pressure increases that interval to 350ms. The reflection
+pass reuses existing shadows. Targets are disposed when changing circuits.
+
+Broad level park lawns blend into the existing road heights and low shoreline
+banks. Dense instanced broadleaf trees and scattered mature palms frame the
+lap, with tree exclusions around event structures and water. Melbourne-inspired
+glass tower silhouettes sit north of the park. Low western golden-hour sunlight,
+a warm horizon and longer local shadows apply only to this circuit; intermediate
+and wet settings retain overcast weather and subdued sunlight.
+
+Added six scaffold grandstands with 5,292 seated spectators and waving coloured
+flags, sponsor-colour Rolex/Pirelli/MSC word boards, three truss bridges, white
+hospitality tents, TV cranes, orange marshals and green/yellow LED panels. Panels
+show local off-track/sliding incidents; they are decorative status indicators,
+not a full FIA flag-rule simulation. Four-deep covered tyre stacks sit outside
+the existing driving boundaries. Concrete walls and dark catch fencing share
+the same physical endpoints; Melbourne's fence now starts on top of its 1.05m
+concrete wall rather than on a separate grass-side offset.
+
+The track centreline/mesh and car model are unchanged. Buildings, vegetation
+and event locations are artistic approximations, not scanned official-game
+assets or surveyed event placements. Lake data is credited in the data license;
+Three.js's Reflector and its MIT license are included and copied during builds.
+Syntax checks were run. Gameplay testing and test suites were omitted at the
+user's request. Refresh all clients before racing together.
