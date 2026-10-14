@@ -113,10 +113,8 @@ export class TrackSurfaces{
   for(const m of this.materials.values()){
    const kind=m.userData.surfaceKind;
    if(kind==='asphalt'){const coat=wetness*.72;if((m.clearcoat>0)!==(coat>0))m.needsUpdate=true;m.roughness=.86-wetness*.57;m.clearcoat=coat;m.bumpScale=.018-wetness*.01;m.color.set(wetness?'#939b9f':'#ffffff');}
-   else if(kind==='concrete'){
-  for(let i=0;i<1200;i++){x.fillStyle=i%3?'rgba(68,70,65,.13)':'rgba(245,243,226,.18)';x.fillRect(random()*256,random()*256,1+random()*2,1+random()*2);}
-  x.fillStyle='rgba(57,64,61,.20)';x.fillRect(0,0,2,256);
- }else if(kind==='paint'){m.roughness=.9-wetness*.36;}
+   else if(kind==='concrete'){m.roughness=.92-wetness*.18;}
+   else if(kind==='paint'){m.roughness=.9-wetness*.36;}
   }
  }
  dispose(){for(const t of this.textures.values())t.dispose();this.textures.clear();this.materials.clear();}

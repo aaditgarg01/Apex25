@@ -380,3 +380,16 @@ assets or surveyed event placements. Lake data is credited in the data license;
 Three.js's Reflector and its MIT license are included and copied during builds.
 Syntax checks were run. Gameplay testing and test suites were omitted at the
 user's request. Refresh all clients before racing together.
+
+
+## Albert Park startup correction (2.10.1)
+
+Removed an accidentally duplicated concrete texture-generation block from the
+weather material update. That block referenced canvas-local `x` and `random`
+variables and stopped Albert Park from loading, even in dry conditions. Texture
+generation remains in its original canvas function; concrete weather updates
+now only adjust material roughness. Startup messages suggest enabling WebGL
+only when the error actually mentions the graphics context.
+
+Syntax/source checks were completed. Gameplay testing was omitted per the
+user's preference. Refresh to load the corrected client.
