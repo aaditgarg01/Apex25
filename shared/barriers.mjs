@@ -1,3 +1,4 @@
+import {shanghaiBoundaryOffset} from './shanghai.mjs';
 import {ribbonOffset} from './surface.mjs';
 import {campusLocal} from './campus.mjs';
 import {campusTunnelLayout} from './campus-geometry.mjs';
@@ -7,7 +8,7 @@ function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor
 function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,offset);return {x:p.x+Math.cos(p.heading)*o,z:p.z-Math.sin(p.heading)*o,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
- const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953';
+ const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',concreteWalls=melbourne||shanghai;
  function add(a,b,width,height,kind,inward=null){
   const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);if(length<.01)return;
   const wall={a,b,width,height,kind,x:(a.x+b.x)/2,z:(a.z+b.z)/2,tx:dx/length,tz:dz/length,length,inward,bottom:Math.min(a.y,b.y),top:Math.max(a.y,b.y)+height};
@@ -17,12 +18,12 @@ export function trackBarriers(track){
  // Campus streets have open verges. Their only solid walls come from the actual
  // subway retaining walls, portal pillars and roundabout island below.
  if(!track.campus)for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
-  const next=(i+1)%track.points.length,inner=half+(track.id==='mc-1929'?.35:6.5),outer=half+(track.id==='mc-1929'?.8:7.2);
-  const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*inner),bo=edge(track,next,side*outer),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
+  const next=(i+1)%track.points.length,inner=shanghai?shanghaiBoundaryOffset(track,i,side)-.35:half+(track.id==='mc-1929'?.35:6.5),outer=shanghai?shanghaiBoundaryOffset(track,i,side)+.35:half+(track.id==='mc-1929'?.8:7.2);
+  const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*(shanghai?shanghaiBoundaryOffset(track,next,side)-.35:inner)),bo=edge(track,next,side*(shanghai?shanghaiBoundaryOffset(track,next,side)+.35:outer)),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
   const cx=(track.points[i].x+track.points[next].x)/2,cz=(track.points[i].z+track.points[next].z)/2,nx=cx-(a.x+b.x)/2,nz=cz-(a.z+b.z)/2,n=Math.hypot(nx,nz);
   const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2);
-  add(a,b,width,melbourne?1.05:.76,'track',n?{x:nx/n,z:nz/n}:null);
-  const fa=melbourne?{...a,y:a.y+1.05}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=melbourne?{...b,y:b.y+1.05}:edge(track,next,side*(half+(track.urban?3.2:8)));add(fa,fb,.12,melbourne?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
+  add(a,b,width,concreteWalls?1.05:.76,'track',n?{x:nx/n,z:nz/n}:null);
+  const fa=concreteWalls?{...a,y:a.y+1.05}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=concreteWalls?{...b,y:b.y+1.05}:edge(track,next,side*(half+(track.urban?3.2:8)));add(fa,fb,.12,concreteWalls?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
  }
  function wallPair(s,length,offset,width,height,kind){
   const p=roadPoint(track,s),tx=Math.sin(p.heading),tz=Math.cos(p.heading),rx=Math.cos(p.heading),rz=-Math.sin(p.heading);

@@ -28,9 +28,18 @@
     {
       "feature": "Lake shoreline and island geometry",
       "url": "https://www.openstreetmap.org/relation/346429"
+    },
+    {
+      "feature": "Shanghai circuit architecture, main grandstand and pit complex",
+      "url": "https://www.tilkeandpartners.com/shanghaicircuit.php"
+    },
+    {
+      "feature": "Shanghai circuit setting, long back straight and stadium corner context",
+      "url": "https://www.formula1.com/en/information/china-shanghai-international-circuit-shanghai.7ESK3ZQ5DHqihx3DpPZKWL"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
   "date": "2026-10-14",
-  "albertPark": "Mapped lake and islands; approximate Melbourne skyline silhouettes and event dressing, with golden-hour lighting per the user brief. Tree species are represented by generic broadleaf and palm artwork."
+  "albertPark": "Mapped lake and islands; approximate Melbourne skyline silhouettes and event dressing, with golden-hour lighting per the user brief. Tree species are represented by generic broadleaf and palm artwork.",
+  "shanghai": "Dedicated procedural environment following the user brief. Architectural shapes, ponds, access roads and event dressing are approximate artistic representations rather than surveyed footprints or scanned game assets."
 }

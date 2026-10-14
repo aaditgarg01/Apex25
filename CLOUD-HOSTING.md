@@ -393,3 +393,35 @@ only when the error actually mentions the graphics context.
 
 Syntax/source checks were completed. Gameplay testing was omitted per the
 user's preference. Refresh to load the corrected client.
+
+
+## Shanghai industrial circuit environment (2.11.0)
+
+Shanghai replaces its generic landmark/park scenery with a dedicated environment:
+twin colossal curved red canopies at the main straight, a pit/control complex,
+two elevated circular glass pavilions, four grass spectator banks and 8,376
+instanced spectators with waving flags. Small matching decorative trees and
+low hedges line the perimeter; no dense forest or palm scenery is added here.
+Broad level lawns blend into the preserved road elevations, with stone-edged
+retention ponds, rippled water, service buildings and sweeping access roads.
+
+Outside-corner runoff uses sharp asphalt/red/white/black bands. A shared cached
+planner expands suitable outer boundaries by up to 25m, limits them against
+neighboring road branches, and smooths the transitions. White concrete walls
+and high dark fencing use that same plan on the server and in the renderer.
+The racing track mesh, centreline, car model and driving-control code are
+unchanged; the physical outer wall/fence positions reflect the expanded runoff.
+
+Lenovo/Pirelli/Aramco word boards, large illuminated sponsor displays, three
+live timing screens, incident-responsive LED flag panels, white security camera
+poles, neon-orange marshals, TV towers and overhead camera wires dress the venue.
+Timing displays update at most once per second. Props are kept behind driving
+boundaries; static geometry is batched and crowds/trees use instancing.
+
+Pale blue-gray atmospheric haze and a diffused white sun create cooler,
+lower-contrast afternoon lighting. Intermediate/wet weather still applies.
+Models and prop locations are artistic approximations of the supplied brief,
+not surveyed replicas of Shanghai architecture. Architectural and circuit
+references are listed in public/data/track-visual-references.json.
+Syntax and undefined-variable source checks were completed. Gameplay testing
+and test suites were omitted at the user's request. Refresh all clients.
