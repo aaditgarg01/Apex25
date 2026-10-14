@@ -521,3 +521,9 @@ The track mesh, centreline, elevations and car model are unchanged. Coastline an
 The Jeddah terrain formula parses correctly, and visible Tecpro blocks now use the same shared positions, dimensions and collision faces in solo play, client prediction and server simulation. Marshal panels read the actual off-track/sliding state. Gantry lap numbers remain one-based and the displayed leader is selected by race progress. Pooled floodlights follow the viewing camera so illumination stays nearby in multiplayer. Required local filenames are restored; the Jeddah waterfront, night scenery and landmark work are retained.
 
 Static syntax, undefined-variable and module dependency checks were performed before deployment. Gameplay and test suites were skipped as requested.
+
+## Jeddah decoration clearance (2.16.2)
+
+Jeddah scenery placement checks complete model footprints against every continuous road branch. Grandstands, pit buildings, hospitality roofs, resorts and pools, marina piers, yachts, camera equipment, cranes, marshal shelters, lawn fountains and distance boards move clear of the road. Shoreline walls are built as short sections and omitted where they would cross the driving corridor; rocks and animated foam also respect the road clearance. Sponsor gantries retain overhead spans while their support feet remain outside all road branches.
+
+The existing road, layout, racing line, driving physics and shared Tecpro collisions are preserved. Static syntax, undefined-variable and import checks passed; gameplay tests were skipped as requested.

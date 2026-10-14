@@ -1,5 +1,6 @@
 import * as THREE from '/vendor/three.module.js';
 import {Reflector} from '/vendor/Reflector.js';
+import {footprintClear,placeDecoration,disposeRejectedDecorations} from './jeddah-clearance.js';
 import {JEDDAH_CORNICHE} from './data/jeddah-corniche.js';
 import {jeddahBoundaryOffset,jeddahTecproBlocks,JEDDAH_TECPRO} from '/shared/jeddah.mjs';
 import {sample,wrap,angleDiff} from '/shared/tracks.mjs';
@@ -45,6 +46,8 @@ export function jeddahTerrainHeight(track,x,z,cell=0){
 function mesh(parent,geo,mat,x=0,y=0,z=0,staticGeometry=true){const o=new THREE.Mesh(geo,mat);o.position.set(x,y,z);o.receiveShadow=true;o.castShadow=staticGeometry;o.userData.mappedStatic=staticGeometry;parent.add(o);return o;}
 function group(scene,p,h=0){const g=new THREE.Group();g.position.set(p.x,p.y,p.z);g.rotation.y=h;scene.group.add(g);return g;}
 function safeGroundClear(track,x,z,minClearance=11.5){return roadClearance(track,x,z)>=minClearance;}
+function bounds(minX,maxX,minZ,maxZ){return new THREE.Box3(new THREE.Vector3(minX,0,minZ),new THREE.Vector3(maxX,0,maxZ));}
+function protect(scene,track,object,options={}){return placeDecoration(scene,track,object,(x,z)=>jeddahTerrainHeight(track,x,z),{accept:(x,z)=>!waterAt(track,x,z),...options});}
 
 function addRedSeaWaterfront(scene,track,p){
  const shape=new THREE.Shape();p.sea.forEach((q,i)=>i?shape.lineTo(q.x,-q.z):shape.moveTo(q.x,-q.z));shape.closePath();
@@ -89,14 +92,22 @@ function addRedSeaWaterfront(scene,track,p){
  const wallMat=material('#cfc7b4',{roughness:.72}),rockMat=material('#4a5258',{roughness:.92}),foamMat=basic('#d8f3ff',{transparent:true,opacity:.72}),foamMeshes=[];
  for(let i=1;i<p.sea.length-2;i++){
   const a=p.sea[i],b=p.sea[i+1],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);if(len<1)continue;
-  const mx=(a.x+b.x)/2,mz=(a.z+b.z)/2,ang=Math.atan2(dx,dz);
-  const w=scene.box(3.4,1.65,len+1.5,'#cfc7b4',mx,p.level+.15,mz);w.rotation.y=ang;
-  const cope=scene.box(3.9,.28,len+1.6,'#e8e2d2',mx,p.level+1.02,mz);cope.rotation.y=ang;
+  const ang=Math.atan2(dx,dz),chunks=Math.ceil(len/10),chunkLength=len/chunks;
+  // Cut the shoreline into short sections; omit sections that cross a road.
+  for(let part=0;part<chunks;part++){
+   const t=(part+.5)/chunks,q={x:a.x+dx*t,z:a.z+dz*t};
+   if(!footprintClear(track,q,ang,bounds(-1.95,1.95,-chunkLength/2-.8,chunkLength/2+.8)))continue;
+   scene.box(3.4,1.65,chunkLength+.35,'#cfc7b4',q.x,p.level+.15,q.z).rotation.y=ang;
+   scene.box(3.9,.28,chunkLength+.4,'#e8e2d2',q.x,p.level+1.02,q.z).rotation.y=ang;
+  }
   const steps=Math.max(2,Math.floor(len/18));
   for(let k=0;k<steps;k++){
    const t=(k+.5)/steps,rx=a.x+dx*t-2.4,rz=a.z+dz*t;
-   const boulder=mesh(scene.group,new THREE.DodecahedronGeometry(1.35+(k%3)*.35,0),rockMat,rx,p.level-.05,rz);boulder.rotation.set(k*.7,k*1.1,k*.4);
-   if(k%2===0){
+   const radius=1.35+(k%3)*.35;
+   if(safeGroundClear(track,rx,rz,10+radius)){
+    const boulder=mesh(scene.group,new THREE.DodecahedronGeometry(radius,0),rockMat,rx,p.level-.05,rz);boulder.rotation.set(k*.7,k*1.1,k*.4);
+   }
+   if(k%2===0&&footprintClear(track,{x:rx-2.2,z:rz},ang,bounds(-3.25,3.25,-9,9))){
     const foam=new THREE.Mesh(new THREE.PlaneGeometry(4.2,Math.min(18,len/steps*1.5)),foamMat);
     foam.rotation.x=-Math.PI/2;foam.rotation.z=-ang;foam.position.set(rx-2.2,p.level-.12,rz);
     foam.userData={noMirror:true,baseX:rx-2.2,phase:i*1.3+k*.8};scene.group.add(foam);foamMeshes.push(foam);
@@ -106,9 +117,10 @@ function addRedSeaWaterfront(scene,track,p){
  // Crashing wave spray & illuminated coastal seawall Curve hugging banked Turn 13 (s=2290..2595m).
  for(let s=2290;s<=2595;s+=14){
   const q=sample(track,s,-(track.width/2+15.5));
-  if(!safeGroundClear(track,q.x,q.z,12.5))continue;
+  if(!footprintClear(track,q,q.heading,bounds(-1.1,1.1,-6.25,6.25)))continue;
   scene.box(2.2,1.2,12.5,'#d8d2c2',q.x,p.level+.38,q.z).rotation.y=q.heading;
   const strip=mesh(scene.group,new THREE.BoxGeometry(.35,.22,11.8),basic('#00d8ff'),q.x,p.level+.95,q.z);strip.rotation.y=q.heading;
+  if(!footprintClear(track,{x:q.x-4.2,z:q.z},q.heading,bounds(-3.9,3.9,-6.25,6.25)))continue;
   const crest=new THREE.Mesh(new THREE.PlaneGeometry(5.5,12.5),foamMat);
   crest.rotation.x=-Math.PI/2;crest.rotation.z=-q.heading;crest.position.set(q.x-4.2,p.level-.1,q.z);
   crest.userData={noMirror:true,baseX:q.x-4.2,phase:s*.04};scene.group.add(crest);foamMeshes.push(crest);
@@ -169,7 +181,8 @@ function addSponsorWallBranding(scene,track){
   for(const side of [-1,1]){
    if((k+(side>0?1:0))%2!==0)continue;
    const idx=Math.floor(wrap(s,track.length)/track.step),offset=side*(jeddahBoundaryOffset(track,idx,side)-.28);
-   const p=sample(track,s,offset);
+   const p=sample(track,s,ribbonOffset(track,idx,offset));
+   if(!footprintClear(track,p,p.heading,bounds(-.06,.06,-3.8,3.8),.3))continue;
    const o=new THREE.Mesh(boardGeo,textures[(k+(side>0?2:0))%textures.length]);
    o.position.set(p.x,p.y+.54,p.z);o.rotation.y=p.heading;o.userData.mappedStatic=true;scene.group.add(o);
   }
@@ -190,7 +203,13 @@ function addSponsorGantriesAndDisplays(scene,track){
  const screens=[];
  for(const b of bridges){
   const p=sample(track,b.s),idx=Math.floor(wrap(b.s,track.length)/track.step);
-  const span=Math.max(track.width+14,(jeddahBoundaryOffset(track,idx,-1)+jeddahBoundaryOffset(track,idx,1))+4.5);
+  let span=Math.max(track.width+14,(jeddahBoundaryOffset(track,idx,-1)+jeddahBoundaryOffset(track,idx,1))+4.5),supportsClear=false;
+  // Only the overhead beam spans the road; both support feet must clear every branch.
+  for(;span<180;span+=6){
+   supportsClear=[-1,1].every(side=>{const x=side*(span/2+1.2);return footprintClear(track,p,p.heading,bounds(x-.75,x+.75,-1,1),5);});
+   if(supportsClear)break;
+  }
+  if(!supportsClear)continue;
   const g=group(scene,p,p.heading);
   for(const side of [-1,1]){
    const x=side*(span/2+1.2);
@@ -220,7 +239,9 @@ function addFloodlights(scene,track){
  for(let s=0;s<track.length;s+=step){
   const idx=Math.floor(wrap(s,track.length)/track.step);
   for(const side of [-1,1]){
-   const wall=jeddahBoundaryOffset(track,idx,side)+1.65,p=sample(track,s,side*wall);
+   let wall=jeddahBoundaryOffset(track,idx,side)+1.65,p=sample(track,s,side*wall);
+   for(let extra=0;extra<120&&!footprintClear(track,p,p.heading,bounds(-.3,.3,-.3,.3),5);extra+=4){wall+=4;p=sample(track,s,side*wall);}
+   if(!footprintClear(track,p,p.heading,bounds(-.3,.3,-.3,.3),5))continue;
    dummy.position.set(p.x,p.y+9.25,p.z);dummy.rotation.set(0,p.heading,0);dummy.scale.set(1,1,1);dummy.updateMatrix();poles.setMatrixAt(count,dummy.matrix);
    const armP=sample(track,s,side*(wall-1.6));
    dummy.position.set(armP.x,p.y+18.2,armP.z);dummy.rotation.set(0,p.heading+(side>0?0:Math.PI),0);dummy.updateMatrix();arms.setMatrixAt(count,dummy.matrix);
@@ -262,6 +283,7 @@ function addGrandstandsAndHospitality(scene,track,p){
     scene.box(.14,3.4,7.2,team.side,-f.width/2+1.02,1.8,z,g);
     mesh(g,new THREE.BoxGeometry(.16,.24,7.2),basic(team.accent),-f.width/2+.95,3.65,z);
    }
+   protect(scene,track,g,{s:f.s,side:f.side,followTrack:true});
    continue;
   }
   if(f.kind==='hospitality'){
@@ -277,6 +299,7 @@ function addGrandstandsAndHospitality(scene,track,p){
     const sail=mesh(g,new THREE.ConeGeometry(8.5,5.2,4),material('#faf8f2',{roughness:.45}),0,13.6,k*(f.length/5.5));
     sail.scale.set(1.15,1,1.65);sail.rotation.y=Math.PI/4;
    }
+   protect(scene,track,g,{s:f.s,side:f.side,followTrack:true});
    continue;
   }
   // Futuristic grandstands with sweeping, wave-like fabric roofs & packed energetic crowds waving Saudi flags.
@@ -308,6 +331,7 @@ function addGrandstandsAndHospitality(scene,track,p){
    idx++;
   }
   bodies.computeBoundingSphere();heads.computeBoundingSphere();g.add(bodies,heads);
+  protect(scene,track,g,{s:f.s,side:f.side,followTrack:true});
  }
  return flags;
 }
@@ -336,6 +360,7 @@ function addLandmarksAndHorizon(scene,track,p){
  mesh(mGroup,new THREE.TorusGeometry(1.3,.18,8,18,Math.PI*1.45),basic('#ffd54f'),p.mosque.radius-4,p.mosque.minaretHeight+2.2,-p.mosque.radius+4);
  // Causeway connecting Island Mosque to Corniche promenade
  scene.box(42,1.1,7.5,'#e8e2d2',26,.4,0,mGroup);
+ protect(scene,track,mGroup,{accept:()=>true});
 
  // 2. Jeddah Yacht Club & Marina with sweeping sail-like roofs & boardwalks
  const yc=group(scene,p.yachtClub,p.yachtClub.heading);
@@ -351,6 +376,7 @@ function addLandmarksAndHorizon(scene,track,p){
  for(let b=-3;b<=3;b++){
   scene.box(46,.45,3.2,'#8d6e53',-p.yachtClub.width/2-22,.15,b*18,yc);
  }
+ protect(scene,track,yc,{accept:()=>true});
  for(const boat of p.boats){
   const bg=group(scene,boat,boat.heading);
   scene.box(boat.width,2.4,boat.length,boat.hull,0,1.2,0,bg);
@@ -358,6 +384,7 @@ function addLandmarksAndHorizon(scene,track,p){
   scene.box(boat.width-1.8,1.7,boat.length*.42,boat.deck,0,4.9,-boat.length*.1,bg);
   mesh(bg,new THREE.BoxGeometry(boat.width+.15,.18,boat.length*.82),basic(boat.accent),0,2.35,0);
   mesh(bg,new THREE.BoxGeometry(boat.width-.6,.16,boat.length*.55),basic('#fff3c4'),0,4.15,-boat.length*.05);
+  protect(scene,track,bg,{accept:(x,z)=>waterAt(track,x,z)});
  }
 
  // 3. High-end coastal beach resort complexes
@@ -371,6 +398,7 @@ function addLandmarksAndHorizon(scene,track,p){
   }
   // Illuminated infinity pool facing Red Sea
   mesh(rg,new THREE.BoxGeometry(14,.3,r.length*.62),basic('#00e5ff'),-r.width/2-9,.18,0);
+  protect(scene,track,rg);
  }
 
  // 4. Gleaming glass Jeddah Tower & futuristic neon-lit coastal skyscrapers on the horizon
@@ -386,6 +414,7 @@ function addLandmarksAndHorizon(scene,track,p){
  }
  mesh(jt,new THREE.CylinderGeometry(16,14,2.4,24),basic('#00f0ff'),0,p.jeddahTower.height*.64,0);
  mesh(jt,new THREE.SphereGeometry(3.2,12,10),basic('#ffffff'),0,p.jeddahTower.height+3,0);
+ protect(scene,track,jt);
 
  // Neon-lit Corniche skyscrapers throwing vibrant blues, purples, and golds
  for(const t of p.skyline){
@@ -401,6 +430,7 @@ function addLandmarksAndHorizon(scene,track,p){
    mesh(tg,new THREE.BoxGeometry(t.w+.9,.55,t.d+.9),basic(y%44===18?t.neon:'#fde68a'),0,y,0);
   }
   mesh(tg,new THREE.BoxGeometry(t.w+1.4,1.2,t.d+1.4),basic(t.neon),0,t.h+.6,0);
+  protect(scene,track,tg);
  }
 }
 
@@ -444,6 +474,7 @@ function addLandscapingAndFountains(scene,track,p){
     const jet=new THREE.Mesh(new THREE.ConeGeometry(1.35,7.8,12),basic('#b8f2ff',{transparent:true,opacity:.78}));
     jet.position.set(0,4.2,0);jet.userData={baseY:4.2,baseH:1,phase:s*.03};lg.add(jet);fountainJets.push(jet);
    }
+   protect(scene,track,lg,{s,side,followTrack:true});
   }
  }
  // Iconic King Fahd's Fountain-inspired tall illuminated coastal water plume on the Red Sea horizon
@@ -451,6 +482,7 @@ function addLandscapingAndFountains(scene,track,p){
  mesh(kf,new THREE.CylinderGeometry(9,11,1.6,18),basic('#00e5ff'),0,.6,0);
  const tallJet=new THREE.Mesh(new THREE.ConeGeometry(6.5,96,16),basic('#dcf8ff',{transparent:true,opacity:.76}));
  tallJet.position.set(0,48,0);tallJet.userData={baseY:48,baseH:1,phase:1.1};kf.add(tallJet);fountainJets.push(tallJet);
+ protect(scene,track,kf,{accept:(x,z)=>waterAt(track,x,z)});
  return fountainJets;
 }
 
@@ -466,6 +498,7 @@ function addTracksideUtilitiesAndMarshals(scene,track,p){
   scene.box(1.4,.14,.14,'#f4f7f9',-side*.6,9.5,0,cg);
   mesh(cg,new THREE.BoxGeometry(.42,.28,.65),camMat,-side*1.2,9.35,0);
   mesh(cg,new THREE.SphereGeometry(.12,8,6),basic('#00f5d4'),-side*1.2,9.62,0);
+  protect(scene,track,cg,{s,side});
  }
  // 2. Massive heavy-duty mobile recovery cranes behind designated concrete wall safety openings
  for(const c of p.cranes){
@@ -481,6 +514,7 @@ function addTracksideUtilitiesAndMarshals(scene,track,p){
   const boom=scene.box(.65,18.5,.65,'#facc15',0,9.2,-1.2,cg);boom.rotation.x=.52;
   mesh(cg,new THREE.CylinderGeometry(.04,.04,9.5,6),material('#cbd5e1'),0,9.2,5.6);
   scene.box(.7,.8,.7,'#ef4444',0,4.4,5.6,cg);
+  protect(scene,track,cg,{s:c.s,side:c.side});
  }
  // 3. Spotless track marshals in high-visibility white jumpsuits, white helmets & glowing LED safety vests in reinforced wall alcoves, plus incident-responsive FIA LED flag panels
  const alcoves=[],panels=[];
@@ -502,7 +536,8 @@ function addTracksideUtilitiesAndMarshals(scene,track,p){
   // Trackside digital FIA LED flag panel
   const panel=new THREE.Mesh(new THREE.BoxGeometry(1.35,.92,.16),basic('#00ff66'));
   panel.position.set(0,3.35,.85);mg.add(panel);
-  panels.push({mesh:panel,s,x:q.x,z:q.z});
+  if(!protect(scene,track,mg,{s,side}))continue;
+  panels.push({mesh:panel,s,x:mg.position.x,z:mg.position.z});
   alcoves.push(mg);
  }
  return {panels};
@@ -520,7 +555,11 @@ function addFireworksAndLightShow(scene,track,p){
  const bursts=[],beamMeshes=[];
  const rayGeo=new THREE.BoxGeometry(.38,14,.38);
  for(let b=0;b<burstSites.length;b++){
-  const site=burstSites[b],bg=new THREE.Group();
+  const site={...burstSites[b]},probe=new THREE.Group();
+  probe.position.set(site.x,site.y,site.z);const extent=new THREE.Mesh(new THREE.BoxGeometry(110,1,110),material('#ffffff'));probe.add(extent);scene.group.add(probe);
+  if(!protect(scene,track,probe,{accept:()=>true})){extent.geometry.dispose();extent.material.dispose();continue;}
+  site.x=probe.position.x;site.y=probe.position.y;site.z=probe.position.z;probe.removeFromParent();extent.geometry.dispose();extent.material.dispose();
+  const bg=new THREE.Group();
   bg.position.set(site.x,site.y+72+(b%3)*14,site.z);bg.userData.noMirror=true;scene.group.add(bg);
   const matRef=basic(site.color,{transparent:true,opacity:.9});
   for(let r=0;r<18;r++){
@@ -552,7 +591,9 @@ export function addJeddah(scene,track){
  const fountainJets=addLandscapingAndFountains(scene,track,p);
  const {panels}=addTracksideUtilitiesAndMarshals(scene,track,p);
  const {bursts,beamMeshes}=addFireworksAndLightShow(scene,track,p);
- addBrakingBoards(scene,track);
+ const boardStart=scene.group.children.length;addBrakingBoards(scene,track);
+ for(const board of scene.group.children.slice(boardStart))protect(scene,track,board);
+ const decorationGroup=scene.group;
 
  let lastScreenAt=0,lastLightAt=0;
  scene.environmentFx={
@@ -615,6 +656,7 @@ export function addJeddah(scene,track){
   },
   dispose(){
    water?.getRenderTarget?.()?.dispose?.();
+   disposeRejectedDecorations(decorationGroup);
   }
  };
 }
