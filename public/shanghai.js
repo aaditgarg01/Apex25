@@ -1,3 +1,4 @@
+import {addShanghaiArchitecture} from './shanghai-architecture.js';
 import * as THREE from '/vendor/three.module.js';
 import {sample,angleDiff} from '/shared/tracks.mjs';
 import {roadClearance,safeBoxSite} from '/shared/venues.mjs';
@@ -34,29 +35,6 @@ function crowd(group,rows,columns,frontX,frontY,length,rowStep,heightStep,flags)
   mesh(group,new THREE.PlaneGeometry(1.2,.75,7,2),material,x+.6,y+.1,z,false);flags.push(uniform);
  }
 }
-function curvedWing(scene,parent,zCenter,frontEdge){
- const positions=[],indices=[],uv=[],steps=36;
- for(let i=0;i<=steps;i++){
-  const t=i/steps,z=zCenter+(t-.5)*148;
-  for(const edge of [0,1]){const x=edge?-40:frontEdge,arch=Math.sin(t*Math.PI)*10,y=29+arch+(edge?3:0);positions.push(x,y,z);uv.push(edge,t*12);}
-  if(i<steps){const n=i*2;indices.push(n,n+2,n+1,n+1,n+2,n+3);}
- }
- const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();
- mesh(parent,geometry,mat(red,{side:THREE.DoubleSide,roughness:.48,metalness:.22}));
- for(let z=zCenter-68;z<zCenter+70;z+=17){const t=(z-zCenter+74)/148,y=29+Math.sin(t*Math.PI)*10;scene.box(.65,y,.65,concrete,-35,y/2,z,parent);beam(scene,parent,new THREE.Vector3(-35,y+2,z),new THREE.Vector3(frontEdge,y,z),.4);}
-}
-function mainComplex(scene,track,flags){
- const p=eventSite(track,track.length-35,45,159,-1,12),g=groupAt(scene,p);reserve(p,48,162);
- scene.box(48,4,314,concrete,-15,2,0,g);scene.box(48,2,314,'#42616c',-15,6,0,g);
- for(let row=0;row<24;row++)scene.box(1.55,.27,306,row%3?'#bdc5c6':'#a13935',-row*1.4,7.3+row*.7,0,g);
- crowd(g,24,130,0,7.72,302,1.4,.7,flags);const centre=sample(track,track.length-35),frontEdge=Math.hypot(p.x-centre.x,p.z-centre.z)+track.width/2+7;curvedWing(scene,g,-78,frontEdge);curvedWing(scene,g,78,frontEdge);
- const label=trackSign('SHANGHAI INTERNATIONAL CIRCUIT',240,1.8,'#b92d32','#f1ece1');label.position.set(9.1,6.2,0);label.rotation.y=Math.PI/2;g.add(label);
- const pitSite=eventSite(track,track.length-30,22,140,1,12),pit=groupAt(scene,pitSite);reserve(pitSite,25,144);
- scene.box(30,7,274,concrete,0,3.5,0,pit);scene.box(31,2.3,275,'#526c78',0,8,0,pit);scene.box(36,.55,282,'#d3d8d7',0,9.5,0,pit);
- const facade=buildingFacade('research');addFacadePanels(pit,30,7,274,facade);
- for(let i=0;i<20;i++){scene.box(.12,3.8,9,'#566770',-15.08,2,-126+i*13,pit);scene.box(.16,.4,10,red,-15.18,4.3,-126+i*13,pit);}
- const tower=new THREE.Group();tower.position.set(0,0,132);pit.add(tower);scene.box(22,35,21,concrete,0,17.5,0,tower);scene.box(27,5,25,'#5b7b88',0,31,0,tower);scene.box(31,1.2,29,red,0,35,0,tower);
-}
 function spanningSite(track,at){
  let best=null;
  for(let distance=0;distance<180;distance+=12)for(const sign of [1,-1]){
@@ -65,18 +43,6 @@ function spanningSite(track,at){
   if(best)return best;
  }
  return {...sample(track,at*track.length),s:at*track.length,offset:75};
-}
-function glassPavilions(scene,track){
- const glass=mat('#6f95a2',{metalness:.55,roughness:.19}),roofMaterial=mat('#aebabe',{roughness:.38,metalness:.38});
- for(const at of [.67,.83]){
-  const p=spanningSite(track,at),g=groupAt(scene,p),radius=p.offset+7;
-  for(const x of [-p.offset,p.offset])for(const z of [-10,10]){const px=p.x+Math.cos(p.heading)*x+Math.sin(p.heading)*z,pz=p.z-Math.sin(p.heading)*x+Math.cos(p.heading)*z,base=shanghaiTerrainHeight(track,px,pz)-p.y;mesh(g,new THREE.CylinderGeometry(1.45,1.8,14-base,16),mat(concrete),x,(14+base)/2,z);}
-  mesh(g,new THREE.CylinderGeometry(radius*.83,radius*.83,1.2,64),mat('#aeb8b9'),0,14.1,0);
-  mesh(g,new THREE.CylinderGeometry(radius*.77,radius*.77,4.8,64,1,true),glass,0,17,0);
-  const roof=mesh(g,new THREE.SphereGeometry(1,48,14,0,Math.PI*2,0,Math.PI/2),roofMaterial,0,19.4,0);roof.scale.set(radius,2.3,radius);
-  for(let i=0;i<32;i++){const a=i*Math.PI/16,r=radius*.78;scene.box(.1,4.8,.1,steel,Math.sin(a)*r,17,Math.cos(a)*r,g);}
-  const rim=mesh(g,new THREE.TorusGeometry(radius*.84,.22,6,64),mat(red),0,19.35,0);rim.rotation.x=Math.PI/2;
- }
 }
 function banking(scene,track,flags){
  for(const [at,side] of [[.12,-1],[.2,1],[.36,-1],[.91,-1]]){
@@ -145,9 +111,9 @@ function industrialProps(scene,track){
  }
 }
 function electronicDressing(scene,track,screens,panels){
- const sponsors=[['Lenovo','#c52c35','#f0eee9'],['PIRELLI','#e0c527','#bf2a2e'],['aramco','#17895e','#f0f3ec']],materials=sponsors.map(([name,color,ink])=>trackSign(name,9,.8,color,ink).material);
+ const sponsors=[['Lenovo','#c52c35','#f0eee9'],['PIRELLI','#e0c527','#bf2a2e'],['aramco','#17895e','#f0f3ec'],['DHL','#e6cd28','#c52d2d']],materials=sponsors.map(([name,color,ink])=>trackSign(name,9,.8,color,ink).material);
  for(let s=15,index=0;s<track.length;s+=16,index++)for(const side of [-1,1]){
-  const i=Math.floor(s/track.step),offset=shanghaiBoundaryOffset(track,i,side)-.41,p=sample(track,s,side*offset),sign=mesh(scene.group,new THREE.PlaneGeometry(9,.8),materials[Math.floor(index/14)%3],p.x,p.y+.61,p.z);sign.rotation.y=p.heading+(side===1?-Math.PI/2:Math.PI/2);
+  const i=Math.floor(s/track.step),offset=shanghaiBoundaryOffset(track,i,side)-.41,p=sample(track,s,side*offset),sign=mesh(scene.group,new THREE.PlaneGeometry(9,.8),materials[s/track.length>.78&&s/track.length<.845?3:Math.floor(index/14)%3],p.x,p.y+.61,p.z);sign.rotation.y=p.heading+(side===1?-Math.PI/2:Math.PI/2);
  }
  for(let i=0;i<10;i++){
   const s=track.length*(i+.3)/10,index=Math.floor(s/track.step),p=sample(track,s,shanghaiBoundaryOffset(track,index,1)+1.5),g=groupAt(scene,p);
@@ -180,7 +146,7 @@ function refreshScreens(screens,time,cars){
  for(const screen of screens){const context=screen.canvas.getContext('2d');context.fillStyle='#102831';context.fillRect(0,0,1024,512);context.fillStyle='#c52d33';context.fillRect(0,0,1024,77);context.fillStyle='#f1f2ed';context.font='bold 40px Arial';context.fillText('SHANGHAI  •  LIVE TIMING',35,54);context.font='bold 34px monospace';for(let i=0;i<Math.min(6,drivers.length);i++){const driver=drivers[i],y=133+i*56;context.fillStyle=i===0?'#e7c742':'#dce7e6';context.fillText(String(i+1).padStart(2,'0')+'  '+String(driver.name||'DRIVER').slice(0,13).toUpperCase(),40,y);context.textAlign='right';context.fillText(driver.retired?'DNF':driver.finished?'FINISHED':'LAP '+driver.lap,970,y);context.textAlign='left';}context.fillStyle='#90b9be';context.font='24px monospace';context.fillText('CIRCUIT STATUS  •  '+(Math.floor(time/1000)%2?'● LIVE':'  LIVE'),35,493);screen.texture.needsUpdate=true;}
 }
 export function addShanghai(scene,track){
- reservations.length=0;const flags=[],screens=[],panels=[],resources=[];runoff(scene,track);mainComplex(scene,track,flags);glassPavilions(scene,track);banking(scene,track,flags);industrialProps(scene,track);electronicDressing(scene,track,screens,panels);serviceAccess(scene,track);const pondMaterial=landscape(scene,track,resources);let screenAt=-Infinity;
+ reservations.length=0;const flags=[],screens=[],panels=[],resources=[];runoff(scene,track);addShanghaiArchitecture(scene,track,flags,{crowd,reserve,groundHeight:shanghaiTerrainHeight});banking(scene,track,flags);industrialProps(scene,track);electronicDressing(scene,track,screens,panels);serviceAccess(scene,track);const pondMaterial=landscape(scene,track,resources);let screenAt=-Infinity;
  scene.environmentFx={frame(time,cars){for(const flag of flags)flag.value=time*.001;for(const panel of panels){const yellow=cars.some(car=>!car.finished&&!car.retired&&(car.offtrack||car.sliding)&&Math.min(Math.abs(car.s-panel.s),track.length-Math.abs(car.s-panel.s))<160);panel.material.color.set(yellow?(Math.floor(time/450)%2?'#eac52f':'#5c510e'):'#32cf88');}if(time-screenAt>1000){refreshScreens(screens,time,cars);screenAt=time;}for(const texture of resources)texture.offset.set(time*.000008,time*.000006);},setConditions(wetness){pondMaterial.roughness=.24-wetness*.1;pondMaterial.bumpScale=.035+wetness*.015;},dispose(){for(const resource of resources)resource.dispose();}};
  return scene.profile;
 }

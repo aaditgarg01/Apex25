@@ -452,3 +452,27 @@ not surveyed replicas of Shanghai architecture. Architectural and circuit
 references are listed in public/data/track-visual-references.json.
 Syntax and undefined-variable source checks were completed. Gameplay testing
 and test suites were omitted at the user's request. Refresh all clients.
+
+
+## Shanghai photographic architecture correction (2.11.1)
+
+Replaced the earlier red-wing/generic disc models with architecture matching the
+two photographs supplied by the user. Mapped building and roof outlines anchor
+the main grandstand on its correct side, the garages opposite it, and two
+lenticular viewing bridges across the main straight at approximately -247m and
++113m from the game's starting line. The bridges have silver cladding and rims,
+purple Lenovo/联想 panels, oval viewing terraces with spectators and railings,
+and cylindrical glass support towers. The main grandstand has two crowd tiers
+and a continuous sloping roof rather than a distant cantilevered red sheet.
+
+Added the mapped H/K grandstands and their 26 cream inverted-cone/lotus canopies:
+central columns, flared fabric roofs, radial ribs, silver rims and light fittings.
+DHL-colour boards dress the corresponding end of the back straight. The canopy
+and bridge positions use the OpenStreetMap outlines saved in
+public/data/shanghai-architecture.js; original procedural detail remains an
+approximation of the supplied photos. Existing ponds, rain, track/car geometry
+and collision boundaries are unchanged. Static roof detail shares materials and
+is merged in spatial batches; crowds remain instanced.
+
+Syntax and undefined-variable checks passed. Gameplay testing and test suites
+were omitted at the user's request. Refresh all players' browsers.

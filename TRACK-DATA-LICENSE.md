@@ -30,3 +30,17 @@ OpenStreetMap relation 346429, retrieved 2026-10-14. © OpenStreetMap contributo
 licensed under ODbL 1.0: https://www.openstreetmap.org/copyright .
 Source: https://www.openstreetmap.org/relation/346429 .
 The lake data is separate from the original circuit centreline.
+
+
+## Shanghai reference architecture outlines
+
+`public/data/shanghai-architecture.js` contains building and roof outlines from
+© OpenStreetMap contributors, retrieved 2026-10-14, licensed under ODbL 1.0:
+https://www.openstreetmap.org/copyright . It records each source way ID.
+Main stand roof: https://www.openstreetmap.org/way/1371942058 .
+Viewing bridges: https://www.openstreetmap.org/way/1371942059 and
+https://www.openstreetmap.org/way/1371942060 .
+H/K stands: https://www.openstreetmap.org/way/1372223261 and
+https://www.openstreetmap.org/way/1372223262 .
+The 3D detailing is original procedural geometry based on the user's supplied
+photographs; no photographic textures are redistributed.
