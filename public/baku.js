@@ -76,11 +76,21 @@ function town(scene,track,stone){
 }
 function fortress(scene,track,stone){
  const data=layout(track),cap=material('#d4bb91'),floor=(x,z)=>{let q=data.heights[0],distance=Infinity;for(const p of data.heights){const d=Math.hypot(x-p.x,z-p.z);if(d<distance){distance=d;q=p;}}return q.groundY-.5;};
- for(const [rings,height] of [[BAKU_CITY.fortressArtwork,9],[BAKU_CITY.palaceWall,6]])for(const r of rings){
+ for(const [rings,height] of [[BAKU_CITY.fortressArtwork,9],[BAKU_CITY.palaceWall,6],[BAKU_CITY.castleSection,10.5]])for(const r of rings){
   extrude(scene.group,[r],height,0,stone,cap,4,floor);
   for(let j=0;j<r.outer.length-1;j++){const a=r.outer[j],b=r.outer[j+1],dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);if(len<2)continue;
    for(let d=1;d<len;d+=3.2){const x=a[0]+dx*d/len,z=a[1]+dz*d/len,bounds=new THREE.Box3(new THREE.Vector3(-.7,0,-.65),new THREE.Vector3(.7,1.2,.65)),h=Math.atan2(-dz,dx);if(!footprintClear(track,{x,z},h,bounds,8.2))continue;const block=scene.box(1.35,1.1,1.3,'#c9ae82',x,floor(x,z)+height+.5,z);block.rotation.y=h;}
   }
+ }
+ // Castle-section bastions are integrated with the roadside wall rather than
+ // the unrelated district perimeter. Prepared footprints reserve their space.
+ for(const [index,tower] of BAKU_CITY.castleTowers.entries()){
+  const [x,z]=tower.center,y=floor(x,z),radius=tower.radius,height=tower.height;
+  mesh(scene.group,new THREE.CylinderGeometry(radius*.93,radius,height,32),stone,x,y+height/2,z);
+  mesh(scene.group,new THREE.CylinderGeometry(radius,radius*.94,.45,32),cap,x,y+height-.2,z);
+  for(let k=0;k<14;k++){const a=k*Math.PI/7,r=radius*.87,block=scene.box(.9,1.1,.7,'#c9ae82',x+Math.sin(a)*r,y+height+.5,z+Math.cos(a)*r);block.rotation.y=a;}
+  const p=sample(track,tower.s),heading=Math.atan2(p.x-x,p.z-z),slit=mesh(scene.group,new THREE.PlaneGeometry(.2,1.25),material('#514431'),x+Math.sin(heading)*radius*.98,y+height*.65,z+Math.cos(heading)*radius*.98);slit.rotation.y=heading;
+  if(index===1){const flag=flagMaterial();addFlag(scene,scene.group,x,y+height+1,z,flag);}
  }
  // Visible relief and battlements remain within the Maiden Tower's render footprint.
  const tower=data.buildings.find(f=>f.kind==='maiden');if(tower)for(const r of tower.rings)for(let j=0;j<r.outer.length-1;j++){const a=r.outer[j],b=r.outer[j+1],x=(a[0]+b[0])/2,z=(a[1]+b[1])/2;if(Math.hypot(x-tower.x,z-tower.z)<4)continue;const h=Math.atan2(-(b[1]-a[1]),b[0]-a[0]);const bounds=new THREE.Box3(new THREE.Vector3(-.55,0,-.5),new THREE.Vector3(.55,1.2,.5));if(footprintClear(track,{x,z},h,bounds,8.2)){const m=scene.box(1.1,1.15,1,'#c6ab80',x,tower.floor+tower.height+.4,z);m.rotation.y=h;}}
