@@ -115,7 +115,7 @@ function horizon(scene,track){
  const geometry=new THREE.PlaneGeometry(1700,15,85,1);geometry.rotateX(-Math.PI/2);const vertices=geometry.attributes.position;for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),z=vertices.getZ(i)+1400;vertices.setXYZ(i,x,bahrainTerrainHeight(track,x,z)+.08,z);}geometry.computeVertexNormals();const road=mesh(scene.group,geometry,material('#67665f'));road.castShadow=false;for(let x=-800;x<800;x+=14)scene.box(5,.025,.2,'#c6baa2',x,bahrainTerrainHeight(track,x,1400)+.105,1400);
 }
 function lights(scene,track){
- const poles=[],luminous=new THREE.MeshBasicMaterial({color:'#fff7df',toneMapped:false}),lensGeo=new THREE.PlaneGeometry(.5,.35),dummy=new THREE.Object3D();
+ const poles=[],luminous=new THREE.MeshBasicMaterial({color:'#fff7df',toneMapped:false,side:THREE.DoubleSide}),lensGeo=new THREE.PlaneGeometry(.5,.35),dummy=new THREE.Object3D();
  for(let i=0;i<495;i++){
   const s=(i+.5)/495*track.length,side=i%2?1:-1,index=Math.floor(s/track.step),height=23+(i%5)*4;let offset=bahrainBoundaryOffset(track,index,side)+6,p=sample(track,s,side*offset);
   while((roadClearance(track,p.x,p.z)<5||occupied(track,p.x,p.z,3))&&offset<180){offset+=8;p=sample(track,s,side*offset);}
@@ -123,8 +123,14 @@ function lights(scene,track){
  }
  const lenses=new THREE.InstancedMesh(lensGeo,luminous,495*8);for(let i=0;i<poles.length;i++){const p=poles[i];for(let j=0;j<8;j++){const x=(j%4-1.5)*.68,z=(Math.floor(j/4)-.5)*.65;dummy.position.set(p.x+Math.cos(p.heading)*x+Math.sin(p.heading)*z,p.y-.16,p.z-Math.sin(p.heading)*x+Math.cos(p.heading)*z);dummy.rotation.set(Math.PI/2,p.heading,0,'YXZ');dummy.scale.setScalar(1);dummy.updateMatrix();lenses.setMatrixAt(i*8+j,dummy.matrix);}}
  lenses.computeBoundingSphere();scene.group.add(lenses);
- const pool=[];for(let i=0;i<6;i++){const light=new THREE.SpotLight('#e7f4ff',0,150,Math.PI*.38,.18,2);light.castShadow=i<2;light.shadow.mapSize.set(512,512);light.shadow.camera.near=1;light.shadow.camera.far=150;light.shadow.bias=-.0003;light.shadow.normalBias=.05;scene.group.add(light,light.target);pool.push(light);}
- return {poles,pool,luminous};
+ // A permanent lighting field represents the combined output of the 495
+ // fixtures. No lamp or illumination region is reassigned to the camera.
+ const center=track.points.reduce((p,q)=>({x:p.x+q.x/track.points.length,y:p.y+q.y/track.points.length,z:p.z+q.z/track.points.length}),{x:0,y:0,z:0}),fills=[];
+ for(const [x,y,z,weight] of [[-130,220,-90,1],[160,180,100,.65]]){
+  const light=new THREE.DirectionalLight('#e7f4ff',weight);light.position.set(center.x+x,center.y+y,center.z+z);light.target.position.set(center.x,center.y,center.z);light.userData.weight=weight;
+  scene.group.add(light,light.target);light.target.updateMatrixWorld();fills.push(light);
+ }
+ return {fills,luminous,cool:new THREE.Color('#f0f8ff')};
 }
 function sponsors(){
  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');ctx.fillStyle='#ebe3cf';ctx.fillRect(0,0,1024,256);ctx.fillStyle='#8b713b';ctx.font='bold 92px Arial';ctx.textAlign='center';ctx.fillText('GULF AIR',650,161);ctx.beginPath();ctx.moveTo(320,102);ctx.lineTo(216,60);ctx.lineTo(107,74);ctx.lineTo(245,129);ctx.lineTo(135,145);ctx.lineTo(301,162);ctx.lineTo(355,116);ctx.lineTo(390,109);ctx.lineTo(348,95);ctx.closePath();ctx.fill();const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;
@@ -147,17 +153,23 @@ function dressing(scene,track,panels){
  addBrakingBoards(scene,track);
 }
 export function addBahrain(scene,track){
- const flags=[],panels=[],towerScreens=[];runoff(scene,track);gravelTraps(scene,track);architecture(scene,track,flags,towerScreens);oasis(scene,track);horizon(scene,track);dressing(scene,track,panels);const flood=lights(scene,track);let started=null,phase=0,wet=0,skyStep=-1,lightAt=-Infinity,screenAt=-Infinity;
- const lighting=()=>{scene.sun.color.set(wet?'#d2dce5':'#ffc292');scene.sun.intensity=1.84*(1-phase)*(1-wet*.7);scene.hemisphere.intensity=.6-phase*.30+wet*.1;scene.hemisphere.color.set(phase>.6?'#8faacf':'#b9b4d6');scene.scene.fog.density=Math.max(.00031,wet*.0011);scene.scene.environmentIntensity=.46-phase*.24;for(const light of flood.pool)light.intensity=(2500+phase*3100)*(1-wet*.12);flood.luminous.color.set(phase>.4?'#f0f8ff':'#fff6df');};
+ const flags=[],panels=[],towerScreens=[];runoff(scene,track);gravelTraps(scene,track);architecture(scene,track,flags,towerScreens);oasis(scene,track);horizon(scene,track);dressing(scene,track,panels);const flood=lights(scene,track);let started=null,phase=0,wet=0,skyStep=-1,screenAt=-Infinity;
+ const lighting=()=>{
+  flood.luminous.color.set('#fff6df').lerp(flood.cool,phase);
+  scene.sun.color.copy(flood.luminous.color);if(wet)scene.sun.color.set('#d2dce5');
+  // The existing shadow light blends into an overhead floodlight contribution
+  // at night; all fill lighting remains active across the entire venue.
+  scene.sun.intensity=(1.84*(1-phase)+phase*.55)*(1-wet*.7);
+  scene.hemisphere.intensity=.8-phase*.15+wet*.1;scene.hemisphere.color.set(phase>.6?'#8faacf':'#b9b4d6');
+  scene.scene.fog.density=Math.max(.00031,wet*.0011);scene.scene.environmentIntensity=.46-phase*.24;
+  for(const light of flood.fills){light.color.copy(flood.luminous.color);light.intensity=(.85+phase*.55)*light.userData.weight*(1-wet*.12);}
+ };
  scene.profile.twilight=0;
  scene.environmentFx={frame(time,cars){if(started===null)started=time;phase=smooth((time-started)/360000);scene.profile.twilight=phase;const step=Math.round(phase*32);if(step!==skyStep){scene.atmosphere.set(scene.profile,scene.appearance,wet);skyStep=step;}lighting();
-  if(time-lightAt>250){const camera=scene.camera.position,nearest=[...flood.poles].sort((a,b)=>(a.x-camera.x)**2+(a.z-camera.z)**2-((b.x-camera.x)**2+(b.z-camera.z)**2)).slice(0,6),used=new Set(flood.pool.map(light=>light.userData.pole).filter(pole=>nearest.includes(pole)));
-   // Keep surviving light assignments stable; do not reshuffle all shadows every update.
-   for(const light of flood.pool){if(nearest.includes(light.userData.pole))continue;const pole=nearest.find(pole=>!used.has(pole));used.add(pole);light.userData.pole=pole;light.position.set(pole.x,pole.y-.3,pole.z);light.target.position.set(pole.target.x,pole.target.y,pole.target.z);light.target.updateMatrixWorld();}lightAt=time;}
 
   for(let i=0;i<flags.length;i++)flags[i].rotation.y=Math.sin(time*.0018+i)*.1;
   for(const panel of panels){const yellow=cars.some(car=>!car.finished&&!car.retired&&(car.offtrack||car.sliding)&&Math.min(wrap(car.s-panel.s,track.length),wrap(panel.s-car.s,track.length))<150);panel.material.color.set(yellow?(Math.floor(time/400)%2?'#eed02e':'#5b4d0c'):'#33de81');}
   if(time-screenAt>250){for(const screen of towerScreens){const ctx=screen.canvas.getContext('2d');ctx.fillStyle='#132d55';ctx.fillRect(0,0,1024,96);for(let i=0;i<32;i++){ctx.fillStyle=i%2?'#e23a54':'#ad962f';ctx.beginPath();const x=(i*40+time*.018)%1100-40;ctx.moveTo(x,0);ctx.lineTo(x+24,48);ctx.lineTo(x,96);ctx.lineTo(x-24,48);ctx.fill();}ctx.fillStyle='#f0ead7';ctx.font='bold 37px Arial';ctx.textAlign='center';ctx.fillText('BAHRAIN  •  SAKHIR',512,62);screen.texture.needsUpdate=true;}screenAt=time;}
- },setConditions(wetness){wet=wetness;lighting();skyStep=-1;},dispose(){for(const light of flood.pool){light.shadow.map?.dispose();light.removeFromParent();light.target.removeFromParent();}}};
+ },setConditions(wetness){wet=wetness;lighting();skyStep=-1;},dispose(){for(const light of flood.fills){light.removeFromParent();light.target.removeFromParent();}}};
  return scene.profile;
 }

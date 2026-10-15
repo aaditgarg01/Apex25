@@ -500,3 +500,7 @@ Static syntax, undefined-variable and module dependency checks were performed be
 Jeddah scenery placement checks complete model footprints against every continuous road branch. Grandstands, pit buildings, hospitality roofs, resorts and pools, marina piers, yachts, camera equipment, cranes, marshal shelters, lawn fountains and distance boards move clear of the road. Shoreline walls are built as short sections and omitted where they would cross the driving corridor; rocks and animated foam also respect the road clearance. Sponsor gantries retain overhead spans while their support feet remain outside all road branches.
 
 The existing road, layout, racing line, driving physics and shared Tecpro collisions are preserved. Static syntax, undefined-variable and import checks passed; gameplay tests were skipped as requested.
+
+## Bahrain persistent floodlights (2.16.3)
+
+Bahrain's floodlighting no longer moves between the six fixtures closest to the camera. All 495 lamp heads remain visibly illuminated from both sides, and a fixed lighting field illuminates the whole circuit continuously. The sunset-to-night transition changes the entire venue gradually; wet conditions remain supported. The existing shadow light blends toward overhead white floodlighting at night, so cars retain moving shadows. Static syntax and module checks passed; gameplay tests were skipped as requested.
