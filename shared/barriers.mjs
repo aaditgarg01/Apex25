@@ -21,12 +21,15 @@ export function trackBarriers(track){
  // Campus streets have open verges. Their only solid walls come from the actual
  // subway retaining walls, portal pillars and roundabout island below.
  if(!track.campus)for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
-  const next=(i+1)%track.points.length,inner=wideRunoff?boundaryOffset(track,i,side)-.35:half+(track.id==='mc-1929'?.35:6.5),outer=wideRunoff?boundaryOffset(track,i,side)+.35:half+(track.id==='mc-1929'?.8:7.2);
+  const next=(i+1)%track.points.length,inner=wideRunoff?boundaryOffset(track,i,side)-.35:half+(track.id==='az-2016'?.3:track.id==='mc-1929'?.35:6.5),outer=wideRunoff?boundaryOffset(track,i,side)+.35:half+(['mc-1929','az-2016'].includes(track.id)?.8:7.2);
   const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*(wideRunoff?boundaryOffset(track,next,side)-.35:inner)),bo=edge(track,next,side*(wideRunoff?boundaryOffset(track,next,side)+.35:outer)),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
   const cx=(track.points[i].x+track.points[next].x)/2,cz=(track.points[i].z+track.points[next].z)/2,nx=cx-(a.x+b.x)/2,nz=cz-(a.z+b.z)/2,n=Math.hypot(nx,nz);
   const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2);
   add(a,b,width,concreteWalls?1.05:.76,'track',n?{x:nx/n,z:nz/n}:null);
-  const fa=concreteWalls||spa?{...a,y:a.y+(spa?.76:1.05)}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=concreteWalls||spa?{...b,y:b.y+(spa?.76:1.05)}:edge(track,next,side*(half+(track.urban?3.2:8)));add(fa,fb,.12,concreteWalls||spa?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
+  const fa=concreteWalls||spa?{...a,y:a.y+(spa?.76:1.05)}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=concreteWalls||spa?{...b,y:b.y+(spa?.76:1.05)}:edge(track,next,side*(half+(track.urban?3.2:8)));
+  // Historic stone wall provides the castle-side enclosure; retain the low
+  // collision barrier without putting a second debris fence in front of it.
+  if(!(track.id==='az-2016'&&side===1&&i*track.step>=2470&&i*track.step<=2760))add(fa,fb,.12,concreteWalls||spa?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
  }
  if(jeddah)for(const block of jeddahTecproBlocks(track))add(block.a,block.b,block.width,block.height,'tecpro',block.inward);
  function wallPair(s,length,offset,width,height,kind){

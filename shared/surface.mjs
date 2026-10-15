@@ -1,8 +1,10 @@
 import {angleDiff,terrainHeight,wrap} from './tracks.mjs';
+import {bakuRibbonOffset} from './baku.mjs';
 
 // An offset beyond the inside bend radius folds a strip back across the road.
 // Use the tightest nearby radius to keep barriers and runoff ordered at hairpins.
 export function ribbonOffset(track,index,offset){
+ if(track.id==='az-2016')return bakuRibbonOffset(track,index,offset);
  // Keep campus bands ordered at tight bends. Clamping each edge separately
  // collapsed kerbs, edge paint and barriers onto the same line.
  if(track.campus){

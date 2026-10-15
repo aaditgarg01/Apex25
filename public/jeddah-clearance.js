@@ -1,5 +1,6 @@
 import * as THREE from '/vendor/three.module.js';
 import {sample} from '/shared/tracks.mjs';
+import {bakuLayout} from '/shared/baku.mjs';
 
 function intersectsRectangle(a,b,minX,maxX,minZ,maxZ){
  let lo=0,hi=1;
@@ -14,10 +15,10 @@ function intersectsRectangle(a,b,minX,maxX,minZ,maxZ){
 // Check the entire model against continuous road segments, including other
 // branches of a bend. Expanding the rectangle also protects its rounded corners.
 export function footprintClear(track,p,heading,bounds,margin=10){
- const rx=Math.cos(heading),rz=-Math.sin(heading),fx=Math.sin(heading),fz=Math.cos(heading),pad=track.width/2+margin;
+ const rx=Math.cos(heading),rz=-Math.sin(heading),fx=Math.sin(heading),fz=Math.cos(heading),widths=track.id==='az-2016'?bakuLayout(track).half:null;
  const project=q=>({x:(q.x-p.x)*rx+(q.z-p.z)*rz,z:(q.x-p.x)*fx+(q.z-p.z)*fz});
  let a=project(track.points.at(-1));
- for(const q of track.points){const b=project(q);
+ for(let i=0;i<track.points.length;i++){const q=track.points[i],b=project(q),pad=(widths?Math.max(widths[i],widths[(i+widths.length-1)%widths.length]):track.width/2)+margin;
   if(intersectsRectangle(a,b,bounds.min.x-pad,bounds.max.x+pad,bounds.min.z-pad,bounds.max.z+pad))return false;
   a=b;
  }

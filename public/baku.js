@@ -20,7 +20,7 @@ function layout(track){
  const data={heights,level,buildings};cache.set(track,data);return data;
 }
 function waterAt(x,z){return inRings(BAKU_CITY.sea,x,z);}
-function buildingAt(track,x,z){return layout(track).buildings.some(f=>inRings(f.rings,x,z));}
+function buildingAt(track,x,z){return inRings(BAKU_CITY.castleKeepout,x,z)||layout(track).buildings.some(f=>inRings(f.rings,x,z));}
 export function bakuTerrainHeight(track,x,z,cell=0){
  const data=layout(track);if(waterAt(x,z))return data.level-1.5;
  let nearest=data.heights[0],distance=Infinity,floor=Infinity;
@@ -36,7 +36,13 @@ function beam(scene,parent,a,b,color='#657478',width=.13){const delta=b.clone().
 function surface(source,index){const g=new THREE.BufferGeometry();for(const [name,a] of Object.entries(source.attributes)){const data=[];for(const part of source.groups.filter(p=>p.materialIndex===index))for(let j=part.start*a.itemSize;j<(part.start+part.count)*a.itemSize;j++)data.push(a.array[j]);g.setAttribute(name,new THREE.Float32BufferAttribute(data,a.itemSize));}return g;}
 function extrude(parent,rings,height,y,wall,roof=wall,repeat=3.5,base=null){for(const r of rings){const source=new THREE.ExtrudeGeometry(shape(r),{depth:height,bevelEnabled:false}),uv=source.attributes.uv,positions=source.attributes.position;for(let i=0;i<uv.count;i++){uv.setXY(i,uv.getX(i)/repeat,uv.getY(i)/repeat);if(base)positions.setZ(i,positions.getZ(i)+base(positions.getX(i),-positions.getY(i))-y);}if(base)source.computeVertexNormals();for(const [index,mat] of [[0,roof],[1,wall]]){const m=mesh(parent,surface(source,index),mat,0,y,0);m.rotation.x=-Math.PI/2;}source.dispose();}}
 function texture(draw,size=256){const c=document.createElement('canvas');c.width=c.height=size;draw(c.getContext('2d'),size);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;return t;}
-function limestone(){const map=texture((c,n)=>{c.fillStyle='#bea57e';c.fillRect(0,0,n,n);for(let row=0;row<8;row++)for(let col=-1;col<5;col++){const x=col*64+(row%2)*32,y=row*32;c.fillStyle=['#c4ad88','#ccb793','#bfa682','#cbb28b'][(row*7+col+5)%4];c.fillRect(x+1,y+1,62,30);c.fillStyle='#e0c9a355';c.fillRect(x+2,y+2,61,1);}for(let i=0;i<1800;i++){c.fillStyle=i%2?'#735f3c20':'#f8e4bd24';c.fillRect((i*73.3)%n,(i*91.7)%n,1,1);}});return material('#ffffff',{map,bumpMap:map,bumpScale:.14,roughness:.96});}
+function limestone(){
+ const map=texture((c,n)=>{let seed=5123;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};c.fillStyle='#8c816b';c.fillRect(0,0,n,n);
+  for(let row=0;row<18;row++){let x=-35-(row%2)*19,y=row*n/18;while(x<n){const w=19+random()*36,h=n/18-1,v=Math.floor(145+random()*39);c.fillStyle=`rgb(${v+12},${v+3},${v-18})`;c.beginPath();c.moveTo(x+1,y+1);c.lineTo(x+w-2,y+random()*2);c.lineTo(x+w-1,y+h);c.lineTo(x+random()*2,y+h-1);c.closePath();c.fill();c.fillStyle='#e6d6ac25';c.fillRect(x+2,y+2,w-5,1);x+=w;}}
+  for(let i=0;i<14000;i++){const x=random()*n,y=random()*n;c.fillStyle=i%2?'#302b2028':'#f1dfb423';c.fillRect(x,y,random()*1.6+.3,random()*2+.3);}for(let i=0;i<40;i++){const x=random()*n,y=random()*n,g=c.createRadialGradient(x,y,1,x,y,20+random()*25);g.addColorStop(0,'#3e392d28');g.addColorStop(1,'#3e392d00');c.fillStyle=g;c.fillRect(x-45,y-45,90,90);}
+ },512);return material('#ffffff',{map,bumpMap:map,bumpScale:.16,roughness:.97});
+}
+function merlonGeometry(width=1.25,height=1.15,depth=.7){const s=new THREE.Shape();s.moveTo(-width/2,0);s.lineTo(width/2,0);s.lineTo(width/2,height-.35);s.quadraticCurveTo(width/2,height-.1,0,height+.08);s.quadraticCurveTo(-width/2,height-.1,-width/2,height-.35);s.closePath();const g=new THREE.ExtrudeGeometry(s,{depth,bevelEnabled:false});g.translate(0,0,-depth/2);return g;}
 function facade(color,glass=false){const map=texture(c=>{c.fillStyle=color;c.fillRect(0,0,256,256);if(glass){c.fillStyle='#94b5c0';c.fillRect(3,2,250,248);c.fillStyle='#273e52';for(let y=12;y<256;y+=42)c.fillRect(4,y,248,7);c.fillStyle='#c8d3cf';for(let x=0;x<256;x+=64)c.fillRect(x,0,3,256);}else{c.fillStyle='#eadac0';c.fillRect(47,25,162,203);c.fillStyle='#49616b';c.fillRect(61,42,134,161);c.fillStyle='#8fa1a1';c.fillRect(66,47,26,148);c.fillStyle='#e5d5ba';c.fillRect(124,43,7,161);c.fillRect(61,121,134,5);c.fillStyle='#a9997e';c.fillRect(42,224,172,12);c.fillStyle='#eadfc8';c.fillRect(0,247,256,6);c.fillRect(40,22,177,8);}});return material('#ffffff',{map,bumpMap:glass?null:map,bumpScale:.035,metalness:glass?.48:.04,roughness:glass?.22:.73});}
 function people(parent,positions){
  if(!positions.length)return;const d=new THREE.Object3D(),body=new THREE.InstancedMesh(new THREE.CapsuleGeometry(.17,.32,2,5),material('#ffffff'),positions.length),heads=new THREE.InstancedMesh(new THREE.SphereGeometry(.12,6,5),material('#ffffff'),positions.length);
@@ -75,23 +81,30 @@ function town(scene,track,stone){
  people(scene.group,spectators);
 }
 function fortress(scene,track,stone){
- const data=layout(track),cap=material('#d4bb91'),floor=(x,z)=>{let q=data.heights[0],distance=Infinity;for(const p of data.heights){const d=Math.hypot(x-p.x,z-p.z);if(d<distance){distance=d;q=p;}}return q.groundY-.5;};
- for(const [rings,height] of [[BAKU_CITY.fortressArtwork,9],[BAKU_CITY.palaceWall,6],[BAKU_CITY.castleSection,10.5]])for(const r of rings){
+ const data=layout(track),cap=material('#b3a183'),merlon=merlonGeometry(),floor=(x,z)=>{let q=data.heights[0],distance=Infinity;for(const p of data.heights){const d=Math.hypot(x-p.x,z-p.z);if(d<distance){distance=d;q=p;}}return q.groundY-.5;};
+ for(const [rings,height] of [[BAKU_CITY.palaceWall,6],[BAKU_CITY.castleSection,10.5]])for(const r of rings){
   extrude(scene.group,[r],height,0,stone,cap,4,floor);
   for(let j=0;j<r.outer.length-1;j++){const a=r.outer[j],b=r.outer[j+1],dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);if(len<2)continue;
-   for(let d=1;d<len;d+=3.2){const x=a[0]+dx*d/len,z=a[1]+dz*d/len,bounds=new THREE.Box3(new THREE.Vector3(-.7,0,-.65),new THREE.Vector3(.7,1.2,.65)),h=Math.atan2(-dz,dx);if(!footprintClear(track,{x,z},h,bounds,8.2))continue;const block=scene.box(1.35,1.1,1.3,'#c9ae82',x,floor(x,z)+height+.5,z);block.rotation.y=h;}
+   for(let d=1;d<len;d+=3.2){const x=a[0]+dx*d/len,z=a[1]+dz*d/len,bounds=new THREE.Box3(new THREE.Vector3(-.7,0,-.65),new THREE.Vector3(.7,1.2,.65)),h=Math.atan2(-dz,dx);if(!footprintClear(track,{x,z},h,bounds,.85))continue;const block=mesh(scene.group,merlon.clone(),stone,x,floor(x,z)+height,z);block.rotation.y=h;const corbel=scene.box(.45,.55,.5,'#a69476',x,floor(x,z)+height-.8,z);corbel.rotation.y=h;}
   }
  }
  // Castle-section bastions are integrated with the roadside wall rather than
  // the unrelated district perimeter. Prepared footprints reserve their space.
  for(const [index,tower] of BAKU_CITY.castleTowers.entries()){
   const [x,z]=tower.center,y=floor(x,z),radius=tower.radius,height=tower.height;
-  mesh(scene.group,new THREE.CylinderGeometry(radius*.93,radius,height,32),stone,x,y+height/2,z);
-  mesh(scene.group,new THREE.CylinderGeometry(radius,radius*.94,.45,32),cap,x,y+height-.2,z);
-  for(let k=0;k<14;k++){const a=k*Math.PI/7,r=radius*.87,block=scene.box(.9,1.1,.7,'#c9ae82',x+Math.sin(a)*r,y+height+.5,z+Math.cos(a)*r);block.rotation.y=a;}
+  mesh(scene.group,new THREE.CylinderGeometry(radius*.95,radius*1.08,height,40),stone,x,y+height/2,z);
+  mesh(scene.group,new THREE.CylinderGeometry(radius*1.03,radius,.55,40),cap,x,y+height-.2,z);
+  for(let k=0;k<14;k++){const a=k*Math.PI/7,r=radius*.90,block=mesh(scene.group,merlonGeometry(1.0,1.2,.7),stone,x+Math.sin(a)*r,y+height,z+Math.cos(a)*r);block.rotation.y=a;const support=scene.box(.3,.55,.55,'#a99779',x+Math.sin(a)*radius*.96,y+height-.7,z+Math.cos(a)*radius*.96);support.rotation.y=a;}
   const p=sample(track,tower.s),heading=Math.atan2(p.x-x,p.z-z),slit=mesh(scene.group,new THREE.PlaneGeometry(.2,1.25),material('#514431'),x+Math.sin(heading)*radius*.98,y+height*.65,z+Math.cos(heading)*radius*.98);slit.rotation.y=heading;
   if(index===1){const flag=flagMaterial();addFlag(scene,scene.group,x,y+height+1,z,flag);}
  }
+ // Twin arched pedestrian gates open into the Old City, beside the road.
+ for(const gate of BAKU_CITY.castleGates){const outline=new THREE.Shape();outline.moveTo(-gate.width/2,0);outline.lineTo(gate.width/2,0);outline.lineTo(gate.width/2,gate.height);outline.lineTo(-gate.width/2,gate.height);outline.closePath();
+  for(const x of [-4.7,4.7]){const h=new THREE.Path();h.moveTo(x-1.8,.2);h.lineTo(x-1.8,3.4);h.quadraticCurveTo(x-1.65,4.8,x,5.5);h.quadraticCurveTo(x+1.65,4.8,x+1.8,3.4);h.lineTo(x+1.8,.2);h.closePath();outline.holes.push(h);}
+  const g=new THREE.Group();g.position.set(gate.center[0],gate.floor,gate.center[1]);g.rotation.y=gate.heading;scene.group.add(g);const source=new THREE.ExtrudeGeometry(outline,{depth:1.8,bevelEnabled:false}),uv=source.attributes.uv;source.translate(0,0,-.9);for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/4,uv.getY(i)/4);mesh(g,source,stone);
+  for(let x=-9;x<=9;x+=2.1){mesh(g,merlon.clone(),stone,x,gate.height,0);for(const z of [-.95,.95]){scene.box(.35,.4,.035,'#514b3c',x,gate.height-1.1,z,g);scene.box(.32,.6,.35,'#a18f73',x,gate.height-2.2,z,g);}}
+ }
+ merlon.dispose();
  // Visible relief and battlements remain within the Maiden Tower's render footprint.
  const tower=data.buildings.find(f=>f.kind==='maiden');if(tower)for(const r of tower.rings)for(let j=0;j<r.outer.length-1;j++){const a=r.outer[j],b=r.outer[j+1],x=(a[0]+b[0])/2,z=(a[1]+b[1])/2;if(Math.hypot(x-tower.x,z-tower.z)<4)continue;const h=Math.atan2(-(b[1]-a[1]),b[0]-a[0]);const bounds=new THREE.Box3(new THREE.Vector3(-.55,0,-.5),new THREE.Vector3(.55,1.2,.5));if(footprintClear(track,{x,z},h,bounds,8.2)){const m=scene.box(1.1,1.15,1,'#c6ab80',x,tower.floor+tower.height+.4,z);m.rotation.y=h;}}
 }
@@ -143,11 +156,11 @@ function stands(scene,track){
   placeDecoration(scene,track,g,height,{s:fraction*track.length,side,followTrack:true,margin:8.2,accept:(x,z)=>!waterAt(x,z)&&!buildingAt(track,x,z)});
  }
 }
-function dressing(scene,track){
+function dressing(scene,track,stone){
  const walls=trackBarriers(track).walls.filter(w=>w.kind==='track'),sponsors=[['QATAR AIRWAYS','#62233d','#f5e9d6'],['aramco','#087b54','#f0f4e8'],['Heineken ★','#0b6144','#ffffff']],signs=sponsors.map(([name,bg,ink])=>trackSign(name,4,.72,bg,ink).material),rubber=material('#25292a'),panels=[];
  for(let i=0;i<walls.length;i++){
-  const w=walls[i],n=w.inward,length=w.length;if(!n||length<.2)continue;const sign=mesh(scene.group,new THREE.PlaneGeometry(length,.72),signs[Math.floor(i/125)%3],w.x+n.x*(w.width/2+.016),(w.a.y+w.b.y)/2+.57,w.z+n.z*(w.width/2+.016));sign.rotation.y=Math.atan2(n.x,n.z);sign.castShadow=false;
-  if(i%3===0&&Math.abs(w.x+650)<500&&w.z<100){const pad=mesh(scene.group,new THREE.BoxGeometry(w.width+.015,.68,length),rubber,w.x,(w.a.y+w.b.y)/2+.37,w.z);pad.rotation.y=Math.atan2(w.tx,w.tz);}
+  const w=walls[i],n=w.inward,length=w.length,s=Math.floor(i/2)*track.step,castleInside=s>=2470&&s<=2760&&i%2===1;if(!n||length<.2)continue;const geometry=new THREE.PlaneGeometry(length,castleInside?.98:.72);if(castleInside){const uv=geometry.attributes.uv;for(let j=0;j<uv.count;j++)uv.setXY(j,uv.getX(j)*length/4,uv.getY(j)/4);}const sign=mesh(scene.group,geometry,castleInside?stone:signs[Math.floor(i/125)%3],w.x+n.x*(w.width/2+.016),(w.a.y+w.b.y)/2+.57,w.z+n.z*(w.width/2+.016));sign.rotation.y=Math.atan2(n.x,n.z);sign.castShadow=false;
+  if(i%3===0&&Math.abs(s-2584)<13&&!castleInside){const pad=mesh(scene.group,new THREE.BoxGeometry(w.width+.015,.68,length),rubber,w.x,(w.a.y+w.b.y)/2+.37,w.z);pad.rotation.y=Math.atan2(w.tx,w.tz);}
  }
  const height=(x,z)=>bakuTerrainHeight(track,x,z);
  for(let i=0;i<22;i++){
@@ -164,7 +177,7 @@ function dressing(scene,track){
  addBrakingBoards(scene,track);return panels;
 }
 export function addBaku(scene,track){
- const stone=limestone(),waters=caspian(scene,track);town(scene,track,stone);fortress(scene,track,stone);const glass=flameTowers(scene,track);landscape(scene,track);stands(scene,track);const panels=dressing(scene,track);let wetness=0,start=performance.now(),skyStep=-1;
+ const stone=limestone(),waters=caspian(scene,track);town(scene,track,stone);fortress(scene,track,stone);const glass=flameTowers(scene,track);landscape(scene,track);stands(scene,track);const panels=dressing(scene,track,stone);let wetness=0,start=performance.now(),skyStep=-1;
  const warm=new THREE.Color('#ffd09a'),cool=new THREE.Color('#a8b8d2');
  const lighting=phase=>{scene.sun.color.copy(warm).lerp(cool,phase*.75+wetness*.2);scene.sun.intensity=(3.25-phase*2.35)*(1-wetness*.63);scene.hemisphere.intensity=.95+wetness*.2-phase*.18;scene.hemisphere.color.set('#b5c9df');scene.scene.fog.density=Math.max(.00017,wetness*.0009);glass.emissiveIntensity=.02+phase*.5;};
  scene.environmentFx={frame(time,cars){const phase=smooth((time-start)/480000);scene.profile.caspianPhase=phase;lighting(phase);const step=Math.floor(phase*16);if(step!==skyStep){scene.atmosphere.set(scene.profile,scene.appearance,wetness);skyStep=step;}for(const water of waters){water.material.uniforms.time.value=time*.001;water.material.uniforms.dusk.value=phase;}for(const [i,flag] of (scene.group.userData.bakuFlags||[]).entries()){const a=flag.geometry.attributes.position;for(let j=0;j<a.count;j++)a.setZ(j,Math.sin(time*.002+a.getX(j)*4+i)*.055*(a.getX(j)+.7));a.needsUpdate=true;}const warning=cars?.some(c=>!c.finished&&(c.offtrack||c.sliding));for(const panel of panels)panel.material.color.set(warning?'#ffca36':'#3bda8c');},setConditions(w){wetness=w;skyStep=-1;for(const water of waters)water.material.uniforms.wetness.value=w;lighting(scene.profile.caspianPhase||0);},dispose(){for(const water of waters)water.getRenderTarget().dispose();disposeRejectedDecorations(scene.group);}};

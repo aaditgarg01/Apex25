@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.17.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.17.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -543,3 +543,10 @@ Building and coastline positions come from OpenStreetMap; architectural details,
 ## Baku castle visibility — 2.17.1
 
 Added a dedicated sandstone fortress wall and crenellated bastions beside the Turn 8–11 uphill sequence. Nearby building footprints reserve space for this landmark so generic facades cannot hide it. This road-relative architecture is procedural artwork, distinct from the mapped district boundary and the distant palace. Racing geometry remains unchanged.
+
+
+## Baku road separation and Old City revision — 2.17.2
+
+Baku now uses one shared corridor profile for asphalt, kerbs, fences, collision walls, racing-line bounds, wet-road grip and track limits. Close opposite-direction boulevard sections narrow smoothly to fit their actual separation; the castle passage uses a 7 m asphalt profile with close barriers. This removes the former overlapping roads and fences. Castle-side fencing is omitted behind the retained low solid collision wall, while the opposite catch fence remains.
+
+The Old City revision brings weathered stone walls beside the road, with rounded merlons, battered round bastions, corbels, arrow slits and twin arched pedestrian gates inspired by official F1 reference photographs. The generic district-perimeter wall is no longer rendered. Mapped frontages are clipped to the same corridor and the new fortress footprint. These are procedural approximations rather than a surveyed or scanned reconstruction. Static corridor review found no overlaps between distant road branches or crossings between their fences; syntax and package build checks passed. No gameplay tests were run.

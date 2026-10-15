@@ -2,6 +2,7 @@ import * as THREE from '/vendor/three.module.js';
 import {sampleGuide,prepareRacingLine} from '/shared/racing-line.mjs';
 import {angleDiff,wrap,sample} from '/shared/tracks.mjs';
 import {VENUES} from '/shared/venues.mjs';
+import {ribbonOffset} from '/shared/surface.mjs';
 
 export function trackAppearance(track){
  const theme=track.campus?'campus':VENUES[track.id]?.theme||'fields',street=track.urban&&!track.campus;
@@ -80,7 +81,7 @@ export class TrackSurfaces{
   const strip=(s,length,offset,width,color)=>{
    const start=positions.length/3,steps=Math.ceil(length/2);
    for(let i=0;i<=steps;i++)for(const side of [-1,1]){
-    const p=sample(track,s+i*length/steps,offset+side*width/2);positions.push(p.x,p.y+.079,p.z);
+    const at=s+i*length/steps,o=offset+side*width/2,p=sample(track,at,track.id==='az-2016'?ribbonOffset(track,Math.floor(wrap(at,track.length)/track.step),o):o);positions.push(p.x,p.y+.079,p.z);
     const fade=Math.min(1,i/2,(steps-i)/2),c=new THREE.Color(color);c.multiplyScalar(.94+fade*.06);colors.push(c.r,c.g,c.b);
     if(i<steps&&side===-1){const n=start+i*2;indices.push(n,n+2,n+1,n+1,n+2,n+3);}
    }

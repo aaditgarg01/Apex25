@@ -4,6 +4,7 @@ import {sampleGuide} from './racing-line.mjs';
 import {conditionProfile,normalizeConditions,yawRate} from './conditions.mjs';
 import {sample,nearest,wrap,clamp,angleDiff,targetSpeed,terrainHeight} from './tracks.mjs';
 import {resolveCarContacts} from './collisions.mjs';
+import {roadHalfWidth} from './baku.mjs';
 export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
 export const GRID_ROW_SPACING=13,GRID_LATERAL_OFFSET=3.6;
@@ -31,7 +32,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
  const road=sample(track,c.s);
  const roadOffset=conditions.wetness?nearest(track,c.x,c.z,c.s).offset:0;
- c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>track.width/2-.8?conditions.curbGrip:1):1;
+ c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>roadHalfWidth(track,c.s)-.8?conditions.curbGrip:1):1;
  c.cornerGrip=1-conditions.wetness*(brake*.24+throttle*.10);
  const traction=conditions.traction*c.surfaceGrip,braking=33*conditions.braking*c.surfaceGrip;
  const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032)*(1-slip*0.3)+(c.offtrack?c.v*.5:0);
@@ -62,10 +63,11 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  const near=nearest(track,c.x,c.z,c.s);let delta=near.s-prev;if(delta>track.length/2)delta-=track.length;if(delta<-track.length/2)delta+=track.length;
  // No teleports or shortcuts: progress advances only near the expected ribbon.
  if(Math.abs(delta)<40&&near.distance<track.width/2+40){c.s=near.s;c.progress+=delta;}
- if(near.distance>track.width/2+1.0){if(!c.offtrack)c.offtrackTime=0;c.offtrack=true;c.offtrackTime+=dt;if(c.offtrackTime>.4&&!c.offtrackPenalty){c.penalty+=1;c.offtrackPenalty=true;c.invalidLap=true;}}else{c.offtrack=false;c.offtrackPenalty=false;}
- if(near.distance>track.width/2+24){c.v*=Math.exp(-dt*4);const p=sample(track,c.s);c.x+=(p.x-c.x)*dt*.6;c.z+=(p.z-c.z)*dt*.6;}
+ const half=roadHalfWidth(track,near.s);
+ if(near.distance>half+1.0){if(!c.offtrack)c.offtrackTime=0;c.offtrack=true;c.offtrackTime+=dt;if(c.offtrackTime>.4&&!c.offtrackPenalty){c.penalty+=1;c.offtrackPenalty=true;c.invalidLap=true;}}else{c.offtrack=false;c.offtrackPenalty=false;}
+ if(near.distance>half+24){c.v*=Math.exp(-dt*4);const p=sample(track,c.s);c.x+=(p.x-c.x)*dt*.6;c.z+=(p.z-c.z)*dt*.6;}
  const surface=sample(track,c.s);
- const fall=clamp(near.distance-(track.width/2+6.5),0,1);
+ const fall=clamp(near.distance-(half+6.5),0,1);
  c.y=fall?surface.y*(1-fall)+(terrainHeight(track,c.x,c.z)-.9)*fall:surface.y;
  c.pitch=surface.pitch;
  const completed=Math.max(0,Math.floor(c.progress/track.length));
