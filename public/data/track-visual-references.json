@@ -128,6 +128,18 @@
     {
       "feature": "Jeddah Tower skyscraper footprint",
       "url": "https://www.openstreetmap.org/way/402915628"
+    },
+    {
+      "feature": "Baku official event map: coastal boulevard, Old City, Government House and event areas",
+      "url": "https://cdn.bakucitycircuit.com/uploads/faq/road-map.pdf"
+    },
+    {
+      "feature": "Baku mapped city footprints and Caspian coastline; source IDs retained in baku-city.js",
+      "url": "https://www.openstreetmap.org/copyright"
+    },
+    {
+      "feature": "Baku Flame Towers mapped footprints and height tags; curved glass forms are procedural artwork",
+      "url": "https://www.openstreetmap.org/way/253081850"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

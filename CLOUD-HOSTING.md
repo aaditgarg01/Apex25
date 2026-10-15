@@ -504,3 +504,10 @@ The existing road, layout, racing line, driving physics and shared Tecpro collis
 ## Bahrain persistent floodlights (2.16.3)
 
 Bahrain's floodlighting no longer moves between the six fixtures closest to the camera. All 495 lamp heads remain visibly illuminated from both sides, and a fixed lighting field illuminates the whole circuit continuously. The sunset-to-night transition changes the entire venue gradually; wet conditions remain supported. The existing shadow light blends toward overhead white floodlighting at night, so cars retain moving shadows. Static syntax and module checks passed; gameplay tests were skipped as requested.
+
+
+## Baku city environment — 2.17.0
+
+Baku now has a dedicated environment with 520 road-clear mapped city footprints, a reflective Caspian shoreline, curved glass Flame Towers, sandstone Old City walls, Maiden Tower, Government House, the Philharmonic and Carpet Museum. Original facade textures, rooftop spectators, Azerbaijani flags, cypress rows, temporary grandstands, pit equipment, cranes, safety fencing and sponsor bridges replace the generic scenery. Warm afternoon light gradually shifts toward dusk over eight minutes. Existing circuit geometry and driving elevations are retained.
+
+Building and coastline positions come from OpenStreetMap; architectural details, fortress artwork guided by the Old City district boundary, terrain away from the road and event placement are procedural approximations, not scanned official-game assets. Visual footprints are clipped outside every road segment and its barriers; freestanding props are checked as complete models. No gameplay test suite was run, as requested; validation covers syntax, undefined identifiers, packaging and deployed file identity.
