@@ -8,7 +8,7 @@ export const encodeInput=(seq,c)=>[seq,Math.max(-1,Math.min(1,Number(c.steer)||0
 // Each command represents exactly one simulation step. Server time pays for
 // those steps; a fast or malicious client cannot purchase extra movement.
 export class InputStream {
- constructor(car){this.queue=[];this.credit=0;this.received=0;this.lastCommandAt=null;car.inputAck=0;car.inputEpoch=0;car.inputLag=0;}
+ constructor(car){this.queue=[];this.credit=0;this.received=0;this.lastCommandAt=null;this.idle=false;car.inputAck=0;car.inputEpoch=0;car.inputLag=0;car.inputTime=0;}
  accept(car,epoch,commands,elapsed){
   if(epoch!==car.inputEpoch||!Array.isArray(commands)||commands.length>8)return false;
   let previous=this.received;
@@ -20,24 +20,33 @@ export class InputStream {
   if(commands.length){this.queue.push(...commands);this.received=previous;this.lastCommandAt=elapsed;}
   return true;
  }
- reset(car){this.queue=[];this.credit=0;car.inputAck=this.received;car.inputEpoch++;car.inputLag=0;}
+ reset(car,elapsed=car.inputTime||0){this.queue=[];this.credit=0;this.lastCommandAt=null;this.idle=true;car.inputAck=this.received;car.inputEpoch++;car.inputLag=0;car.inputTime=elapsed;}
  step(car,input,track,dt,elapsed,laps,afterStep=()=>{}){
   this.credit=Math.min(1,this.credit+dt);
   // A disconnected/background client eventually brakes on the server. Invalidate
   // the old input epoch so delayed commands cannot restart the car afterward.
   if(this.lastCommandAt!==null&&elapsed-this.lastCommandAt>1&&this.queue.length===0){
-   this.reset(car);this.lastCommandAt=null;
+   this.reset(car,elapsed);
   }
-  if(this.lastCommandAt===null){stepCar(car,{brake:true,park:true},track,dt,elapsed,laps);afterStep();car.inputLag=this.credit;return;}
+  if(this.lastCommandAt===null){
+   // Before the first input, preserve the same initial state the client predicts.
+   // After a timeout, brake in real server time rather than banking idle steps.
+   if(this.idle){this.credit=0;stepCar(car,{brake:true,park:true},track,dt,elapsed,laps);afterStep();car.inputTime=elapsed;}
+   car.inputLag=this.credit;return;
+  }
+  this.idle=false;
   const slipstream=car.slipstream;
   let count=0;
-  while(this.queue.length&&this.credit+1e-9>=INPUT_DT&&count<8){
+  while(this.queue.length&&this.credit+1e-9>=INPUT_DT&&count<4&&!car.finished){
    const command=this.queue.shift();this.credit-=INPUT_DT;count++;
    car.slipstream=slipstream;
-   stepCar(car,decodeInput(command),track,INPUT_DT,elapsed,laps);
+   // Commands in a delayed batch have distinct simulation times, including lap
+   // and sector crossings. Never stamp the entire burst with its delivery time.
+   car.inputTime=elapsed-this.credit;
+   stepCar(car,decodeInput(command),track,INPUT_DT,car.inputTime,laps);
    afterStep();
    car.inputAck=command[0];
   }
-  car.inputLag=this.credit;
+  car.inputLag=car.finished?0:this.credit;
  }
 }

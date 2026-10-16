@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.18.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.19.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -52,14 +52,14 @@ Do not share the Google Drive folder to invite players. The tunnel exposes the g
 | R | Recover to track; adds 3 seconds |
 | Escape | Pause solo; open menu online |
 
-Gamepad: left stick steers; RT accelerates, LT brakes, A boosts. Touch controls appear on touch devices. Engine sound starts after a browser interaction; use the sound button and volume slider to adjust it. Steering is fully manual. Compact, bright chevrons suggest acceleration (green), lifting (amber) and braking (red). Keyboard, touch and gamepad steering follow the driver’s left/right view. The line is a guide, not an exact optimal racing line. Recovery penalties are included in race results. Sustained track-limit violations invalidate timed laps. In qualifying, R restarts the flying lap with a fresh timer, up to three times; in practice, recovery invalidates the current lap. Starting practice partway around the circuit produces an out lap; timing starts after you cross the line. Use Finish qualifying to end the session early; drivers without a valid completed lap start behind valid times. In multiplayer only the host can end a session or continue from qualifying to the race.
+Gamepad: left stick steers; RT accelerates, LT brakes, A boosts. Touch controls appear on touch devices. Engine sound starts after a browser interaction; use the sound button and volume slider to adjust it. Steering is fully manual. Compact, bright chevrons suggest acceleration (green), lifting (amber) and braking (red). Keyboard, touch and gamepad steering follow the driver’s left/right view. The line is a guide, not an exact optimal racing line. Recovery penalties are included in race results. Sustained track-limit violations invalidate timed laps. Qualifying starts with one untimed outlap, followed by repeated flying laps during the unchanged seven-minute session. R recovery and lap restarts are disabled in qualifying: complete the circuit and cross the line to try again. Current-lap penalties and invalid warnings clear at the next flying lap. The fastest of all valid flying laps sets the grid; a flying lap begun before the timer expires can finish after zero. In practice, recovery invalidates the current lap. Starting practice partway around the circuit produces an out lap; timing starts after you cross the line. Use Finish qualifying to end the session early; drivers without a valid completed lap start behind valid times. In multiplayer only the host can end a session or continue from qualifying to the race.
 
 ## Included
 
 - 41 real geographic circuit layouts: all 24 destinations on the 2025 calendar and 17 extra venues, including the Indian Grand Prix at Buddh International Circuit.
 - 3D open-wheel cars, three camera views, road markings, curbs, scenery and a Suzuka crossover.
 - Free Practice with unlimited timed laps and optional sector starts. Spa includes an Eau Rouge approach start.
-- Race Weekend: one ghosted flying qualifying lap with up to three restarts, classification, then a race with any positive whole number of laps with a grid based on valid qualifying times.
+- Race Weekend: seven minutes of ghosted qualifying, one initial outlap and multiple flying laps, classification by the best valid lap, then a race with any positive whole number of laps.
 - Quick Race skips qualifying. Solo and online race modes allow zero to seven AI opponents.
 - All circuits have elevation profiles; Spa uses published circuit altitude markers and a shaped Raidillon climb. Car pitch, gradient, gravity, camera and terrain follow the road.
 - Private rooms for up to eight players with shared countdown, live standings, lap times and rematches.
@@ -559,3 +559,25 @@ Singapore now has a dedicated environment with 450 mapped city footprints and ma
 A permanent world-space light field covers the entire road, supported by constantly lit LED fixtures and fixed fill lights. Lighting is not reassigned to the approaching car. Compact white safety walls and black catch fences share the renderer/collision envelope; corner wraps stay inside those walls. Tropical rain-tree canopies, palms, green uplight artwork, planted plazas, raked grandstands, phone/wristband glints, flags, orange marshals, live LED boards, cranes, tyre stacks and warm hospitality suites complete the venue.
 
 The existing 19-corner driving route, elevations and car remain. Colourful waterfront seating is an artistic treatment beside the current route; the pre-2023 Bay Grandstand underpass is not restored. Landmark architecture, event placement, lighting and terrain away from the road are procedural approximations, not scans or official-game assets. Syntax, undefined-name, packaging, placement-data and live deployment checks are used; no gameplay test suite is run.
+
+## Multiplayer smoothing and qualifying — 2.19.0
+
+Multiplayer retains all snapshots delivered between painted frames, interpolates
+rivals on the time their movement was simulated, and smooths corrections for
+nearby predicted cars. Local correction compares fixed simulation poses and
+renders the fraction between ticks; visual contact correction moves rivals
+without displacing the player's camera. Delayed input batches have distinct lap
+and sector timestamps and bounded catch-up work. Race collisions remain solid.
+
+Qualifying keeps the full 420-second duration. Each driver completes one initial
+untimed outlap, then may attempt multiple flying laps. Neither recovery nor R
+restarts a qualifying lap. Complete an invalid lap on track; the next crossing
+starts a fresh flying lap and clears current-lap penalties/invalid warnings.
+The best valid completed flying lap is retained across all attempts. When time
+expires, drivers on flying laps may finish that lap, with no further timed lap
+allowed; outlap drivers do not receive an extra flying lap. Results wait for
+eligible drivers to finish (the host can still end qualifying manually).
+
+Validation for this release: syntax, undefined-name checks, shared-module
+imports and asset build only. Gameplay and multiplayer driving checks were not
+run, following the preference for manual playtesting.

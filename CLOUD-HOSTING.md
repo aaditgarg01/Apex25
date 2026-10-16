@@ -532,3 +532,16 @@ Singapore now has a dedicated environment with 450 mapped city footprints and ma
 A permanent world-space light field covers the entire road, supported by constantly lit LED fixtures and fixed fill lights. Lighting is not reassigned to the approaching car. Compact white safety walls and black catch fences share the renderer/collision envelope; corner wraps stay inside those walls. Tropical rain-tree canopies, palms, green uplight artwork, planted plazas, raked grandstands, phone/wristband glints, flags, orange marshals, live LED boards, cranes, tyre stacks and warm hospitality suites complete the venue.
 
 The existing 19-corner driving route, elevations and car remain. Colourful waterfront seating is an artistic treatment beside the current route; the pre-2023 Bay Grandstand underpass is not restored. Landmark architecture, event placement, lighting and terrain away from the road are procedural approximations, not scans or official-game assets. Syntax, undefined-name, packaging, placement-data and live deployment checks are used; no gameplay test suite is run.
+
+## Multiplayer smoothing and qualifying — 2.19.0
+
+The server publishes authoritative per-driver input simulation time. The client
+keeps intermediate snapshots and smooths nearby corrections rather than
+switching to raw packet positions; visual contacts keep the local pose fixed.
+Late command batches receive individual simulation timestamps. Qualifying now
+uses a single outlap and multiple flying attempts within the unchanged seven
+minutes, no qualifying recovery/restart, and a final flying-lap extension after
+the timer reaches zero. Best valid time across all attempts sets the grid.
+
+Only static source checks, module import resolution, asset build, and deployment
+health/asset verification are used for this release. No gameplay tests are run.

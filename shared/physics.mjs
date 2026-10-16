@@ -5,24 +5,21 @@ import {conditionProfile,normalizeConditions,yawRate} from './conditions.mjs';
 import {sample,nearest,wrap,clamp,angleDiff,targetSpeed,terrainHeight} from './tracks.mjs';
 import {resolveCarContacts} from './collisions.mjs';
 import {roadHalfWidth} from './baku.mjs';
+import {QUALIFYING_LIMIT,finishQualifyingCar} from './qualifying.mjs';
 export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
 export const GRID_ROW_SPACING=13,GRID_LATERAL_OFFSET=3.6;
 export function gridSlot(index){return {s:-12-Math.floor(index/2)*GRID_ROW_SPACING,offset:(index%2?1:-1)*GRID_LATERAL_OFFSET};}
 export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
-export const QUALIFYING_RESTARTS=3;
 export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
- if(c.finished)return false;
- if(isQualifying){
-  if((c.restarts||0)>=QUALIFYING_RESTARTS)return false;
-  const p=sample(track,0);
-  Object.assign(c,p,{restarts:(c.restarts||0)+1,v:45*conditionProfile(c.conditions).pace,motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,boost:100,penalty:0,s:0,progress:0,lap:1,lapStart:Math.max(0,elapsed),sector:0,sectors:[],lastSectors:[],invalidLap:false,outLap:false,offtrack:false,offtrackTime:0,offtrackPenalty:false,steer:0,resetTimer:1});
- }else{const p=sample(track,c.s);Object.assign(c,p,{v:0,motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,penalty:c.penalty+3,resetTimer:1,invalidLap:true});}
+ if(c.finished||isQualifying||c.qualifying)return false;
+ const p=sample(track,c.s);Object.assign(c,p,{v:0,motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,penalty:c.penalty+3,resetTimer:1,invalidLap:true});
  return true;
 }
 export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.finished)return;
+ if(c.qualifying&&c.outLap&&elapsed>=QUALIFYING_LIMIT){finishQualifyingCar(c,elapsed);return;}
  if(c.ai)c.inputLag=0;
  if(c.resetTimer>0)c.resetTimer-=dt;
  const prev=c.s,previousPose={x:c.x,z:c.z,heading:c.heading},conditions=conditionProfile(c.conditions);
@@ -76,14 +73,24 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  else if(c.sector===1&&lapProgress>track.length*2/3){c.sectors[1]=elapsed-c.lapStart-c.sectors[0];c.sector=2;}
  if(completed>=c.lap){
   c.sectors[2]=elapsed-c.lapStart-(c.sectors[0]||0)-(c.sectors[1]||0);
-  c.lastLap=elapsed-c.lapStart;c.lastLapValid=!c.invalidLap;
-  if(c.lastLapValid){
-   c.bestLap=c.bestLap?Math.min(c.bestLap,c.lastLap):c.lastLap;
-   for(let i=0;i<3;i++)c.bestSectors[i]=c.bestSectors[i]?Math.min(c.bestSectors[i],c.sectors[i]):c.sectors[i];
+  const outLap=c.outLap;
+  // The single qualifying outlap never enters lap history or the classification.
+  if(!c.qualifying||!outLap){
+   c.lastLap=elapsed-c.lapStart;c.lastLapValid=!c.invalidLap&&!outLap;
+   if(c.lastLapValid){
+    c.bestLap=c.bestLap?Math.min(c.bestLap,c.lastLap):c.lastLap;
+    for(let i=0;i<3;i++)c.bestSectors[i]=c.bestSectors[i]?Math.min(c.bestSectors[i],c.sectors[i]):c.sectors[i];
+   }
+   c.lapHistory.push(c.lastLap);if(!c.lapValidHistory)c.lapValidHistory=[];c.lapValidHistory.push(c.lastLapValid);
+   c.lastSectors=[...c.sectors];
   }
-  c.lapHistory.push(c.lastLap);if(!c.lapValidHistory)c.lapValidHistory=[];c.lapValidHistory.push(c.lastLapValid);
-  c.lastSectors=[...c.sectors];c.invalidLap=false;c.outLap=false;c.lapStart=elapsed;c.lap=completed+1;c.sector=0;c.sectors=[];
-  if(completed>=laps){c.finished=true;c.finishTime=elapsed+c.penalty;c.v=0;c.boostActive=false;c.sliding=false;c.motionYawRate=0;c.inputLag=0;}
+  c.outLap=false;c.lapStart=elapsed;c.lap=completed+1;c.sector=0;c.sectors=[];
+  if(c.qualifying&&elapsed>=QUALIFYING_LIMIT)finishQualifyingCar(c,elapsed);
+  else{
+   c.invalidLap=false;
+   if(c.qualifying){c.penalty=0;c.offtrackPenalty=false;c.offtrackTime=0;}
+   if(!c.qualifying&&completed>=laps){c.finished=true;c.finishTime=elapsed+c.penalty;c.v=0;c.boostActive=false;c.sliding=false;c.motionYawRate=0;c.inputLag=0;}
+  }
  }
 }
 export function draftStrength(c,cars){

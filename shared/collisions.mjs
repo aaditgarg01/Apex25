@@ -19,13 +19,13 @@ function nearbyPairs(cars,movingId){
  for(let i=0;i<cars.length;i++){const c=cars[i];if(c.retired||c.finished)continue;const x=Math.floor(c.x/8),z=Math.floor(c.z/8);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const j of grid.get(`${x+dx},${z+dz}`)||[])if(movingId===null||c.id===movingId||cars[j].id===movingId)pairs.push([j,i]);const key=`${x},${z}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(i);}
  return pairs;
 }
-export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrection=.8}={}){
+export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrection=.8,fixedIds=null}={}){
  let contacts=0;const pairs=nearbyPairs(cars,movingId);
  for(let pass=0;pass<4;pass++){
   let touched=false;
   for(const [i,j] of pairs){
    const a=cars[i],b=cars[j],hit=carContact(a,b);if(!hit)continue;
-   const wa=a.finished?0:1,wb=b.finished?0:1,total=wa+wb;if(!total)continue;
+   const wa=a.finished||fixedIds?.has(a.id)?0:1,wb=b.finished||fixedIds?.has(b.id)?0:1,total=wa+wb;if(!total)continue;
    const {normal:n,depth}=hit,push=Math.min(depth+.001,maxCorrection);touched=true;
    a.x-=n.x*push*wa/total;a.z-=n.z*push*wa/total;b.x+=n.x*push*wb/total;b.z+=n.z*push*wb/total;
    if(impulses){
