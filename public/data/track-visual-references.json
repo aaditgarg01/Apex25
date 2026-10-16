@@ -144,6 +144,22 @@
     {
       "feature": "Baku close Old City walls, rounded battlements, round bastions and arched gates; original procedural reconstruction",
       "url": "https://www.formula1.com/en/latest/article/how-the-azerbaijan-grand-prix-became-a-modern-classic.5aL5RCVlpraaMF26WzGnPs"
+    },
+    {
+      "feature": "Singapore Marina Bay Sands skypark, financial skyline and Flyer context",
+      "url": "https://www.visitsingapore.com/see-do-singapore/recreation-leisure/resorts/marina-bay-sands/"
+    },
+    {
+      "feature": "Singapore current 19-corner route and event-area context",
+      "url": "https://singaporegp.sg/media/2023/circuit-park-map/2023-09-06-circuit-park-map.pdf"
+    },
+    {
+      "feature": "Closure of historic Bay Grandstand; colourful waterfront seating is an artistic treatment on the existing current route",
+      "url": "https://singaporegp.sg/en/news/2023/new-grandstands-added-for-the-formula-1-singapore-airlines-singapore-grand-prix-2023/"
+    },
+    {
+      "feature": "Mapped Marina Reservoir shoreline and city footprint source credit",
+      "url": "https://www.openstreetmap.org/relation/9542146"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
@@ -151,8 +167,9 @@
   "albertPark": "Mapped lake and islands; approximate Melbourne skyline silhouettes and event dressing, with golden-hour lighting per the user brief. Tree species are represented by generic broadleaf and palm artwork.",
   "shanghai": "Corrected using the two user-supplied photographs and mapped roof/building outlines: cream funnel canopies at H/K, enclosed viewing bridges over the main straight, and pit/main-stand sides aligned with the map. Procedural cladding, crowds, windows and branding remain approximations; original track and rain effects are unchanged.",
   "suzuka": "Mapped Circuit Wheel, main stand and pit positions; original procedural wheel, rides, tiered stands, hillside crowds, crossover structure, hills, gravel, trees and event props. Terrain between sampled track elevations, ride silhouettes and architectural detailing are artistic approximations; centreline, driving surface, car and physics are unchanged.",
-  "bahrain": "Mapped Sakhir Tower, paddock and stand positions; procedural sail shades, LED bands, desert terrain, oasis gardens, blue/white wave runoff, regional branding and 495 visual floodlight poles. Six nearby pooled lights illuminate the scene; two cast shadows. Twilight fades to night over six minutes. Runoff walls share rendering/collision boundaries. Distant city/oilfield silhouettes, runoff decorations and architecture details are artistic approximations; track mesh and car are unchanged.",
+  "bahrain": "Mapped Sakhir Tower, paddock and stand positions; procedural sail shades, LED bands, desert terrain, oasis gardens, blue/white wave runoff, regional branding and 495 visual floodlight poles. A permanent venue lighting field and fixed fill lights keep illumination continuous, with the existing key light casting shadows. Twilight fades to night over six minutes. Runoff walls share rendering/collision boundaries. Distant city/oilfield silhouettes, runoff decorations and architecture details are artistic approximations; track mesh and car are unchanged.",
   "spa": "Mapped Eau Rouge venue, pits, Endurance/Raidillon/F1/Silver stands. Original procedural pine forest, steep rolling terrain around the existing official elevation profile, rocky banks, chalet detailing, terraces, cranes, tractors, safety gates, LED panels, tyres and brand artwork. Shifting cloud sky and sunlight; occasional hillside smoke. Shared runoff envelope keeps visible guardrails and collision aligned. No track centreline, elevation or car changes. Terrain away from the track and building/forest/event details are artistic approximations.",
   "monaco": "Mapped Mediterranean coastline, Port Hercule, 210 building outlines and hotel/Casino positions. Road-clear building render rings preserve the narrow streets; Fairmont retains overhead tunnel clearance. Procedural pastel facades, balconies, bougainvillea, Casino towers/clocks, superyachts with reflective rippling harbor water, water-supported stands, palms, cliffs, marshals and mapped quay cranes add detail. Clear midday sun; original track, elevations, hairpin, tunnel cover and car unchanged. Architectural detailing, terrain outside the road and event dressing remain artistic approximations.",
-  "jeddah": "Mapped Red Sea Corniche shoreline, Al-Rahmah Floating Mosque (Island Mosque), Jeddah Yacht Club & Marina, and Jeddah Tower horizon anchor. Narrow street-circuit paved runoff without gravel traps shares concrete wall and black catch-fence boundaries between renderer and collision logic. Procedural banked Turn 13 coastal embankment with animated wave foam, neon-lit Corniche skyscrapers, beach resorts, superyachts, uplight palms, illuminated fountains, Tecpro corner blocks, Aramco/stc/Rolex branding, live LED gantry bridges, wave-roofed grandstands, Saudi flags, synchronized fireworks, white camera poles, recovery cranes, and white-suited marshals in LED vests. Track mesh and car model are unchanged."
+  "jeddah": "Mapped Red Sea Corniche shoreline, Al-Rahmah Floating Mosque (Island Mosque), Jeddah Yacht Club & Marina, and Jeddah Tower horizon anchor. Narrow street-circuit paved runoff without gravel traps shares concrete wall and black catch-fence boundaries between renderer and collision logic. Procedural banked Turn 13 coastal embankment with animated wave foam, neon-lit Corniche skyscrapers, beach resorts, superyachts, uplight palms, illuminated fountains, Tecpro corner blocks, Aramco/stc/Rolex branding, live LED gantry bridges, wave-roofed grandstands, Saudi flags, synchronized fireworks, white camera poles, recovery cranes, and white-suited marshals in LED vests. Track mesh and car model are unchanged.",
+  "singapore": "Mapped Marina Reservoir and Singapore River water, 450 road-clear city footprints, Marina Bay Sands towers/skypark, Flyer, Fullerton, Old Supreme Court and Esplanade references. Original procedural architecture and textures, emissive windows, reflective bay water, permanent road illumination field and LED fixtures, tropical foliage, green uplights, four colourful grandstands with phone glints, flags, marshals, pit detailing and hospitality artwork. Existing 19-corner route, driving elevations and car retained; historic Bay Grandstand underpass is not restored."
 }

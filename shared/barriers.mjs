@@ -11,7 +11,7 @@ function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor
 function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,offset);return {x:p.x+Math.cos(p.heading)*o,z:p.z-Math.sin(p.heading)*o,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
- const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',jeddah=track.id==='sa-2021',wideRunoff=shanghai||bahrain||spa||jeddah,concreteWalls=melbourne||shanghai||bahrain||jeddah||track.id==='az-2016',boundaryOffset=jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
+ const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',jeddah=track.id==='sa-2021',wideRunoff=shanghai||bahrain||spa||jeddah,concreteWalls=melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008'].includes(track.id),boundaryOffset=jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
  function add(a,b,width,height,kind,inward=null){
   const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);if(length<.01)return;
   const wall={a,b,width,height,kind,x:(a.x+b.x)/2,z:(a.z+b.z)/2,tx:dx/length,tz:dz/length,length,inward,bottom:Math.min(a.y,b.y),top:Math.max(a.y,b.y)+height};
@@ -21,7 +21,7 @@ export function trackBarriers(track){
  // Campus streets have open verges. Their only solid walls come from the actual
  // subway retaining walls, portal pillars and roundabout island below.
  if(!track.campus)for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
-  const next=(i+1)%track.points.length,inner=wideRunoff?boundaryOffset(track,i,side)-.35:half+(track.id==='az-2016'?.3:track.id==='mc-1929'?.35:6.5),outer=wideRunoff?boundaryOffset(track,i,side)+.35:half+(['mc-1929','az-2016'].includes(track.id)?.8:7.2);
+  const next=(i+1)%track.points.length,inner=wideRunoff?boundaryOffset(track,i,side)-.35:half+(track.id==='sg-2008'?.65:track.id==='az-2016'?.3:track.id==='mc-1929'?.35:6.5),outer=wideRunoff?boundaryOffset(track,i,side)+.35:half+(track.id==='sg-2008'?1.2:['mc-1929','az-2016'].includes(track.id)?.8:7.2);
   const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*(wideRunoff?boundaryOffset(track,next,side)-.35:inner)),bo=edge(track,next,side*(wideRunoff?boundaryOffset(track,next,side)+.35:outer)),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
   const cx=(track.points[i].x+track.points[next].x)/2,cz=(track.points[i].z+track.points[next].z)/2,nx=cx-(a.x+b.x)/2,nz=cz-(a.z+b.z)/2,n=Math.hypot(nx,nz);
   const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2);
