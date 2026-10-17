@@ -545,3 +545,29 @@ the timer reaches zero. Best valid time across all attempts sets the grid.
 
 Only static source checks, module import resolution, asset build, and deployment
 health/asset verification are used for this release. No gameplay tests are run.
+
+## Madrid IFEMA and Valdebebas environment — 2.20.0
+
+Madrid now has a dedicated environment: vaulted exhibition halls 12/14, North
+Convention Centre, an enclosed pit/hospitality pavilion, parkland, sparse pine
+avenues and a 545-metre spectator bowl fitted around the retained La Monumental
+curve. Instanced spectators and Spanish flags suggest the large stadium crowd;
+the real venue's stated 45,000 capacity is a reference, not a rendered head count.
+
+Two concrete underpass shells enclose the full curved road envelope. Roofs,
+portals, permanent ceiling lights, highway parapets, shared collision walls,
+rain shelter and tunnel camera clearance use the same placement plan. Branded
+boards, overhead gantries, El Búnker block stacks, bank-side reinforced rails,
+marshals, working LED status panels, TV cranes, fan zones, distant aircraft,
+warm hard sunlight and subtle animated heat shimmer complete the surroundings.
+
+Whole building/stand reservations check every road branch and keep later props
+clear. Repeated sponsor textures and static geometry are shared/batched; crowds
+use instancing. The road centreline, elevation profile, banking, racing line and
+cars are retained. Architecture, prop locations and tunnel envelopes are artistic
+reconstructions fitted to that layout, not scanned official-game assets or
+surveyed construction dimensions.
+
+Verification: syntax/undefined-name checks, asset build and static geometry
+inspection (finite vertices, 97 clear assembly sites, and tunnel collision walls
+at least 15.09m from the centreline). No gameplay tests were run.

@@ -85,3 +85,19 @@ Baku 2.17.2 derives building/park clipping from the shared variable-width road c
 `public/data/singapore-city.js` contains selected building and park outlines, Marina Reservoir relation 9542146 and Singapore River relation 9569901 from © OpenStreetMap contributors, retrieved 2026-10-16, under ODbL 1.0: https://www.openstreetmap.org/copyright . Source way/relation/node IDs are retained; building/park render rings are clipped clear of the road and compact safety-wall corridor. Marina Bay Sands towers: ways 116801004, 172307471 and 172307472; skypark 116800998. Singapore Flyer: node 13725008268 and footprint 230082125. Fullerton Hotel: 46595395. Old Supreme Court: 170960936. Esplanade domes: 256163011 and 256163012. F1 Pit Building: 49890775.
 
 Original procedural architecture, glowing facades, foliage, lighting and event art use no redistributed photographs or official-game assets. Reference context: https://www.visitsingapore.com/see-do-singapore/recreation-leisure/resorts/marina-bay-sands/ and https://singaporegp.sg/media/2023/circuit-park-map/2023-09-06-circuit-park-map.pdf . Historic Bay Grandstand closure/current-route context: https://singaporegp.sg/en/news/2023/new-grandstands-added-for-the-formula-1-singapore-airlines-singapore-grand-prix-2023/ . Grandstand positions are derived road-clear event artwork, not surveyed seating plans.
+
+## Madrid IFEMA environment references
+
+Procedural Madrid environment assets are original geometry/textures. Named
+corner/underpass context, the La Monumental stadium concept and IFEMA architecture
+use the official MADRING circuit guide and promotional architectural references:
+
+- https://www.madring.com/en/circuit
+- https://www.madring.com/en/press-releases/new-renders-madring
+- https://www.madring.com/en/press-releases/pit-building-paddock-club
+- https://www.ifema.es/en/doc/2024-annual-report/memoria-anual-en-2024.pdf
+
+No photographs, official logos, third-party 3D assets or new geographic datasets
+are bundled. Local tunnel/arena anchors are approximate fits to the already
+licensed geographic centreline. Surrounding architecture is an interpretation,
+not a surveyed or scanned reproduction. The retained road banking is unchanged.

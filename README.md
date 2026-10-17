@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.19.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.20.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -581,3 +581,29 @@ eligible drivers to finish (the host can still end qualifying manually).
 Validation for this release: syntax, undefined-name checks, shared-module
 imports and asset build only. Gameplay and multiplayer driving checks were not
 run, following the preference for manual playtesting.
+
+## Madrid IFEMA and Valdebebas environment — 2.20.0
+
+Madrid now has a dedicated environment: vaulted exhibition halls 12/14, North
+Convention Centre, an enclosed pit/hospitality pavilion, parkland, sparse pine
+avenues and a 545-metre spectator bowl fitted around the retained La Monumental
+curve. Instanced spectators and Spanish flags suggest the large stadium crowd;
+the real venue's stated 45,000 capacity is a reference, not a rendered head count.
+
+Two concrete underpass shells enclose the full curved road envelope. Roofs,
+portals, permanent ceiling lights, highway parapets, shared collision walls,
+rain shelter and tunnel camera clearance use the same placement plan. Branded
+boards, overhead gantries, El Búnker block stacks, bank-side reinforced rails,
+marshals, working LED status panels, TV cranes, fan zones, distant aircraft,
+warm hard sunlight and subtle animated heat shimmer complete the surroundings.
+
+Whole building/stand reservations check every road branch and keep later props
+clear. Repeated sponsor textures and static geometry are shared/batched; crowds
+use instancing. The road centreline, elevation profile, banking, racing line and
+cars are retained. Architecture, prop locations and tunnel envelopes are artistic
+reconstructions fitted to that layout, not scanned official-game assets or
+surveyed construction dimensions.
+
+Verification: syntax/undefined-name checks, asset build and static geometry
+inspection (finite vertices, 97 clear assembly sites, and tunnel collision walls
+at least 15.09m from the centreline). No gameplay tests were run.

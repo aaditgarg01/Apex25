@@ -160,6 +160,22 @@
     {
       "feature": "Mapped Marina Reservoir shoreline and city footprint source credit",
       "url": "https://www.openstreetmap.org/relation/9542146"
+    },
+    {
+      "feature": "Madrid named corners, La Monumental 550m/24% bank, C\u00e1rcavas climb and Norte tunnel context",
+      "url": "https://www.madring.com/en/circuit"
+    },
+    {
+      "feature": "Madrid IFEMA halls and spectator/stadium architecture visual references",
+      "url": "https://www.madring.com/en/press-releases/new-renders-madring"
+    },
+    {
+      "feature": "Madrid pit building and IFEMA-integrated hospitality references",
+      "url": "https://www.madring.com/en/press-releases/pit-building-paddock-club"
+    },
+    {
+      "feature": "Madrid covered exhibition paddock context",
+      "url": "https://www.ifema.es/en/doc/2024-annual-report/memoria-anual-en-2024.pdf"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

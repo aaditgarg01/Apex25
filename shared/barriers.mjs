@@ -1,3 +1,4 @@
+import {madridLayout,madridTunnelLayout} from './madrid.mjs';
 import {jeddahBoundaryOffset,jeddahTecproBlocks} from './jeddah.mjs';
 import {spaBoundaryOffset} from './spa.mjs';
 import {bahrainBoundaryOffset} from './bahrain.mjs';
@@ -11,7 +12,7 @@ function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor
 function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,offset);return {x:p.x+Math.cos(p.heading)*o,z:p.z-Math.sin(p.heading)*o,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
- const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',jeddah=track.id==='sa-2021',wideRunoff=shanghai||bahrain||spa||jeddah,concreteWalls=melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008'].includes(track.id),boundaryOffset=jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
+ const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',jeddah=track.id==='sa-2021',wideRunoff=shanghai||bahrain||spa||jeddah,concreteWalls=melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026'].includes(track.id),boundaryOffset=jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
  function add(a,b,width,height,kind,inward=null){
   const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);if(length<.01)return;
   const wall={a,b,width,height,kind,x:(a.x+b.x)/2,z:(a.z+b.z)/2,tx:dx/length,tz:dz/length,length,inward,bottom:Math.min(a.y,b.y),top:Math.max(a.y,b.y)+height};
@@ -36,6 +37,7 @@ export function trackBarriers(track){
   const p=roadPoint(track,s),tx=Math.sin(p.heading),tz=Math.cos(p.heading),rx=Math.cos(p.heading),rz=-Math.sin(p.heading);
   for(const side of [-1,1]){const x=p.x+rx*offset*side,z=p.z+rz*offset*side;add({x:x-tx*length/2,z:z-tz*length/2,y:p.y},{x:x+tx*length/2,z:z+tz*length/2,y:p.y},width,height,kind,{x:-rx*side,z:-rz*side});}
  }
+ if(track.id==='es-2026')for(const tunnel of madridLayout(track).tunnels)for(const w of madridTunnelLayout(track,tunnel).walls)add(w.a,w.b,w.width,w.height,'tunnel',w.inward);
  if(track.campus){
   for(const tunnel of track.campus.tunnels){const layout=campusTunnelLayout(track,tunnel);for(const w of [...layout.walls,...layout.portals])add(w.a,w.b,w.width,w.height,w.kind,w.inward);}
   for(const island of track.campus.roundabouts){const p=campusLocal(track,island.location);let closest=track.points[0],distance=Infinity;for(const point of track.points){const d=Math.hypot(point.x-p.x,point.z-p.z);if(d<distance){distance=d;closest=point;}}const y=closest.groundY-.975;for(let i=0;i<32;i++){const a=i*Math.PI/16,b=(i+1)*Math.PI/16;add({x:p.x+Math.cos(a)*island.radius,z:p.z+Math.sin(a)*island.radius,y},{x:p.x+Math.cos(b)*island.radius,z:p.z+Math.sin(b)*island.radius,y},.12,1.4,'island');}}
