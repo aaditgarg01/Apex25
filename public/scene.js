@@ -71,7 +71,10 @@ export class RaceScene{
  const start=sample(track,0),gantry=new THREE.Group();gantry.position.set(start.x,start.y,start.z);gantry.rotation.y=start.heading;this.group.add(gantry);for(const x of [-half-2,half+2])this.box(.5,7.5,.5,'#5a6265',x,3.75,0,gantry);this.box(track.width+5,1.5,.6,'#202c35',0,7,0,gantry);
  const tc=document.createElement('canvas');tc.width=1024;tc.height=128;const ctx=tc.getContext('2d');ctx.fillStyle='#202c35';ctx.fillRect(0,0,1024,128);ctx.fillStyle='#ff5936';ctx.font='italic 900 76px Arial';ctx.textAlign='center';ctx.fillText(track.campus?'VIT VELLORE':'APEX 25',512,93);const tex=new THREE.CanvasTexture(tc),sign=new THREE.Mesh(new THREE.PlaneGeometry(track.width+3,1.4),new THREE.MeshBasicMaterial({map:tex}));sign.position.set(0,7,.32);gantry.add(sign);const back=sign.clone();back.rotation.y=Math.PI;back.position.z=-.32;gantry.add(back);
  for(let row=0;row<2;row++)for(let col=0;col<16;col++)this.box(track.width/16,.035,1,(row+col)%2?'#dce1dc':'#252d33',-half+(col+.5)*track.width/16,.12,row-1,gantry);
- for(let i=0;i<8;i++){const {s,offset}=gridSlot(i),p=sample(track,s,offset),m=this.box(2.5,.02,.12,'#d5d8cb',p.x,p.y+.11,p.z);m.rotation.y=p.heading;}
+ for(let i=0;i<8;i++){
+  const {s,offset}=gridSlot(i),p=sample(track,s,offset),slot=new THREE.Group();slot.position.set(p.x,p.y+.11,p.z);slot.rotation.set(-p.pitch,p.heading,0,'YXZ');this.group.add(slot);
+  this.box(2.8,.025,.12,'#e1e0d5',0,0,2.85,slot);this.box(.12,.025,5.4,'#e1e0d5',offset<0?-1.4:1.4,0,.2,slot);
+ }
  this.batchStats=batchBoxes(this.group);batchMapped(this.group);this.setConditions(this.conditions);
  }
  setConditions(value){
@@ -115,10 +118,13 @@ export class RaceScene{
   add(new THREE.BoxGeometry(.035,.065,1.86),accent,x,.39,-.4);
   add(new THREE.BoxGeometry(.26,.02,1.28),secondary,x*.82,.645,-.4);
  }
- const decal=document.createElement('canvas');decal.width=512;decal.height=128;const ink=decal.getContext('2d');ink.fillStyle=paint.side;ink.fillRect(0,0,512,128);ink.fillStyle=paint.accent;ink.fillRect(0,100,512,28);ink.fillStyle=paint.secondary;ink.beginPath();ink.moveTo(0,0);ink.lineTo(92,0);ink.lineTo(46,100);ink.lineTo(0,100);ink.fill();ink.fillStyle=paint.ink;ink.font='italic 900 35px Arial';ink.textAlign='center';ink.fillText(paint.label,285,64,410);
- const texture=new THREE.CanvasTexture(decal);texture.colorSpace=THREE.SRGBColorSpace;const lettering=mat('#ffffff',{map:texture,roughness:.4});
- for(const x of [-.97,.97]){const label=add(new THREE.PlaneGeometry(1.75,.25),lettering,x,.52,-.4);label.rotation.y=Math.sign(x)*Math.PI/2;}
- const number=document.createElement('canvas');number.width=128;number.height=128;const ni=number.getContext('2d');ni.fillStyle=paint.nose;ni.fillRect(0,0,128,128);ni.fillStyle=paint.nose==='#f6d321'||paint.nose==='#f2f4f5'||paint.nose==='#f3f4f5'||paint.nose==='#33ed22'?'#11191f':'#ffffff';ni.font='italic 900 90px Arial';ni.textAlign='center';ni.fillText(String(driver.index+1).padStart(2,'0'),64,99);const numberTexture=new THREE.CanvasTexture(number);numberTexture.colorSpace=THREE.SRGBColorSpace;const numberPanel=add(new THREE.PlaneGeometry(.35,.45),mat('#ffffff',{map:numberTexture,roughness:.4}),0,.535,2.16);numberPanel.rotation.x=-Math.PI/2+.13;
+ const sideLettering=(background,foreground)=>{
+  const decal=document.createElement('canvas');decal.width=512;decal.height=128;const ink=decal.getContext('2d');ink.fillStyle=background;ink.fillRect(0,0,512,128);ink.fillStyle=paint.accent;ink.fillRect(0,100,512,28);ink.fillStyle=paint.secondary;ink.beginPath();ink.moveTo(0,0);ink.lineTo(92,0);ink.lineTo(46,100);ink.lineTo(0,100);ink.fill();ink.fillStyle=foreground;ink.font='italic 900 35px Arial';ink.textAlign='center';ink.fillText(paint.label,285,64,410);
+  const texture=new THREE.CanvasTexture(decal);texture.colorSpace=THREE.SRGBColorSpace;return mat('#ffffff',{map:texture,roughness:.4});
+ };
+ const lettering=paint.splitColors?null:sideLettering(paint.side,paint.ink);
+ for(const x of [-.97,.97]){const side=x<0?0:1,material=lettering||sideLettering(paint.splitColors[side],paint.splitColors[1-side]),label=add(new THREE.PlaneGeometry(1.75,.25),material,x,.52,-.4);label.rotation.y=Math.sign(x)*Math.PI/2;}
+ const number=document.createElement('canvas');number.width=128;number.height=128;const ni=number.getContext('2d');ni.fillStyle=paint.nose;ni.fillRect(0,0,128,128);ni.fillStyle=paint.numberInk||(paint.nose==='#f6d321'||paint.nose==='#f2f4f5'||paint.nose==='#f3f4f5'||paint.nose==='#33ed22'?'#11191f':'#ffffff');ni.font='italic 900 90px Arial';ni.textAlign='center';ni.fillText(String(driver.index+1).padStart(2,'0'),64,99);const numberTexture=new THREE.CanvasTexture(number);numberTexture.colorSpace=THREE.SRGBColorSpace;const numberPanel=add(new THREE.PlaneGeometry(.35,.45),mat('#ffffff',{map:numberTexture,roughness:.4}),0,.535,2.16);numberPanel.rotation.x=-Math.PI/2+.13;
  const tyreProfile=[[.25,-.18],[.35,-.18],[.385,-.14],[.395,-.07],[.395,.07],[.385,.14],[.35,.18],[.25,.18]].map(([r,y])=>new THREE.Vector2(r,y));const wheelGeo=new THREE.LatheGeometry(tyreProfile,24),hubGeo=new THREE.CylinderGeometry(.23,.23,.35,16),wheels=[];
  wheelGeo.rotateZ(Math.PI/2);hubGeo.rotateZ(Math.PI/2);
  for(const x of [-1.05,1.05])for(const z of [-1.2,1.45]){

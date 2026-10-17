@@ -571,3 +571,20 @@ surveyed construction dimensions.
 Verification: syntax/undefined-name checks, asset build and static geometry
 inspection (finite vertices, 97 clear assembly sites, and tunnel collision walls
 at least 15.09m from the centreline). No gameplay tests were run.
+
+## Staggered starting grid and Cadillac livery — 2.21.0
+
+Race starts now alternate left/right with each consecutive car 8 metres farther
+back, giving 16 metres between cars in the same column. The 7.2-metre lateral
+separation is retained. Race spawns, post-qualifying grids and L-shaped painted
+slots share the same placement function, including online sessions.
+
+Cadillac is appended as the eleventh livery without changing existing selections.
+Its 2026 debut black/white split is rendered across the chassis, nose, engine
+cover and sidepods, with contrasting CADILLAC side lettering. The selector shows
+the livery year per team (the original ten remain their 2025 schemes).
+Reference: https://www.cadillacf1team.com/news/cadillac-formula-1-r-team-reveals-historic-first-livery
+
+Static verification: all 42 circuit grids have non-overlapping car footprints;
+all eleven livery models assemble and batch with finite geometry. Syntax,
+undefined-name checks and the asset build pass. No gameplay tests were run.

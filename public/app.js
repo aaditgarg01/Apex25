@@ -34,7 +34,7 @@ function updateLiveryUI(){
  const selected=normalizeLiveryIndex(Number($('car-color').value));$('car-color').value=String(selected);
  const paint=liveryProfile(selected);$('livery-swatches').replaceChildren();
  for(const color of [paint.body,paint.side,paint.accent]){const swatch=document.createElement('i');swatch.style.background=color;$('livery-swatches').append(swatch);}
- $('livery-name').textContent=paint.name+' · 2025';
+ $('livery-name').textContent=paint.name+' · '+paint.season;
  try{localStorage.setItem('apex-livery',paint.id);}catch{}
  if(track&&!racing&&!room)cars=[createCar(track,'preview','Driver',0,false,selected)];
 }

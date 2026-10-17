@@ -8,8 +8,8 @@ import {roadHalfWidth} from './baku.mjs';
 import {QUALIFYING_LIMIT,finishQualifyingCar} from './qualifying.mjs';
 export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
-export const GRID_ROW_SPACING=13,GRID_LATERAL_OFFSET=3.6;
-export function gridSlot(index){return {s:-12-Math.floor(index/2)*GRID_ROW_SPACING,offset:(index%2?1:-1)*GRID_LATERAL_OFFSET};}
+export const GRID_ROW_SPACING=16,GRID_STAGGER=8,GRID_LATERAL_OFFSET=3.6;
+export function gridSlot(index){return {s:-12-Math.floor(index/2)*GRID_ROW_SPACING-(index%2)*GRID_STAGGER,offset:(index%2?1:-1)*GRID_LATERAL_OFFSET};}
 export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
 export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){

@@ -25,13 +25,22 @@ export function addCarDetail(car,paint){
  const painted=color=>new THREE.MeshPhysicalMaterial({color,roughness:.32,metalness:.08,clearcoat:.8,clearcoatRoughness:.2});
  const body=painted(paint.body),side=painted(paint.side),nose=painted(paint.nose),accent=painted(paint.accent);
  const add=(geometry,material,x=0,y=0,z=0,parent=car)=>{const mesh=new THREE.Mesh(geometry,material);mesh.position.set(x,y,z);parent.add(mesh);if(parent===car)mesh.userData.mappedStatic=true;return mesh;};
- add(loft([[-1.75,.55,.38,.38],[-1.1,.62,.78,.7],[-.65,.48,.94,.43],[.1,.48,.93,.43],[.7,.53,.66,.5],[1.25,.46,.43,.3]]),body);
- add(loft([[.7,.53,.5,.38],[1.4,.47,.4,.28],[2.1,.42,.33,.22],[2.45,.38,.24,.16]]),nose);
+ const split=paint.splitColors?.map(painted);
+ const addPaint=(geometry,material)=>{
+  if(!split)return add(geometry,material);
+  // The loft has vertices on the centre seam. Split faces into two materials
+  // to keep Cadillac's black/white halves crisp from either camera side.
+  const positions=geometry.attributes.position,indices=geometry.index.array,halves=[[],[]];
+  for(let i=0;i<indices.length;i+=3){const ids=[indices[i],indices[i+1],indices[i+2]],x=ids.reduce((sum,index)=>sum+positions.getX(index),0);halves[x<-.000001?0:1].push(...ids);}
+  for(let i=0;i<2;i++){const half=geometry.clone();half.setIndex(halves[i]);add(half,split[i]);}geometry.dispose();
+ };
+ addPaint(loft([[-1.75,.55,.38,.38],[-1.1,.62,.78,.7],[-.65,.48,.94,.43],[.1,.48,.93,.43],[.7,.53,.66,.5],[1.25,.46,.43,.3]]),body);
+ addPaint(loft([[.7,.53,.5,.38],[1.4,.47,.4,.28],[2.1,.42,.33,.22],[2.45,.38,.24,.16]]),nose);
  for(const x of [-.63,.63]){
-  add(loft([[-1.55,.39,.32,.22],[-1.15,.48,.56,.4],[-.65,.48,.62,.43],[.1,.48,.61,.4],[.45,.49,.47,.3]]),side,x);
+  add(loft([[-1.55,.39,.32,.22],[-1.15,.48,.56,.4],[-.65,.48,.62,.43],[.1,.48,.61,.4],[.45,.49,.47,.3]]),split?split[x<0?0:1]:side,x);
   const intake=add(new THREE.SphereGeometry(1,12,8),carbon,x,.53,.45);intake.scale.set(.2,.1,.035);
  }
- add(loft([[-1.8,.69,.16,.28],[-1.2,.91,.39,.63],[-.73,.95,.36,.62],[-.43,.83,.25,.5]]),body);
+ addPaint(loft([[-1.8,.69,.16,.28],[-1.2,.91,.39,.63],[-.73,.95,.36,.62],[-.43,.83,.25,.5]]),body);
  // A dark open cockpit rim, a front support and a rounded halo horseshoe.
  const rim=add(new THREE.TorusGeometry(.39,.06,8,32),carbon,0,.77,-.06);rim.rotation.x=Math.PI/2;rim.scale.set(1,1.6,1);
  const haloPoints=[[-.36,1.1,-.58],[-.43,1.24,-.1],[-.34,1.29,.47],[0,1.3,.63],[.34,1.29,.47],[.43,1.24,-.1],[.36,1.1,-.58]].map(p=>new THREE.Vector3(...p));

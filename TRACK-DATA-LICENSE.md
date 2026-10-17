@@ -101,3 +101,10 @@ No photographs, official logos, third-party 3D assets or new geographic datasets
 are bundled. Local tunnel/arena anchors are approximate fits to the already
 licensed geographic centreline. Surrounding architecture is an interpretation,
 not a surveyed or scanned reproduction. The retained road banking is unchanged.
+
+## Cadillac 2026 livery reference
+
+The additional Cadillac scheme is an original procedural interpretation of the
+team's black-and-white 2026 debut livery, applied to this game's original car
+geometry. No official logo bitmap or external 3D car model is bundled.
+Reference: https://www.cadillacf1team.com/news/cadillac-formula-1-r-team-reveals-historic-first-livery
