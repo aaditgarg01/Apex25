@@ -1,3 +1,4 @@
+import {addLasVegas} from './las-vegas.js';
 import {addMadrid} from './madrid.js';
 import {addSingapore} from './singapore.js';
 import {addBaku} from './baku.js';
@@ -25,9 +26,10 @@ const nightIds=['sg-2008','us-2023','sa-2021','ae-2009','bh-2002','qa-2004'];
 const desertIds=['bh-2002','sa-2021','qa-2004','ae-2009','us-2023'];
 const forestIds=['it-1922','be-1925','de-1927','de-1932','it-1953','at-1969','us-1956'];
 const tropicalIds=['my-1999','sg-2008','br-1940','us-2022','au-1953','in-vit-vellore'];
-export function venueProfile(track){return {night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),goldenHour:track.id==='au-1953',industrialHaze:track.id==='cn-2004',clearHills:track.id==='jp-1962',desertTwilight:track.id==='bh-2002',ardennes:track.id==='be-1925',riviera:track.id==='mc-1929',redSeaNight:track.id==='sa-2021',caspian:track.id==='az-2016',marinaNight:track.id==='sg-2008',castilian:track.id==='es-2026',ground:track.campus?'#7a8b62':track.id==='sa-2021'?'#cbb894':desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:track.id==='sa-2021'?'#040811':nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
+export function venueProfile(track){return {night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),goldenHour:track.id==='au-1953',industrialHaze:track.id==='cn-2004',clearHills:track.id==='jp-1962',desertTwilight:track.id==='bh-2002',ardennes:track.id==='be-1925',riviera:track.id==='mc-1929',redSeaNight:track.id==='sa-2021',caspian:track.id==='az-2016',marinaNight:track.id==='sg-2008',castilian:track.id==='es-2026',vegasNight:track.id==='us-2023',ground:track.campus?'#7a8b62':track.id==='sa-2021'?'#cbb894':desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:track.id==='sa-2021'?'#040811':nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
 export function addVenue(scene,track){
  if(track.campus)return addCampus(scene,track);
+ if(track.id==='us-2023')return addLasVegas(scene,track);
  if(track.id==='es-2026')return addMadrid(scene,track);
  if(track.id==='az-2016')return addBaku(scene,track);
  if(track.id==='sg-2008')return addSingapore(scene,track);

@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.22.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.23.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -644,3 +644,28 @@ and eight isolated collision-math scenarios covering momentum/energy, grazing,
 rear, offset, crossing, head-on and reversing contact. Parallel rubbing retains
 speed; all checked scenarios conserve linear momentum and add no impact energy.
 These are component calculations, not gameplay or internet playtests.
+
+## Las Vegas Strip environment — 2.23.0
+
+Las Vegas now has a dedicated night environment with geographically anchored,
+original simplified models of the Sphere, Eiffel Tower replica, Bellagio,
+Caesars Palace, Venetian, Flamingo and Wynn. The Sphere displays animated LED
+patterns; Bellagio has animated illuminated fountain jets. Permanent circuit-wide
+road illumination and emissive floodlight fixtures stay on independently of
+player location. Casino windows, neon trims, pedestrian bridges, the GP paddock,
+occupied grandstands, phone lights, LED sticks and hospitality add trackside scale.
+
+Grey concrete walls and black catch fences share the same boundary. Scuffed
+red/white safety cladding follows solid collision walls at technical corners.
+Palms, hedges, marshals, LED warning panels, cranes, medical vehicles and an
+infield stage are kept outside the road. Faint brake haze is cosmetic only.
+Whole-model checks protect all road branches; static geometry is batched.
+
+These are procedural approximations, not a scanned or licensed replica of the
+commercial F1 game. References: official Las Vegas GP circuit/zone information
+(https://www.f1lasvegasgp.com/2026/), Sphere engineering dimensions
+(https://www.walterpmoore.com/projects/msg-sphere-at-the-venetian), and the Paris
+Las Vegas fact sheet (https://newsroom.caesars.com/files/images/fact-sheets-images/Paris-Las-Vegas-Fact-Sheet_July-2023_FINAL.pdf).
+
+Verification: syntax/undefined-name checks, source build, static model geometry,
+road clearance and batching inspection. No driving or multiplayer playtests.
