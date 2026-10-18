@@ -588,3 +588,23 @@ Reference: https://www.cadillacf1team.com/news/cadillac-formula-1-r-team-reveals
 Static verification: all 42 circuit grids have non-overlapping car footprints;
 all eleven livery models assemble and batch with finite geometry. Syntax,
 undefined-name checks and the asset build pass. No gameplay tests were run.
+
+## Momentum-based car collisions — 2.22.0
+
+Car-to-car contact now uses two-dimensional momentum and rotational inertia.
+Side swipes push cars sideways instead of projecting the entire impact onto
+forward speed. Rear bumps transfer motion to both cars; off-centre hits produce
+bounded rotation. Small restitution and limited sliding friction dissipate impact
+energy without making light parallel contact stop either driver.
+
+Lateral impact velocity and rotation persist across physics ticks and settle
+through tyre grip, more slowly in wet conditions. Barrier contacts use the full
+velocity vector, and server snapshots/client prediction carry the same impact
+state. The speedometer includes lateral motion. Recovery, retirement and race
+finish clear the remaining impact state. Qualifying stays ghosted.
+
+Verification: syntax, undefined-name checks, shared-module imports, asset build
+and eight isolated collision-math scenarios covering momentum/energy, grazing,
+rear, offset, crossing, head-on and reversing contact. Parallel rubbing retains
+speed; all checked scenarios conserve linear momentum and add no impact energy.
+These are component calculations, not gameplay or internet playtests.

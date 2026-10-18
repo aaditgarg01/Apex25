@@ -1,3 +1,4 @@
+import {velocityOf} from '/shared/motion.mjs';
 import * as THREE from '/vendor/three.module.js';
 
 // Rounded lofts, assembled from original geometry within the existing car size.
@@ -71,7 +72,7 @@ export function updateCockpit(car,state,visible){
  const cockpit=car.userData.cockpit;if(!cockpit)return;
  cockpit.steering.rotation.z=-(state.steer||0)*1.25;
  if(!visible||performance.now()-(cockpit.updatedAt||0)<80)return;cockpit.updatedAt=performance.now();
- const speed=Math.round(Math.abs(state.v)*3.6),gear=state.v<-.5?'R':state.v<1?'N':Math.min(8,Math.max(1,Math.floor(speed/43)+1)),boost=Math.round(state.boost||0),key=`${gear}:${speed}:${boost}`;
+ const velocity=velocityOf(state),speed=Math.round(Math.hypot(velocity.x,velocity.z)*3.6),gear=state.v<-.5?'R':state.v<1?'N':Math.min(8,Math.max(1,Math.floor(Math.abs(state.v)*3.6/43)+1)),boost=Math.round(state.boost||0),key=`${gear}:${speed}:${boost}`;
  if(key===cockpit.key)return;cockpit.key=key;
  const ctx=cockpit.canvas.getContext('2d');ctx.fillStyle='#07101a';ctx.fillRect(0,0,256,128);ctx.textAlign='center';ctx.fillStyle='#e3f9eb';ctx.font='bold 80px monospace';ctx.fillText(String(gear),62,101);ctx.font='bold 40px monospace';ctx.fillText(String(speed),184,74);ctx.fillStyle='#4ee3c2';ctx.fillRect(114,95,120*boost/100,7);
  for(let i=0;i<10;i++){ctx.fillStyle=i<Math.floor((speed%43)/43*10)?(i>7?'#ee5c65':'#46dbbe'):'#253543';ctx.fillRect(13+i*23,8,17,8);}cockpit.display.needsUpdate=true;

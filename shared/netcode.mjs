@@ -1,3 +1,4 @@
+import {dampImpact,impactDamping,setVelocity} from './motion.mjs';
 import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
 import {yawRate} from './conditions.mjs';
 import {stepCar,draftStrength} from './physics.mjs';
@@ -16,11 +17,14 @@ function correction(old,next,reset){
 // A straight tangent would put a turning rival across the player's path.
 export function advanceRemote(c,dt,track=null){
  if(c.finished)return;const previousPose={x:c.x,z:c.z,heading:c.heading};
- const yaw=yawRate(c),travel=Number.isFinite(c.motionHeading)?c.motionHeading:c.heading,motionYaw=Number.isFinite(c.motionYawRate)?c.motionYawRate:yaw;
- const middle=travel+motionYaw*dt/2,distance=c.v*dt;
- c.x+=Math.sin(middle)*distance*Math.cos(c.pitch||0);
- c.z+=Math.cos(middle)*distance*Math.cos(c.pitch||0);
+ const yaw=yawRate(c)+(c.impactYaw||0),travel=Number.isFinite(c.motionHeading)?c.motionHeading:c.heading,motionYaw=Number.isFinite(c.motionYawRate)?c.motionYawRate:yaw;
+ const hasImpact=Math.hypot(c.impactVX||0,c.impactVZ||0)>.01||Math.abs(c.impactYaw||0)>.001,middle=travel+(hasImpact?0:motionYaw*dt/2),distance=c.v*dt,driftTime=dt>0?(1-Math.exp(-impactDamping(c)*dt))/impactDamping(c):dt;
+ const longitudinal={x:Math.sin(travel)*c.v,z:Math.cos(travel)*c.v};
+ c.x+=Math.sin(middle)*distance*Math.cos(c.pitch||0)+(c.impactVX||0)*driftTime;
+ c.z+=Math.cos(middle)*distance*Math.cos(c.pitch||0)+(c.impactVZ||0)*driftTime;
  c.y+=Math.sin(c.pitch||0)*distance;c.heading+=yaw*dt;c.motionHeading=travel+motionYaw*dt;
+ if(dt>0)dampImpact(c,dt);
+ if(hasImpact)setVelocity(c,longitudinal.x+(c.impactVX||0),longitudinal.z+(c.impactVZ||0));
  if(track&&dt>0)moveWithBarriers(c,track,previousPose);
  c.progress+=distance;
 }
@@ -105,7 +109,7 @@ export class NetworkMotion {
    for(let i=1;i<samples.length;i++){if(samples[i].at>=target){a=samples[i-1];b=samples[i];break;}a=samples[i];}
    const ca=a.car,cb=b.car,t=b.at===a.at?1:Math.max(0,Math.min(1,(target-a.at)/(b.at-a.at)));
    if(c.finished||cb.inputEpoch!==ca.inputEpoch||cb.resetTimer>ca.resetTimer+.3||Math.hypot(cb.x-ca.x,cb.z-ca.z)>30)return {...c,smoothMotion:true};
-   const out={...c,smoothMotion:true};for(const k of ['x','y','z','v','steer','pitch'])out[k]=lerp(ca[k],cb[k],t);out.heading=ca.heading+angleDiff(cb.heading,ca.heading)*t;out.motionHeading=(ca.motionHeading??ca.heading)+angleDiff(cb.motionHeading??cb.heading,ca.motionHeading??ca.heading)*t;
+   const out={...c,smoothMotion:true};for(const k of ['x','y','z','v','steer','pitch','impactVX','impactVZ','impactYaw'])out[k]=lerp(ca[k]??0,cb[k]??0,t);out.heading=ca.heading+angleDiff(cb.heading,ca.heading)*t;out.motionHeading=(ca.motionHeading??ca.heading)+angleDiff(cb.motionHeading??cb.heading,ca.motionHeading??ca.heading)*t;
    // Bridge a missing packet briefly; never extrapolate indefinitely after a disconnect.
    if(target>b.at&&active(s))advanceRemote(out,Math.min((target-b.at)/1000,.1),this.track);
    // Nearby cars must be shown at the same predicted time as the player, or
@@ -113,7 +117,7 @@ export class NetworkMotion {
    if(s.phase==='race'||s.phase==='practice'){
     const predicted=this.others.find(o=>o.id===c.id),other=corrected(predicted,this.remoteErrors.get(c.id)),distance=Math.hypot(other.x-this.local.x,other.z-this.local.z),blend=Math.max(0,Math.min(1,(35-distance)/20));
     advanceRemote(other,this.acc,this.track);
-    for(const key of ['x','y','z','v','pitch'])out[key]=lerp(out[key],other[key],blend);
+    for(const key of ['x','y','z','v','pitch','impactVX','impactVZ','impactYaw'])out[key]=lerp(out[key]??0,other[key]??0,blend);
     out.heading+=angleDiff(other.heading,out.heading)*blend;out.motionHeading+=angleDiff(other.motionHeading??other.heading,out.motionHeading)*blend;
    }
    return out;

@@ -1,3 +1,4 @@
+import {velocityOf,setVelocity} from './motion.mjs';
 import {madridLayout,madridTunnelLayout} from './madrid.mjs';
 import {jeddahBoundaryOffset,jeddahTecproBlocks} from './jeddah.mjs';
 import {spaBoundaryOffset} from './spa.mjs';
@@ -63,7 +64,7 @@ export function resolveBarrierContacts(car,track,{impulses=true}={}){
  if(car.finished||car.retired)return 0;const data=trackBarriers(track);let count=0;
  for(let pass=0;pass<4;pass++){
   let touched=false;for(const wall of candidates(car,data)){const hit=contact(car,wall);if(!hit)continue;const {normal:n,depth}=hit;car.x+=n.x*(depth+.002);car.z+=n.z*(depth+.002);touched=true;count++;
-   if(impulses){const direction=car.motionHeading??car.heading,vx=Math.sin(direction)*car.v,vz=Math.cos(direction)*car.v,into=vx*n.x+vz*n.z;if(into<0){const friction=into<-.5?.98:1,x=(vx-into*n.x)*friction,z=(vz-into*n.z)*friction,speed=Math.hypot(x,z),reverse=car.v<0;car.v=speed<.2?0:(reverse?-speed:speed);if(speed>=.2)car.motionHeading=Math.atan2(reverse?-x:x,reverse?-z:z);car.motionYawRate=0;car.boostActive=false;}}
+   if(impulses){const v=velocityOf(car),into=v.x*n.x+v.z*n.z;if(into<0){const friction=into<-.5?.98:1,x=(v.x-into*n.x)*friction,z=(v.z-into*n.z)*friction,speed=Math.hypot(x,z);setVelocity(car,speed<.2?0:x,speed<.2?0:z);car.impactYaw=(car.impactYaw||0)*.35;car.motionYawRate=0;car.boostActive=false;}}
   }if(!touched)break;
  }
  return count;

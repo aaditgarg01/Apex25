@@ -1,3 +1,4 @@
+import {clearImpact,dampImpact,velocityOf,setVelocity} from './motion.mjs';
 import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
 import {LIVERIES,normalizeLiveryIndex} from './liveries.mjs';
 import {sampleGuide} from './racing-line.mjs';
@@ -10,16 +11,17 @@ export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
 export const GRID_ROW_SPACING=16,GRID_STAGGER=8,GRID_LATERAL_OFFSET=3.6;
 export function gridSlot(index){return {s:-12-Math.floor(index/2)*GRID_ROW_SPACING-(index%2)*GRID_STAGGER,offset:(index%2?1:-1)*GRID_LATERAL_OFFSET};}
-export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
-export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;c.boostActive=false;c.sliding=false;return true;}
+export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
+export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;clearImpact(c);c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
  if(c.finished||isQualifying||c.qualifying)return false;
- const p=sample(track,c.s);Object.assign(c,p,{v:0,motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,penalty:c.penalty+3,resetTimer:1,invalidLap:true});
+ clearImpact(c);const p=sample(track,c.s);Object.assign(c,p,{v:0,motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,penalty:c.penalty+3,resetTimer:1,invalidLap:true});
  return true;
 }
 export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.finished)return;
  if(c.qualifying&&c.outLap&&elapsed>=QUALIFYING_LIMIT){finishQualifyingCar(c,elapsed);return;}
+ dampImpact(c,dt);
  if(c.ai)c.inputLag=0;
  if(c.resetTimer>0)c.resetTimer-=dt;
  const prev=c.s,previousPose={x:c.x,z:c.z,heading:c.heading},conditions=conditionProfile(c.conditions);
@@ -38,24 +40,28 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(input.park){if(c.v>0)c.v=Math.max(0,c.v-(braking+drag)*dt);else if(c.v<0)c.v=Math.min(0,c.v+(braking+drag)*dt);}
  else if(c.v>=0){
   if(c.v<=.2&&brake&&!throttle&&!c.ai){c.v=Math.max(-12,c.v-(7.5*traction-gravity)*dt);}
-  else{const newV=c.v+(throttle*accel-brake*braking-drag+gravity)*dt;if(newV<0&&brake&&!throttle&&!c.ai)c.v=Math.max(-12,newV*.25);else c.v=Math.max(0,Math.min(boost?BOOST_TOP_SPEED:TOP_SPEED,newV));}
+  else{const newV=c.v+(throttle*accel-brake*braking-drag+gravity)*dt;if(newV<0&&brake&&!throttle&&!c.ai)c.v=Math.max(-12,newV*.25);else c.v=Math.max(0,Math.min(Math.max(c.v,boost?BOOST_TOP_SPEED:TOP_SPEED),newV));}
  }else{
   if(throttle){const newV=c.v+(braking+drag+gravity)*dt;c.v=newV>0?Math.min(boost?BOOST_TOP_SPEED:TOP_SPEED,newV):newV;}
-  else if(brake){const revDrag=.8+Math.abs(c.v)*.25;c.v=Math.max(-12,c.v-(7.5*traction+revDrag-gravity)*dt);}
+  else if(brake){const revDrag=.8+Math.abs(c.v)*.25;c.v=c.v<-12?Math.min(-12,c.v+(revDrag+gravity)*dt):Math.max(-12,c.v-(7.5*traction+revDrag-gravity)*dt);}
   else{const revDrag=2.5+Math.abs(c.v)*.5;c.v=Math.min(0,c.v+(revDrag+gravity)*dt);}
  }
  const speed=Math.abs(c.v);
  c.steer+=(steer-c.steer)*Math.min(1,dt*10);
  const rate=yawRate(c);
- c.heading+=rate*dt;
+ const impactMotion=Math.hypot(c.impactVX,c.impactVZ)>.01||Math.abs(c.impactYaw)>.001?velocityOf(c):null;
+ c.heading+=(rate+c.impactYaw)*dt;
  const oldMotion=Number.isFinite(c.motionHeading)?c.motionHeading:c.heading;
  if(conditions.wetness&&speed>2){
   const alignment=conditions.alignment*c.surfaceGrip*(brake?.72:1);
   c.motionHeading=oldMotion+angleDiff(c.heading,oldMotion)*(1-Math.exp(-alignment*dt));
  }else c.motionHeading=c.heading;
  c.motionYawRate=angleDiff(c.motionHeading,oldMotion)/dt;
- c.sliding=conditions.wetness>0&&speed>8&&Math.abs(angleDiff(c.heading,c.motionHeading))>.10;
- c.x+=Math.sin(c.motionHeading)*c.v*Math.cos(road.pitch)*dt;c.z+=Math.cos(c.motionHeading)*c.v*Math.cos(road.pitch)*dt;
+ // Impact rotation turns the chassis, not its world-space momentum. Tyre grip
+ // damps the resulting lateral slip on subsequent ticks, without adding energy.
+ if(impactMotion)setVelocity(c,impactMotion.x,impactMotion.z);
+ c.sliding=conditions.wetness>0&&speed>8&&Math.abs(angleDiff(c.heading,c.motionHeading))>.10||Math.hypot(c.impactVX,c.impactVZ)>1.2;
+ c.x+=(Math.sin(c.motionHeading)*c.v*Math.cos(road.pitch)+c.impactVX)*dt;c.z+=(Math.cos(c.motionHeading)*c.v*Math.cos(road.pitch)+c.impactVZ)*dt;
  moveWithBarriers(c,track,previousPose);
  const near=nearest(track,c.x,c.z,c.s);let delta=near.s-prev;if(delta>track.length/2)delta-=track.length;if(delta<-track.length/2)delta+=track.length;
  // No teleports or shortcuts: progress advances only near the expected ribbon.
@@ -89,7 +95,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
   else{
    c.invalidLap=false;
    if(c.qualifying){c.penalty=0;c.offtrackPenalty=false;c.offtrackTime=0;}
-   if(!c.qualifying&&completed>=laps){c.finished=true;c.finishTime=elapsed+c.penalty;c.v=0;c.boostActive=false;c.sliding=false;c.motionYawRate=0;c.inputLag=0;}
+   if(!c.qualifying&&completed>=laps){c.finished=true;c.finishTime=elapsed+c.penalty;c.v=0;clearImpact(c);c.boostActive=false;c.sliding=false;c.motionYawRate=0;c.inputLag=0;}
   }
  }
 }
