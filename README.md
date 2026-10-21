@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.24.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.25.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -716,3 +716,32 @@ to use the same-origin Node multiplayer server.
 Verification: asset build, syntax/undefined-name checks, DOM identifiers and static
 module paths. Deployment verification checks public assets and backend selection;
 no driving or multiplayer gameplay tests were run.
+
+## Precise contacts and synchronized multiplayer poses — 2.25.0
+
+Car contact uses separate oriented shapes for the visible floor/body, front and
+rear wings, and tyres, including front-wheel steering. Empty space beside the
+nose and between the wheels is not filled by one oversized rectangle. Collision
+slop is two millimetres to tolerate rounded network coordinates.
+
+Every physics step records its simulation time. Server contact resolution projects
+nearby car poses to one time, resolves contact there, and transfers only position
+corrections and momentum changes back to the original states. It never advances
+another driver's input clock or lap progress. Uncertain moving poses older than
+250 ms are excluded from speculative contact; stationary cars stay solid.
+
+Client prediction corrects contact positions without inventing braking impulses
+against guessed rival inputs. Momentum remains server-authoritative. Nearby rival
+rendering uses the player's visual correction as one rigid frame, preserving the
+same visible gap as the collision poses. Remote-clock catch-up is bounded but
+faster after a delivery stall.
+
+The Esc menu shows the room code and copy controls in every friends session,
+including practice, race and qualifying. Host lobby editing remains enabled on
+the prepared backend until Start Session; guests cannot edit it. Vercel detects
+the running backend's capabilities and does not advertise unavailable features.
+
+Verification: syntax/undefined-name checks, asset build, DOM identifiers and ten
+isolated contact/timing cases covering clear gaps, true contact, four impact types,
+clock alignment, stationary cars and coherent nearby display offsets. These check
+momentum conservation and no added impact energy. No driving or internet playtests.

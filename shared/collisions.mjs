@@ -1,23 +1,28 @@
-import {velocityOf,setVelocity} from './motion.mjs';
+import {carShapes,CONTACT_SLOP} from './car-shape.mjs';
+import {velocityOf,setVelocity,projectMotion} from './motion.mjs';
 import {yawRate,conditionProfile} from './conditions.mjs';
-// Full oriented footprint, including wings and tyres. Local +Z is the nose.
+// Finite mass/inertia for impulses; detailed contact shapes match the model.
 const HALF_WIDTH=1.24,HALF_LENGTH=2.6,CENTER_OFFSET=.3,MASS=800,INV_MASS=1/MASS,INV_INERTIA=12/(MASS*((HALF_LENGTH*2)**2+(HALF_WIDTH*2)**2));
 const dot=(a,b)=>a.x*b.x+a.z*b.z;
 const lever=(r,n)=>r.z*n.x-r.x*n.z;
-const radius=(b,axis)=>Math.abs(dot(axis,b.forward))*HALF_LENGTH+Math.abs(dot(axis,b.right))*HALF_WIDTH;
+const radius=(b,axis)=>Math.abs(dot(axis,b.forward))*b.halfLength+Math.abs(dot(axis,b.right))*b.halfWidth;
 function body(c){const forward={x:Math.sin(c.heading),z:Math.cos(c.heading)},right={x:forward.z,z:-forward.x};return {forward,right,x:c.x+forward.x*CENTER_OFFSET,z:c.z+forward.z*CENTER_OFFSET};}
-export function carContact(a,b){
- if(a.finished||b.finished||a.retired||b.retired)return null;
- if(Math.abs(a.y-b.y)>1.5||Math.abs(a.x-b.x)>7||Math.abs(a.z-b.z)>7)return null;
- const A=body(a),B=body(b),delta={x:B.x-A.x,z:B.z-A.z};if(Math.hypot(delta.x,delta.z)>6)return null;
- let depth=Infinity,normal;
+function shapeContact(A,B){
+ const delta={x:B.x-A.x,z:B.z-A.z};let depth=Infinity,normal;
  for(const axis of [A.forward,A.right,B.forward,B.right]){
   const separation=dot(delta,axis),overlap=radius(A,axis)+radius(B,axis)-Math.abs(separation);
-  if(overlap<=0)return null;
+  if(overlap<=CONTACT_SLOP)return null;
   if(overlap<depth){depth=overlap;const sign=separation<0?-1:1;normal={x:axis.x*sign,z:axis.z*sign};}
  }
  const tangent={x:-normal.z,z:normal.x},aT=dot(A,tangent),bT=dot(B,tangent),low=Math.max(aT-radius(A,tangent),bT-radius(B,tangent)),high=Math.min(aT+radius(A,tangent),bT+radius(B,tangent)),along=(low+high)/2,across=(dot(A,normal)+radius(A,normal)+dot(B,normal)-radius(B,normal))/2;
  return {depth,normal,point:{x:normal.x*across+tangent.x*along,z:normal.z*across+tangent.z*along}};
+}
+export function carContact(a,b){
+ if(a.finished||b.finished||a.retired||b.retired||a.contactUncertain||b.contactUncertain)return null;
+ if(Math.abs(a.y-b.y)>1.5||Math.abs(a.x-b.x)>7||Math.abs(a.z-b.z)>7)return null;
+ let deepest=null;const shapesA=carShapes(a),shapesB=carShapes(b);
+ for(const A of shapesA)for(const B of shapesB){const hit=shapeContact(A,B);if(hit&&(!deepest||hit.depth>deepest.depth))deepest=hit;}
+ return deepest;
 }
 function contactVelocity(car,r){const v=velocityOf(car),spin=yawRate(car)+(car.impactYaw||0);return {x:v.x+spin*r.z,z:v.z-spin*r.x};}
 function impulse(car,r,p,weight){
@@ -41,7 +46,8 @@ function nearbyPairs(cars,movingId){
  for(let i=0;i<cars.length;i++){const c=cars[i];if(c.retired||c.finished)continue;const x=Math.floor(c.x/8),z=Math.floor(c.z/8);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const j of grid.get(`${x+dx},${z+dz}`)||[])if(movingId===null||c.id===movingId||cars[j].id===movingId)pairs.push([j,i]);const key=`${x},${z}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(i);}
  return pairs;
 }
-export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrection=.8,fixedIds=null}={}){
+export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrection=.8,fixedIds=null,time=null}={}){
+ if(Number.isFinite(time))return timedContacts(cars,movingId,{impulses,maxCorrection,fixedIds},time);
  let contacts=0;const pairs=nearbyPairs(cars,movingId),bounced=new Set();
  for(let pass=0;pass<4;pass++){
   let touched=false;
@@ -55,5 +61,14 @@ export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrecti
   }
   if(!touched)break;
  }
+ return contacts;
+}
+
+// Never collide a just-simulated driver with another driver's older input pose.
+// Only contact corrections/impulses return to the originals, not projected travel.
+function timedContacts(cars,movingId,options,time){
+ const views=cars.map(car=>{const view={...car},stamp=car.physicsTime??car.inputTime??time,dt=time-stamp;const moving=Math.abs(car.v)>2||Math.hypot(car.impactVX||0,car.impactVZ||0)>.5;view.contactUncertain=Math.abs(dt)>.25&&moving;if(Math.abs(dt)<=.25)projectMotion(view,dt);return view;}),before=views.map(c=>({x:c.x,z:c.z,velocity:velocityOf(c),spin:c.impactYaw||0}));
+ const contacts=resolveCarContacts(views,movingId,options);if(!contacts)return 0;
+ for(let i=0;i<cars.length;i++){const c=cars[i],view=views[i],base=before[i];c.x+=view.x-base.x;c.z+=view.z-base.z;if(options.impulses){const old=velocityOf(c),after=velocityOf(view);setVelocity(c,old.x+after.x-base.velocity.x,old.z+after.z-base.velocity.z);c.impactYaw=Math.max(-3,Math.min(3,(c.impactYaw||0)+(view.impactYaw||0)-base.spin));}}
  return contacts;
 }

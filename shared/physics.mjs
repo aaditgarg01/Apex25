@@ -20,6 +20,7 @@ export function resetCar(c,track,isQualifying=false,elapsed=0){
 }
 export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.finished)return;
+ c.physicsTime=elapsed;
  if(c.qualifying&&c.outLap&&elapsed>=QUALIFYING_LIMIT){finishQualifyingCar(c,elapsed);return;}
  dampImpact(c,dt);
  if(c.ai)c.inputLag=0;
@@ -115,7 +116,7 @@ export function stepRace(cars,inputs,track,dt,elapsed,laps,stepDriver=stepCar){
   c.slipstream=draftStrength(c,cars);
   stepDriver(c,inputs[c.id]||{},track,dt,elapsed,laps);
  }
- resolveCarContacts(cars);
+ resolveCarContacts(cars,null,{time:elapsed});
  for(const c of cars)resolveBarrierContacts(c,track);
 }
 export function standings(cars){return [...cars].sort((a,b)=>!!a.retired!==!!b.retired?(a.retired?1:-1):a.retired?b.progress-a.progress:a.finished&&b.finished?a.finishTime-b.finishTime:a.finished?-1:b.finished?1:b.progress-a.progress);}
