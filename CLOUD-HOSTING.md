@@ -633,3 +633,26 @@ Las Vegas fact sheet (https://newsroom.caesars.com/files/images/fact-sheets-imag
 
 Verification: syntax/undefined-name checks, source build, static model geometry,
 road clearance and batching inspection. No driving or multiplayer playtests.
+
+## Driver setup, private-room settings and qualifying joins — 2.24.0
+
+Start by choosing a driver name and livery, then choose Free Play or Play with
+Friends. Free Play keeps the solo circuit/session setup without a multiplayer
+button. Play with Friends opens host/join first; room settings then appear in the
+lobby. The host can change circuit, conditions, session type, lap count, AI count
+and practice start, with changes synchronized to guests. Guests see the settings
+without editing them. Driver/livery selections persist locally.
+
+An invite link retains its code through driver setup, and the join field accepts
+either a six-character code or a full invite link. Players can join an active
+qualifying session until the seven-minute clock expires. They start their own
+single outlap with a fresh car and the remaining session time. Existing driver
+states, valid laps and the session clock are preserved. A late human replaces an
+AI if necessary; rooms never exceed eight cars. Races and qualifying results are
+closed to new entrants. Invite-copy controls are also available in the online
+qualifying menu.
+
+Verification: syntax, undefined-name and DOM-target checks, asset build, and
+isolated room/session component checks covering timer/result preservation,
+outlaps, input clocks, AI replacement, capacity, closed sessions, invite parsing
+and settings validation. No driving, browser gameplay or multiplayer playtests.

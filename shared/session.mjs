@@ -35,3 +35,14 @@ export function stepSession(s,inputs,track,dt,stepDriver=stepCar){
  if(s.phase==='race'&&s.cars.every(c=>c.finished))s.phase='race-results';
 }
 export function sessionStandings(s){return s.phase.startsWith('qualifying')||s.phase.startsWith('practice')?qualifyingOrder(s.cars):standings(s.cars);}
+
+// Joining never restarts the qualifying clock or touches existing lap results.
+export function canJoinQualifying(s){return s?.phase==='qualifying'&&s.elapsed<QUALIFYING_LIMIT&&(s.cars.length<8||s.cars.some(c=>c.ai));}
+export function addQualifyingDriver(s,track,driver){
+ if(!canJoinQualifying(s)||s.cars.some(c=>c.id===driver.id))return null;
+ const replace=s.cars.findIndex(c=>c.ai),old=replace>=0?s.cars[replace]:null,index=old?.index??Math.max(-1,...s.cars.map(c=>c.index))+1;
+ const car=createCar(track,driver.id,driver.name,index,false,driver.colorId,s.conditions),p=sample(track,0);
+ Object.assign(car,p,{s:0,progress:0,motionHeading:p.heading,motionYawRate:0,v:0,qualifying:true,outLap:true,lapStart:Math.max(0,s.elapsed)});
+ if(replace>=0)s.cars.splice(replace,1,car);else s.cars.push(car);
+ return {car,replacedId:old?.id??null};
+}

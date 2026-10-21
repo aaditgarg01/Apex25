@@ -103,3 +103,19 @@ body.racing #timing #leaderboard li .driver-name-text{display:block}body.racing 
 body.racing #map-credit{top:auto;left:auto;right:18px;bottom:58px;font-size:10px;max-width:min(60vw,240px)}
 @media(max-width:800px){body.racing #map-credit{top:auto;left:auto;right:10px;bottom:132px;font-size:9px}}
 @media(max-height:540px) and (orientation:landscape){body.racing #map-credit{right:8px;bottom:104px}}
+
+/* Choose a driver, then a play mode. Session controls live in one active view. */
+#menu .flow-title{font-size:clamp(35px,4vw,52px);line-height:1.05;letter-spacing:-2px;margin:24px 0 15px}
+.flow-back{padding:0;margin:0 0 20px;color:#b8c8d2;font-size:12px;text-align:left}
+.driver-profile{margin:26px 0}.driver-profile .driver-settings{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.driver-profile .livery-preview{margin-top:14px}
+.mode-choice{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:10px;width:100%;padding:23px 20px;margin:12px 0;border:1px solid #ffffff2c;border-radius:6px;background:linear-gradient(115deg,#293b47d9,#16222bd9)}
+.mode-choice strong{font-size:22px;font-weight:700}.mode-choice span{font-size:13px;line-height:1.5;color:#b5c5ce}.mode-choice:hover{border-color:#ff805e;background:#2b3e4ce8}
+#setup-controls{border:0;min-width:0;margin:0;padding:0}#setup-controls:disabled{opacity:.75}#setup-controls:disabled button{cursor:default}
+#lobby-dialog{width:min(900px,calc(100vw - 30px));max-width:900px;max-height:calc(100dvh - 30px);overflow-y:auto}
+.room-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;margin:20px 0}.room-layout h3{font-size:15px;margin:0 0 10px}.room-layout .settings-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#room-edit-note{min-height:35px;line-height:1.5;margin:0 0 18px}#room-setup-mount .session-label{margin-top:14px}#room-setup-mount select,#room-setup-mount input{width:100%}
+#room-setup-mount .lap-counter input{appearance:textfield;text-align:center;border:0;min-width:0;background:transparent;padding:8px 0}#room-setup-mount .lap-counter{min-height:40px}#room-setup-mount .random-select select{width:0}
+#room-setup-mount .driving-options{margin-bottom:0}#players li{gap:12px;align-items:flex-start}#players small{text-align:right;max-width:60%;line-height:1.4}#room-player-count{color:#a5b9c4;font-size:12px}
+#session-invite{border:1px solid #ffffff21;background:#14212b;padding:12px;margin:16px 0}#session-invite p{margin:0 0 8px}#session-invite .secondary{margin-top:0;padding:10px;font-size:11px}
+#online-dialog .join-row input{min-width:0;flex:1}#online-dialog .join-row button{flex:0 0 auto}#invite-profile-note{padding:12px;background:#172d3b;border-left:2px solid var(--orange);line-height:1.6}
+@media(max-width:650px){.room-layout{grid-template-columns:minmax(0,1fr);gap:22px}#lobby-dialog{padding:24px 20px}.room-drivers{border-top:1px solid #ffffff20;padding-top:20px}#menu .flow-title{font-size:36px}.driver-profile .driver-settings{grid-template-columns:minmax(0,1fr)}.mode-choice{padding:19px}}
