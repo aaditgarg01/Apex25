@@ -745,3 +745,22 @@ Verification: syntax/undefined-name checks, asset build, DOM identifiers and ten
 isolated contact/timing cases covering clear gaps, true contact, four impact types,
 clock alignment, stationary cars and coherent nearby display offsets. These check
 momentum conservation and no added impact energy. No driving or internet playtests.
+
+## Direct server positions — 2.26.0
+
+Online cars now display the latest received server position and heading exactly,
+including the local car. Removed input replay for rendered poses, rival prediction,
+interpolation buffering, extrapolation, visual correction offsets and client-only
+contact resolution. Between snapshots, positions hold; no guessed movement is
+shown during a delivery stall. Input commands still send at 60 Hz with acknowledgments,
+epoch resets and a bounded queue. Free Play keeps its local simulation unchanged.
+
+The prepared backend now broadcasts after every simulation tick, up to 60 Hz,
+while skipping backed-up sockets and sending only the newest completed state.
+Network transit remains unavoidable; this mode adds no presentation delay, but
+controls become visible after their authoritative update returns from the server.
+
+Lobby editing already exists in the prepared backend. It remains unavailable on
+the live Railway 2.23 server: Railway rejected the deployment with “Deploys have
+been paused temporarily.” Do not unlock the fields against an unsupported server
+or claim room updates are live until that backend has actually been deployed.

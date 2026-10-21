@@ -1,6 +1,6 @@
 {
   "name": "apex-25",
-  "version": "2.25.0",
+  "version": "2.26.0",
   "private": true,
   "type": "module",
   "description": "Local 3D open-wheel racing with real circuit geography and multiplayer rooms",

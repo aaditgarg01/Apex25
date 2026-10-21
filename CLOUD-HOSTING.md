@@ -709,3 +709,16 @@ Verification: syntax/undefined-name checks, asset build, DOM identifiers and ten
 isolated contact/timing cases covering clear gaps, true contact, four impact types,
 clock alignment, stationary cars and coherent nearby display offsets. These check
 momentum conservation and no added impact energy. No driving or internet playtests.
+
+## Direct server positions — 2.26.0
+
+The Vercel client displays server snapshots directly for all online cars, without
+prediction, smoothing buffers or invented contact corrections. Its 60 Hz controls
+remain compatible with Railway 2.23. The prepared server broadcasts at up to 60 Hz;
+the live 2.23 backend still broadcasts at 30 Hz until deployment is accepted.
+
+Host lobby editing and precise server contact physics remain pending on Railway.
+The latest backend deployment attempt was rejected: “Deploys have been paused
+temporarily.” Existing rooms remain on their original backend; Vercel cannot
+replace a persistent room simulation. Keep the current Railway connection until
+the user authorizes another host or Railway accepts the update.
