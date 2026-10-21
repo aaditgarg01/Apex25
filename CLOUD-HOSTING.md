@@ -656,3 +656,27 @@ Verification: syntax, undefined-name and DOM-target checks, asset build, and
 isolated room/session component checks covering timer/result preservation,
 outlaps, input clocks, AI replacement, capacity, closed sessions, invite parsing
 and settings validation. No driving, browser gameplay or multiplayer playtests.
+
+## Vercel site with persistent Railway multiplayer — 2.24.1
+
+The website can now deploy independently to Vercel. `npm run build:vercel`
+builds the pinned Three.js assets and copies public assets plus shared browser
+modules into `dist/`. Vercel hosts those files; a small configuration function
+checks the existing Railway server and supplies its secure WebSocket URL and
+supported room features. Live driving inputs go directly to Railway.
+
+For the current Railway 2.23 server, friends choose settings before creating a
+room and the lobby displays those settings without editing. Joining qualifying
+and editing an existing lobby stay unavailable until the Railway backend accepts
+the prepared 2.24+ update. The client detects backend capabilities when connecting
+and enables the new behavior once supported. Free Play remains entirely local to
+the browser. Vercel does not run the in-memory racing simulation.
+
+Deploy with `vercel --prod`; the configuration endpoint defaults to the existing
+APEX25 Railway server. Set APEX_MULTIPLAYER_ORIGIN in Vercel to change the persistent
+backend. Do not expose credentials in that origin. Normal `npm start` continues
+to use the same-origin Node multiplayer server.
+
+Verification: asset build, syntax/undefined-name checks, DOM identifiers and static
+module paths. Deployment verification checks public assets and backend selection;
+no driving or multiplayer gameplay tests were run.

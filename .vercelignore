@@ -1,0 +1,10 @@
+.git
+node_modules
+dist
+work
+.runtime
+.env
+.env.*
+bin
+*.log
+.DS_Store

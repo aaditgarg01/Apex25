@@ -10,3 +10,6 @@ INTERNET-LINK.txt
 bin/cloudflared
 work/
 CLOUD-LINK.txt
+
+.vercel/
+dist/
