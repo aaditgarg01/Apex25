@@ -1,9 +1,12 @@
 import {INPUT_DT,encodeInput} from './input-stream.mjs';
+import {MultiplayerTracking} from './multiplayer-tracking.mjs';
 const active=s=>['race','qualifying','practice'].includes(s.phase)&&s.elapsed>=0;
-// Online poses come only from the latest server snapshot. Live controls replace
-// older unsent controls; no replay, dead reckoning or speculative contacts.
+// Tracking is presentation only. Live controls still replace unsent controls;
+// contacts, session timing and results remain authoritative on the server.
 export class NetworkMotion {
- constructor(_track,id,{liveInput=false}={}){this.liveInput=liveInput;this.control=null;this.sentKey=null;this.sentAt=-Infinity;this.id=id;this.session=null;this.visual=null;this.acc=0;this.lastAt=-Infinity;this.pending=[];this.outgoing=[];this.sequence=0;this.epoch=0;}
+ constructor(track,id,{liveInput=false}={}){this.tracking=new MultiplayerTracking(track,id,{liveInput});this.liveInput=liveInput;this.control=null;this.sentKey=null;this.sentAt=-Infinity;this.id=id;this.session=null;this.visual=null;this.acc=0;this.lastAt=-Infinity;this.pending=[];this.outgoing=[];this.sequence=0;this.epoch=0;}
+ record(s,now){this.tracking.record(s,now);}
+ setPing(ms){this.tracking.setPing(ms);}
  receive(s,now){
   const car=s.cars.find(c=>c.id===this.id);if(!car)return;
   const previous=this.session,old=previous?.cars.find(c=>c.id===this.id);
@@ -14,6 +17,7 @@ export class NetworkMotion {
   this.pending=this.pending.filter(command=>command[0]>ack);
   this.outgoing=this.outgoing.filter(command=>command[0]>ack);
   this.session=s;this.lastAt=now;this.visual={...car,smoothMotion:true};
+  this.tracking.receive(s,now,reset);
  }
  takeCommands(now=0){
   if(this.liveInput){
@@ -36,9 +40,9 @@ export class NetworkMotion {
     this.pending.push(command);this.outgoing.push(command);
    }
   }else this.acc=0;
-  // smoothMotion bypasses the scene's generic position lerp. Even nearby cars
-  // and cars in contact retain the exact position and heading the server sent.
-  const rendered=s.cars.map(c=>({...c,smoothMotion:true}));
+  // The restored tracker fills uneven snapshot delivery without changing the
+  // controls sent to the server or inventing client-side collision impulses.
+  const rendered=this.tracking.frame(now,dt,control);
   this.visual=rendered.find(c=>c.id===this.id);
   return rendered;
  }

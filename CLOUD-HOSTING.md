@@ -747,3 +747,22 @@ Refresh every player's browser and create a new room after deployment.
 
 Validation: production asset build, syntax/undefined-name checks and focused input,
 clock, epoch, compact-packet and exact-pose checks. No browser driving playtest.
+
+## Restored smooth multiplayer tracking — 2.28.0
+
+Restores the earlier tracking approach for multiplayer presentation: an adaptive
+90–220 ms snapshot buffer, shortest-angle interpolation and at most 100 ms of
+projection to bridge missing rival samples. Every received full/compact sample
+is recorded, including bursts between browser paints. Recovery, input epochs,
+phase changes and finished cars reset or bypass interpolation.
+
+The local car again responds through a reconciled visual simulation, adapted to
+the current shared-clock controls. It replays recent held controls over an RTT
+estimate, blends small corrections and caps projection at 250 ms after the
+confirmed input horizon. Long stalls hold the last bounded pose. This only changes
+rendered tracking: server collision impulses, lap validity, results, lobby editing,
+the shared 60 Hz simulation and compact transport remain unchanged. No speculative
+car-contact solver or old per-frame input queues are restored. Free Play is unchanged.
+
+Refresh all players after deployment. Driving verification is left to the user;
+only syntax and production packaging are checked for this change.

@@ -16,10 +16,10 @@ test('controls queue immediately while every online pose stays server-authoritat
  }
  assert.equal(n.pending.length,6);assert.equal(n.takeCommands().commands.length,6);assert.equal(JSON.stringify(s),original);
 });
-test('new snapshots display exactly without interpolation or heading offsets',()=>{
+test('rival tracking interpolates buffered snapshots using the shortest heading arc',()=>{
  const a=session(),b=structuredClone(a);a.cars[1].heading=Math.PI-.1;b.cars[1].x+=10;b.cars[1].heading=-Math.PI+.1;b.elapsed+=.1;
  const n=new NetworkMotion(track,'p');n.receive(a,0);n.frame(50,INPUT_DT,{});n.receive(b,100);
- const remote=n.frame(100,0,{}).find(c=>c.id==='q');assert.equal(remote.x,b.cars[1].x);assert.equal(remote.heading,b.cars[1].heading);
+ const remote=n.frame(150,.1,{}).find(c=>c.id==='q');assert(Math.abs(remote.x-(a.cars[1].x+6))<1e-6);assert(Math.abs(remote.heading-(Math.PI+.02))<1e-6);
 });
 test('nearby and overlapping cars receive no client-only contact displacement',()=>{
  const s=session();Object.assign(s.cars[1],{x:s.cars[0].x+.3,z:s.cars[0].z,v:50,steer:1});
@@ -73,10 +73,10 @@ test('parking survives command encoding and stops without selecting reverse',()=
  assert.equal(c.v,0);
 });
 
-test('coalesced packets display the newest snapshot without retaining old poses',()=>{
+test('coalesced packets retain the rival timeline for smooth tracking',()=>{
  const n=new NetworkMotion(track,'p'),a=session();a.phase='qualifying';a.cars[1].x=0;n.receive(structuredClone(a),0);
  for(let i=1;i<=3;i++){const b=structuredClone(a);b.elapsed+=i*.05;b.cars[1].x=i*5;n.receive(b,150);}
- const remote=n.frame(150,0,{}).find(c=>c.id==='q');assert.equal(remote.x,15);
+ const remote=n.frame(150,0,{}).find(c=>c.id==='q');assert(Math.abs(remote.x-6)<1e-6);
 });
 test('command queues stay bounded and reset on a new input epoch',()=>{
  const s=session(),n=new NetworkMotion(track,'p');n.receive(s,0);
