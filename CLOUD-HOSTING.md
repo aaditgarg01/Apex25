@@ -722,3 +722,28 @@ The latest backend deployment attempt was rejected: “Deploys have been paused
 temporarily.” Existing rooms remain on their original backend; Vercel cannot
 replace a persistent room simulation. Keep the current Railway connection until
 the user authorizes another host or Railway accepts the update.
+
+## Shared-clock multiplayer and compact updates — 2.27.0
+
+New clients send their latest control state on change, with 50 ms heartbeats and
+an 80-message/second ceiling for high-refresh analog input. Unsent controls are
+coalesced when a socket is backed up. The authoritative server advances each car
+once per 60 Hz simulation step on the shared session clock, instead of waiting
+for one queued command for every client frame. Lost connections brake after
+700 ms and invalidate the old input epoch. Older command-stream clients remain
+compatible until refreshed.
+
+Protocol 3 sends compact, exact motion samples at up to 60 Hz and full timing and
+classification snapshots about every 100 ms. Phase changes, roster/history changes
+and periodic history refreshes force complete snapshots. Backed-up sockets skip
+obsolete snapshots. The sample eight-car payload is 999 bytes versus 5,499 bytes;
+10 complete plus 50 motion updates per second use about 32% of the former traffic.
+Positions are held between confirmed updates: no client prediction, extrapolation
+or artificial interpolation delay was introduced.
+
+Deploy the backend before the Vercel client. Health/config capability flags select
+the new input and snapshot protocols only when the connected backend supports them.
+Refresh every player's browser and create a new room after deployment.
+
+Validation: production asset build, syntax/undefined-name checks and focused input,
+clock, epoch, compact-packet and exact-pose checks. No browser driving playtest.

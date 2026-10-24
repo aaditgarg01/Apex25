@@ -50,3 +50,25 @@ export class InputStream {
   car.inputLag=car.finished?0:this.credit;
  }
 }
+
+// Live controls are state, not a queue of time slices. The server advances every
+// car once on the shared clock even when a client renders or sends less often.
+export const LIVE_INPUT_VERSION=3;
+export class LiveInputStream {
+ constructor(car){this.received=0;this.lastCommandAt=null;this.command=[0,0,10];car.inputAck=0;car.inputEpoch=0;car.inputLag=0;car.inputTime=0;}
+ accept(car,epoch,commands,elapsed){
+  if(epoch!==car.inputEpoch||!Array.isArray(commands)||!commands.length||commands.length>8)return false;
+  let previous=this.received;
+  for(const c of commands){
+   if(!Array.isArray(c)||c.length!==3||!Number.isSafeInteger(c[0])||c[0]<=previous||!Number.isFinite(c[1])||Math.abs(c[1])>1||!Number.isInteger(c[2])||c[2]<0||c[2]>15)return false;
+   previous=c[0];
+  }
+  this.command=[...commands.at(-1)];this.received=previous;this.lastCommandAt=elapsed;return true;
+ }
+ reset(car,elapsed=car.inputTime||0){this.lastCommandAt=null;this.command=[this.received,0,10];car.inputAck=this.received;car.inputEpoch++;car.inputLag=0;car.inputTime=elapsed;}
+ step(car,_input,track,dt,elapsed,laps){
+  if(this.lastCommandAt!==null&&elapsed-this.lastCommandAt>.7)this.reset(car,elapsed);
+  stepCar(car,decodeInput(this.command),track,dt,elapsed,laps);
+  car.inputTime=elapsed;car.inputLag=0;car.inputAck=this.received;
+ }
+}
