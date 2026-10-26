@@ -1,3 +1,5 @@
+import {prepareTyres,wearTyres,tyreGrip} from './tyres.mjs';
+import {stepPit,tryPitEntry,pitAhead,preparePitTraffic} from './pits.mjs';
 import {clearImpact,dampImpact,velocityOf,setVelocity} from './motion.mjs';
 import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
 import {LIVERIES,normalizeLiveryIndex} from './liveries.mjs';
@@ -11,16 +13,17 @@ export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
 export const GRID_ROW_SPACING=16,GRID_STAGGER=8,GRID_LATERAL_OFFSET=3.6;
 export function gridSlot(index){return {s:-12-Math.floor(index/2)*GRID_ROW_SPACING-(index%2)*GRID_STAGGER,offset:(index%2?1:-1)*GRID_LATERAL_OFFSET};}
-export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);return {id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};}
+export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);const car={id,name,index,ai,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};prepareTyres(car);return car;}
 export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;clearImpact(c);c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
- if(c.finished||isQualifying||c.qualifying)return false;
+ if(c.finished||isQualifying||c.qualifying||c.pitState!=='none')return false;
  clearImpact(c);const p=sample(track,c.s);Object.assign(c,p,{v:0,motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,penalty:c.penalty+3,resetTimer:1,invalidLap:true});
  return true;
 }
 export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.finished)return;
  c.physicsTime=elapsed;
+ if(stepPit(c,track,dt)){updateLap(c,track,elapsed,laps);return;}
  if(c.qualifying&&c.outLap&&elapsed>=QUALIFYING_LIMIT){finishQualifyingCar(c,elapsed);return;}
  dampImpact(c,dt);
  if(c.ai)c.inputLag=0;
@@ -28,13 +31,15 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  const prev=c.s,previousPose={x:c.x,z:c.z,heading:c.heading},conditions=conditionProfile(c.conditions);
  let throttle=input.throttle?1:0,brake=input.brake?1:0,steer=clamp(Number(input.steer)||0,-1,1);
  if(c.ai){const look=sampleGuide(track,c.s+Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)));const lane=Math.sin(c.index*2+c.s*.003)*.35;look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;const aim=Math.atan2(look.x-c.x,look.z-c.z);steer=clamp(angleDiff(aim,c.heading)*3,-1,1);const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;const desired=Math.min(targetSpeed(track,c.s,c.conditions),targetSpeed(track,c.s+brakingLook,c.conditions))*(track.width<15?.65+c.index*.01:.78+c.index*.018);throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;}
+ if(c.ai&&c.tyreLife<35&&(laps===Infinity||laps*track.length-c.progress>track.length*.45))c.pitRequested=true;
+ if(c.pitRequested){const ahead=pitAhead(c,track);if(ahead<Math.max(110,c.v*c.v/44+25)&&c.v>22){throttle=0;brake=1;}}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
  const road=sample(track,c.s);
  const roadOffset=conditions.wetness?nearest(track,c.x,c.z,c.s).offset:0;
  c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>roadHalfWidth(track,c.s)-.8?conditions.curbGrip:1):1;
  c.cornerGrip=1-conditions.wetness*(brake*.24+throttle*.10);
- const traction=conditions.traction*c.surfaceGrip,braking=33*conditions.braking*c.surfaceGrip;
+ const rubber=tyreGrip(c),traction=conditions.traction*c.surfaceGrip*rubber,braking=33*conditions.braking*c.surfaceGrip*rubber;
  const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032)*(1-slip*0.3)+(c.offtrack?c.v*.5:0);
  c.slipstream=0;
  const gravity=-9.81*Math.sin(road.pitch);
@@ -64,7 +69,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  c.sliding=conditions.wetness>0&&speed>8&&Math.abs(angleDiff(c.heading,c.motionHeading))>.10||Math.hypot(c.impactVX,c.impactVZ)>1.2;
  c.x+=(Math.sin(c.motionHeading)*c.v*Math.cos(road.pitch)+c.impactVX)*dt;c.z+=(Math.cos(c.motionHeading)*c.v*Math.cos(road.pitch)+c.impactVZ)*dt;
  moveWithBarriers(c,track,previousPose);
- const near=nearest(track,c.x,c.z,c.s);let delta=near.s-prev;if(delta>track.length/2)delta-=track.length;if(delta<-track.length/2)delta+=track.length;
+ const near=nearest(track,c.x,c.z,c.s);c.lateral=near.offset;let delta=near.s-prev;if(delta>track.length/2)delta-=track.length;if(delta<-track.length/2)delta+=track.length;
  // No teleports or shortcuts: progress advances only near the expected ribbon.
  if(Math.abs(delta)<40&&near.distance<track.width/2+40){c.s=near.s;c.progress+=delta;}
  const half=roadHalfWidth(track,near.s);
@@ -74,6 +79,11 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  const fall=clamp(near.distance-(half+6.5),0,1);
  c.y=fall?surface.y*(1-fall)+(terrainHeight(track,c.x,c.z)-.9)*fall:surface.y;
  c.pitch=surface.pitch;
+ wearTyres(c,track,dt,Math.hypot(c.x-previousPose.x,c.z-previousPose.z),boost);
+ tryPitEntry(c,track,prev);
+ updateLap(c,track,elapsed,laps);
+}
+function updateLap(c,track,elapsed,laps){
  const completed=Math.max(0,Math.floor(c.progress/track.length));
  const lapProgress=c.progress-(c.lap-1)*track.length;
  if(c.sector===0&&lapProgress>track.length/3){c.sectors[0]=elapsed-c.lapStart;c.sector=1;}
@@ -111,6 +121,7 @@ export function draftStrength(c,cars){
  return strength;
 }
 export function stepRace(cars,inputs,track,dt,elapsed,laps,stepDriver=stepCar){
+ preparePitTraffic(cars);
  for(const c of cars){
   if(c.finished){c.slipstream=0;continue;}
   c.slipstream=draftStrength(c,cars);

@@ -1,3 +1,4 @@
+import {damageTyres} from './tyres.mjs';
 import {carShapes,CONTACT_SLOP} from './car-shape.mjs';
 import {velocityOf,setVelocity,projectMotion} from './motion.mjs';
 import {yawRate,conditionProfile} from './conditions.mjs';
@@ -34,6 +35,7 @@ function collide(a,b,hit,wa,wb,bounce){
  const relative=()=>{const av=contactVelocity(a,ra),bv=contactVelocity(b,rb);return {x:bv.x-av.x,z:bv.z-av.z};};
  const effective=axis=>(wa+wb)*INV_MASS+(wa*lever(ra,axis)**2+wb*lever(rb,axis)**2)*INV_INERTIA;
  const closing=-dot(relative(),n);if(closing<=.001)return;
+ if(bounce){if(wa)damageTyres(a,closing);if(wb)damageTyres(b,closing);}
  // Equal finite masses transfer momentum in the contact direction. The small
  // restitution is applied once; solver passes never add repeated bounce energy.
  const normalImpulse=(1+(bounce&&closing>2?.06:0))*closing/effective(n);
@@ -69,6 +71,6 @@ export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrecti
 function timedContacts(cars,movingId,options,time){
  const views=cars.map(car=>{const view={...car},stamp=car.physicsTime??car.inputTime??time,dt=time-stamp;const moving=Math.abs(car.v)>2||Math.hypot(car.impactVX||0,car.impactVZ||0)>.5;view.contactUncertain=Math.abs(dt)>.25&&moving;if(Math.abs(dt)<=.25)projectMotion(view,dt);return view;}),before=views.map(c=>({x:c.x,z:c.z,velocity:velocityOf(c),spin:c.impactYaw||0}));
  const contacts=resolveCarContacts(views,movingId,options);if(!contacts)return 0;
- for(let i=0;i<cars.length;i++){const c=cars[i],view=views[i],base=before[i];c.x+=view.x-base.x;c.z+=view.z-base.z;if(options.impulses){const old=velocityOf(c),after=velocityOf(view);setVelocity(c,old.x+after.x-base.velocity.x,old.z+after.z-base.velocity.z);c.impactYaw=Math.max(-3,Math.min(3,(c.impactYaw||0)+(view.impactYaw||0)-base.spin));}}
+ for(let i=0;i<cars.length;i++){const c=cars[i],view=views[i],base=before[i];c.x+=view.x-base.x;c.z+=view.z-base.z;if(options.impulses){const old=velocityOf(c),after=velocityOf(view);setVelocity(c,old.x+after.x-base.velocity.x,old.z+after.z-base.velocity.z);c.impactYaw=Math.max(-3,Math.min(3,(c.impactYaw||0)+(view.impactYaw||0)-base.spin));if(Number.isFinite(view.tyreLife)){c.tyreLife=view.tyreLife;c.tyreImpactCooldown=view.tyreImpactCooldown;}}}
  return contacts;
 }

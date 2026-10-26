@@ -1,3 +1,4 @@
+import {tyreGrip} from './tyres.mjs';
 // Arcade surface presets. The normal preset retains the original dry handling.
 export const CONDITIONS=Object.freeze({
  normal:Object.freeze({id:'normal',label:'Normal / dry',description:'Dry surface, full grip and normal braking.',wetness:0,traction:1,braking:1,steering:1,pace:1,lateral:Infinity,alignment:Infinity,curbGrip:1}),
@@ -9,7 +10,7 @@ export const conditionProfile=value=>CONDITIONS[normalizeConditions(value)];
 export function yawRate(car){
  const speed=Math.abs(car.v),profile=conditionProfile(car.conditions);
  const rate=speed>1?Math.min(speed/9,1)*(1.9/(1+speed*.025)):0;
- const requested=(car.v>=0?1:-1)*(car.steer||0)*rate*profile.steering;
+ const requested=(car.v>=0?1:-1)*(car.steer||0)*rate*profile.steering*tyreGrip(car);
  if(!profile.wetness)return requested;
  const grip=car.surfaceGrip??1;
  // Aero provides grip at speed, but hard braking / acceleration uses up some

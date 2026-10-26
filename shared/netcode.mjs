@@ -52,9 +52,13 @@ export const encodeState=(session,history=true)=>JSON.stringify({type:'state',..
 // Positions remain exact server samples. Only frequently changing motion/telemetry fields
 // travel at 60 Hz; standings and complete lap history travel less frequently.
 export const MOTION_FIELDS=['id','x','y','z','heading','pitch','v','steer','motionHeading','impactVX','impactVZ','impactYaw','inputTime','physicsTime','inputAck','inputEpoch','progress','s','lateral','boost','finished','retired','resetTimer'];
-export const encodeMotion=session=>JSON.stringify({type:'motion',phase:session.phase,elapsed:Math.round(session.elapsed*1000)/1000,cars:session.cars.map(c=>MOTION_FIELDS.map(k=>{const value=c[k];return typeof value==='number'&&!Number.isInteger(value)?Math.round(value*1000)/1000:value;}))});
+export const STRATEGY_FIELDS=['id','tyreLife','tyreCompound','tyreBoostHeat','pitState','pitRequested','pitCompound','pitTimer','pitTravel','pitEntryProgress','pitEntryOffset','pitFitted','pitStops','pitClearance'];
+const wireNumber=value=>typeof value==='number'&&!Number.isInteger(value)?Math.round(value*1000)/1000:value;
+// Optional parallel rows keep old motion rows compatible with existing clients.
+export const encodeMotion=session=>JSON.stringify({type:'motion',phase:session.phase,elapsed:Math.round(session.elapsed*1000)/1000,cars:session.cars.map(c=>MOTION_FIELDS.map(k=>wireNumber(c[k]))),strategy:session.cars.map(c=>STRATEGY_FIELDS.map(k=>wireNumber(c[k])))});
 export function mergeMotionState(base,packet){
  if(!base||base.phase!==packet.phase||!Number.isFinite(packet.elapsed)||packet.elapsed<base.elapsed||!Array.isArray(packet.cars))return base;
  const poses=new Map(packet.cars.filter(row=>Array.isArray(row)&&row.length===MOTION_FIELDS.length).map(row=>[row[0],row]));
- return {...base,elapsed:packet.elapsed,cars:base.cars.map(c=>{const row=poses.get(c.id);if(!row)return c;const next={...c};for(let i=1;i<MOTION_FIELDS.length;i++)if(row[i]!==null&&row[i]!==undefined)next[MOTION_FIELDS[i]]=row[i];return next;})};
+ const strategy=new Map((Array.isArray(packet.strategy)?packet.strategy:[]).filter(row=>Array.isArray(row)&&row.length===STRATEGY_FIELDS.length).map(row=>[row[0],row]));
+ return {...base,elapsed:packet.elapsed,cars:base.cars.map(c=>{const row=poses.get(c.id);if(!row)return c;const next={...c};for(let i=1;i<MOTION_FIELDS.length;i++)if(row[i]!==null&&row[i]!==undefined)next[MOTION_FIELDS[i]]=row[i];const tyres=strategy.get(c.id);if(tyres)for(let i=1;i<STRATEGY_FIELDS.length;i++)if(STRATEGY_FIELDS[i]==='pitClearance')next.pitClearance=tyres[i]===null?Infinity:tyres[i];else if(tyres[i]!==null&&tyres[i]!==undefined)next[STRATEGY_FIELDS[i]]=tyres[i];return next;})};
 }

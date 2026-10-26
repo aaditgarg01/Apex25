@@ -766,3 +766,13 @@ car-contact solver or old per-frame input queues are restored. Free Play is unch
 
 Refresh all players after deployment. Driving verification is left to the user;
 only syntax and production packaging are checked for this change.
+
+## Pit-stop capability — 2.29.0
+
+Deploy the backend and frontend for online tyre strategy. Railway health advertises
+`features.pitStops`; the Vercel config function forwards that explicit flag and
+clients keep online pit controls hidden until it is present. The server validates
+per-driver pit requests, selected compounds, active phases and current pit state.
+Existing input versions and motion row lengths are unchanged; an optional
+`strategy` array carries wear/service updates alongside the usual car poses.
+Restarted rooms and freshly refreshed clients get new scaled tyre stints.

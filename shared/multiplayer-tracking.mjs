@@ -2,6 +2,7 @@ import {projectMotion} from './motion.mjs';
 import {moveWithBarriers} from './barriers.mjs';
 import {stepCar} from './physics.mjs';
 import {angleDiff} from './tracks.mjs';
+import {pitPose,pitLayout} from './pits.mjs';
 
 const active=s=>['race','qualifying','practice'].includes(s.phase)&&s.elapsed>=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -39,6 +40,7 @@ export class MultiplayerTracking {
  }
  project(car,dt){
   if(!active(this.session)||dt<=0||car.finished)return;
+  if(car.pitState&&car.pitState!=='none'){const plan=pitLayout(this.track),end=car.pitState==='lane'?plan.box:car.pitState==='service'?car.pitTravel:plan.length;Object.assign(car,pitPose(car,this.track,Math.min(end,car.pitTravel+car.v*dt)));return;}
   const before={x:car.x,z:car.z,heading:car.heading};projectMotion(car,dt);moveWithBarriers(car,this.track,before);
  }
  localPose(now){
@@ -88,7 +90,7 @@ export class MultiplayerTracking {
    let a=samples[0],b=a;
    for(let i=1;i<samples.length;i++){b=samples[i];if(b.at>=target)break;a=b;}
    const ca=a.car,cb=b.car;
-   if(cb.inputEpoch!==ca.inputEpoch||cb.finished!==ca.finished||cb.resetTimer>(ca.resetTimer||0)+.3||Math.hypot(cb.x-ca.x,cb.z-ca.z)>30)return {...c,smoothMotion:true};
+   if(cb.inputEpoch!==ca.inputEpoch||cb.finished!==ca.finished||cb.pitState!==ca.pitState||c.pitState!==cb.pitState||cb.resetTimer>(ca.resetTimer||0)+.3||Math.hypot(cb.x-ca.x,cb.z-ca.z)>30)return {...c,smoothMotion:true};
    // Do not interpolate through an older epoch after recovery or retirement.
    if(c.inputEpoch!==cb.inputEpoch)return {...c,smoothMotion:true};
    const t=b.at===a.at?1:clamp((target-a.at)/(b.at-a.at),0,1),out={...c,smoothMotion:true};

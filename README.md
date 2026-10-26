@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.28.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.29.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -808,3 +808,41 @@ car-contact solver or old per-frame input queues are restored. Free Play is unch
 
 Refresh all players after deployment. Driving verification is left to the user;
 only syntax and production packaging are checked for this change.
+
+## Pit stops and tyre strategy — 2.29.0
+
+Press **P** or the Pit button to request/cancel a tyre change. Choose Soft, Medium,
+Hard, Intermediate or Wet in the Esc menu before requesting. A cyan service lane
+is generated on a straight near the start/finish using the existing paved ribbon;
+it is a gameplay service lane, not surveyed real-world pit-lane geometry. Once
+requested, assist brakes toward entry, follows an 80 km/h lane, queues behind cars
+at the box, stops for three seconds, fits a fresh set and rejoins at the lane end.
+The pit box is painted yellow and has a simple animated crew. Stops do not refill
+battery instantly, remove penalties or count as recovery. Driving through the
+pits invalidates the current timed lap; the original qualifying clock/outlap rules
+remain in force. Finished/retired drivers cannot request a stop.
+
+Fresh-set life scales with configured race distance. Gentle baseline stints are
+60% of race laps on Soft, 80% Medium, 105% Hard, 85% Intermediate and 95% Wet,
+with a 1.5-lap floor. A three-lap race therefore gives approximately 1.8 / 2.4 /
+3.15 laps for the dry compounds. One/two-lap sprints use a longer 170% baseline
+so an ordinary sprint does not force a stop. Practice/qualifying use an eight-lap
+reference, and everyone starts the race with a fresh condition-appropriate set.
+
+Wear is driven by distance, with extra scrub/sliding/off-track wear. Using overtake
+adds 25–80% wear while active as boost heat rises over six seconds and cools over
+ten. Actual car/wall impacts above 2 m/s remove up to 14 percentage points, with
+a 0.4-second cooldown to avoid repeated losses per solver pass. No battery use or
+stationary idling alone consumes distance-based life. Grip/braking progressively
+fall below 35% remaining and more sharply below 10%; wrong weather compounds also
+lose grip and wet tyres wear faster on dry roads. AI follows the same wear rules
+and requests a stop below 35% when enough race distance remains.
+
+Tyre/pit state is server-authoritative online. Optional parallel strategy rows
+preserve compatibility with existing compact motion packets; the Vercel client
+only enables online pit controls when Railway advertises `pitStops`. Free Play
+works immediately with the same shared physics. Previous multiplayer tracking
+and collision geometry/impulses are retained. Refresh clients and start a new room.
+
+Validation for this change: production packaging, syntax and undefined-name
+checks, module imports and UI identifier checks. No test suite or driving playtest.

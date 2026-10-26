@@ -1,3 +1,5 @@
+import {addPitLane} from './pit-lane.js';
+import {tyreProfile} from '/shared/tyres.mjs';
 import {vegasTerrainHeight} from './las-vegas.js';
 import {madridTerrainHeight} from './madrid.js';
 import {madridTunnelAt} from '/shared/madrid.mjs';
@@ -76,7 +78,7 @@ export class RaceScene{
   const {s,offset}=gridSlot(i),p=sample(track,s,offset),slot=new THREE.Group();slot.position.set(p.x,p.y+.11,p.z);slot.rotation.set(-p.pitch,p.heading,0,'YXZ');this.group.add(slot);
   this.box(2.8,.025,.12,'#e1e0d5',0,0,2.85,slot);this.box(.12,.025,5.4,'#e1e0d5',offset<0?-1.4:1.4,0,.2,slot);
  }
- this.batchStats=batchBoxes(this.group);batchMapped(this.group);this.setConditions(this.conditions);
+ this.pitLane=addPitLane(this,track);this.batchStats=batchBoxes(this.group);batchMapped(this.group);this.setConditions(this.conditions);
  }
  setConditions(value){
  const condition=conditionProfile(value);this.conditions=condition.id;this.weather.setConditions(condition.id);
@@ -128,21 +130,22 @@ export class RaceScene{
  for(const x of [-.97,.97]){const side=x<0?0:1,material=lettering||sideLettering(paint.splitColors[side],paint.splitColors[1-side]),label=add(new THREE.PlaneGeometry(1.75,.25),material,x,.52,-.4);label.rotation.y=Math.sign(x)*Math.PI/2;}
  const number=document.createElement('canvas');number.width=128;number.height=128;const ni=number.getContext('2d');ni.fillStyle=paint.nose;ni.fillRect(0,0,128,128);ni.fillStyle=paint.numberInk||(paint.nose==='#f6d321'||paint.nose==='#f2f4f5'||paint.nose==='#f3f4f5'||paint.nose==='#33ed22'?'#11191f':'#ffffff');ni.font='italic 900 90px Arial';ni.textAlign='center';ni.fillText(String(driver.index+1).padStart(2,'0'),64,99);const numberTexture=new THREE.CanvasTexture(number);numberTexture.colorSpace=THREE.SRGBColorSpace;const numberPanel=add(new THREE.PlaneGeometry(.35,.45),mat('#ffffff',{map:numberTexture,roughness:.4}),0,.535,2.16);numberPanel.rotation.x=-Math.PI/2+.13;
  const tyreProfile=[[.25,-.18],[.35,-.18],[.385,-.14],[.395,-.07],[.395,.07],[.385,.14],[.35,.18],[.25,.18]].map(([r,y])=>new THREE.Vector2(r,y));const wheelGeo=new THREE.LatheGeometry(tyreProfile,24),hubGeo=new THREE.CylinderGeometry(.23,.23,.35,16),wheels=[];
- wheelGeo.rotateZ(Math.PI/2);hubGeo.rotateZ(Math.PI/2);
+ wheelGeo.rotateZ(Math.PI/2);hubGeo.rotateZ(Math.PI/2);const tyreMark=new THREE.MeshStandardMaterial({color:tyreProfile(driver.tyreCompound).color,roughness:.8}),ringGeo=new THREE.TorusGeometry(.305,.018,6,24);ringGeo.rotateY(Math.PI/2);car.userData.tyreMark=tyreMark;
  for(const x of [-1.05,1.05])for(const z of [-1.2,1.45]){
   const wheel=new THREE.Group();wheel.position.set(x,.39,z);
   const spin=new THREE.Group();
   spin.add(new THREE.Mesh(wheelGeo,rubber),new THREE.Mesh(hubGeo,silver));
   const mark=new THREE.Mesh(new THREE.BoxGeometry(.012,.09,.055),mat('#b8b9ad'));mark.position.set(Math.sign(x)*.185,.30,0);
-  spin.add(mark);
+  spin.add(mark);const ring=new THREE.Mesh(ringGeo,tyreMark);ring.position.x=Math.sign(x)*.187;spin.add(ring);
   wheel.add(spin);
   wheel.userData={isFront:z>0,spin};
   car.add(wheel);wheels.push(wheel);
  }
  car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});batchBoxes(car,Infinity);batchMapped(car);car.userData.wheels=wheels;this.group.add(car);return car;}
  removeCar(id){const model=this.cars.get(id);if(!model)return;this.group.remove(model);const geometries=new Set(),materials=new Set(),textures=new Set();model.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const material of [].concat(o.material)){materials.add(material);if(material.map)textures.add(material.map);}});for(const geometry of geometries)geometry.dispose();for(const texture of textures)texture.dispose();for(const material of materials)material.dispose();this.cars.delete(id);}
- sync(cars,dt,rolling){const live=new Set(cars.filter(isOnTrack).map(c=>c.id));for(const id of this.cars.keys())if(!live.has(id))this.removeCar(id);for(const c of cars){if(!isOnTrack(c))continue;let model=this.cars.get(c.id);if(model&&model.userData.liveryId!==normalizeLiveryIndex(c.colorId)){this.removeCar(c.id);model=null;}if(!model){model=this.makeCar(c);this.cars.set(c.id,model);model.position.set(c.x,c.y,c.z);model.rotation.y=c.heading;}const blend=c.smoothMotion?1:1-Math.exp(-dt*18);model.position.lerp(new THREE.Vector3(c.x,c.y+.07,c.z),blend);model.rotation.y+=angleDiff(c.heading,model.rotation.y)*blend;model.rotation.x+=(-(c.pitch||0)-model.rotation.x)*blend;if(rolling&&!c.finished)model.userData.wheels.forEach(w=>{w.userData.spin.rotation.x=(w.userData.spin.rotation.x+c.v*dt/.39)%(Math.PI*2);if(w.userData.isFront)w.rotation.y=c.steer*.6;});}}
+ sync(cars,dt,rolling){const live=new Set(cars.filter(isOnTrack).map(c=>c.id));for(const id of this.cars.keys())if(!live.has(id))this.removeCar(id);for(const c of cars){if(!isOnTrack(c))continue;let model=this.cars.get(c.id);if(model&&model.userData.liveryId!==normalizeLiveryIndex(c.colorId)){this.removeCar(c.id);model=null;}if(!model){model=this.makeCar(c);this.cars.set(c.id,model);model.position.set(c.x,c.y,c.z);model.rotation.y=c.heading;}model.userData.tyreMark.color.set(tyreProfile(c.tyreCompound).color);const blend=c.smoothMotion?1:1-Math.exp(-dt*18);model.position.lerp(new THREE.Vector3(c.x,c.y+.07,c.z),blend);model.rotation.y+=angleDiff(c.heading,model.rotation.y)*blend;model.rotation.x+=(-(c.pitch||0)-model.rotation.x)*blend;if(rolling&&!c.finished)model.userData.wheels.forEach(w=>{w.userData.spin.rotation.x=(w.userData.spin.rotation.x+c.v*dt/.39)%(Math.PI*2);if(w.userData.isFront)w.rotation.y=c.steer*.6;});}}
  frame(cars,player,dt,racing,rolling=false){
+ this.pitLane?.update(cars,performance.now());
  // Sustained slow frames lower resolution before input feels sluggish. Do not
  // count background-tab throttling or loading spikes as graphics pressure.
  if(!document.hidden&&dt>.032&&dt<.095)this.slowFrames++;else this.slowFrames=Math.max(0,this.slowFrames-1);
