@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.29.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.29.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -846,3 +846,11 @@ and collision geometry/impulses are retained. Refresh clients and start a new ro
 
 Validation for this change: production packaging, syntax and undefined-name
 checks, module imports and UI identifier checks. No test suite or driving playtest.
+
+## Graphics startup fix — 2.29.1
+
+Renamed the local wheel cross-section array that shadowed the imported tyreProfile
+lookup in RaceScene.makeCar. The conflict threw before the renderer could draw
+even one frame, leaving menus on a blank background. Tyre wear, pit stops and
+multiplayer behaviour are unchanged. Confirmed the live error before the fix;
+verification covers the rendered scene and browser error log after deployment.
