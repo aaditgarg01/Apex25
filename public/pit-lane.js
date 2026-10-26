@@ -4,13 +4,13 @@ import {pitLayout,pitRoadPose} from '/shared/pit-layout.mjs';
 
 export function addPitLane(scene,track){
  const plan=pitLayout(track),group=new THREE.Group();scene.group.add(group);
- const paint=new THREE.MeshBasicMaterial({color:'#27353b',transparent:false,depthWrite:true,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3});
+ const paint=new THREE.MeshBasicMaterial({color:'#27353b',transparent:false,depthWrite:true,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1});
  const positions=[];
  for(let d=0;d<plan.length;d+=3){
   for(const [s,o] of [[d,plan.offset-plan.width/2],[Math.min(plan.length,d+3),plan.offset-plan.width/2],[d,plan.offset+plan.width/2],[d,plan.offset+plan.width/2],[Math.min(plan.length,d+3),plan.offset-plan.width/2],[Math.min(plan.length,d+3),plan.offset+plan.width/2]]){const p=pitRoadPose(track,s,o-plan.offset);positions.push(p.x,p.y+.045,p.z);}
  }
  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));group.add(new THREE.Mesh(geometry,paint));
- const edgePaint=new THREE.MeshBasicMaterial({color:'#63dbe8',side:THREE.DoubleSide});for(const side of [-1,1]){const pts=[];for(let d=0;d<plan.length;d+=3)for(const [at,o]of [[d,side*(plan.width/2-.15)],[Math.min(d+3,plan.length),side*(plan.width/2-.15)],[d,side*(plan.width/2+.02)],[d,side*(plan.width/2+.02)],[Math.min(d+3,plan.length),side*(plan.width/2-.15)],[Math.min(d+3,plan.length),side*(plan.width/2+.02)]]){const p=pitRoadPose(track,at,o);pts.push(p.x,p.y+.08,p.z);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));group.add(new THREE.Mesh(g,edgePaint));}
+ const edgePaint=new THREE.MeshBasicMaterial({color:'#45d9ef',side:THREE.DoubleSide,toneMapped:false,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-6});for(const side of [-1,1]){const pts=[];for(let d=0;d<plan.length;d+=3)for(const [at,o]of [[d,side*(plan.width/2-.28)],[Math.min(d+3,plan.length),side*(plan.width/2-.28)],[d,side*(plan.width/2+.02)],[d,side*(plan.width/2+.02)],[Math.min(d+3,plan.length),side*(plan.width/2-.28)],[Math.min(d+3,plan.length),side*(plan.width/2+.02)]]){const p=pitRoadPose(track,at,o);pts.push(p.x,p.y+.08,p.z);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));group.add(new THREE.Mesh(g,edgePaint));}
  const boxAt=pitRoadPose(track,plan.box),box=new THREE.Group();box.position.set(boxAt.x,boxAt.y+.09,boxAt.z);box.rotation.set(-boxAt.pitch,boxAt.heading,0,'YXZ');group.add(box);
  const yellow=new THREE.MeshBasicMaterial({color:'#ffdd58'});
  for(const x of [-1.65,1.65]){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.12,.015,7),yellow);stripe.position.set(x,0,0);box.add(stripe);}
