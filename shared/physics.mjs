@@ -1,5 +1,5 @@
 import {prepareTyres,wearTyres,tyreGrip} from './tyres.mjs';
-import {stepPit,tryPitEntry,pitAhead,preparePitTraffic} from './pits.mjs';
+import {stepPit,tryPitEntry,pitAhead,preparePitTraffic,pitLayout} from './pits.mjs';
 import {clearImpact,dampImpact,velocityOf,setVelocity} from './motion.mjs';
 import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
 import {LIVERIES,normalizeLiveryIndex} from './liveries.mjs';
@@ -30,7 +30,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.resetTimer>0)c.resetTimer-=dt;
  const prev=c.s,previousPose={x:c.x,z:c.z,heading:c.heading},conditions=conditionProfile(c.conditions);
  let throttle=input.throttle?1:0,brake=input.brake?1:0,steer=clamp(Number(input.steer)||0,-1,1);
- if(c.ai){const look=sampleGuide(track,c.s+Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)));const lane=Math.sin(c.index*2+c.s*.003)*.35;look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;const aim=Math.atan2(look.x-c.x,look.z-c.z);steer=clamp(angleDiff(aim,c.heading)*3,-1,1);const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;const desired=Math.min(targetSpeed(track,c.s,c.conditions),targetSpeed(track,c.s+brakingLook,c.conditions))*(track.width<15?.65+c.index*.01:.78+c.index*.018);throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;}
+ if(c.ai){const look=sampleGuide(track,c.s+Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)));if(c.pitRequested&&pitAhead(c,track)<170){const entry=pitLayout(track),p=sample(track,c.s+Math.max(8,c.v*.4),entry.entryOffset);Object.assign(look,p);}const lane=Math.sin(c.index*2+c.s*.003)*.35;look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;const aim=Math.atan2(look.x-c.x,look.z-c.z);steer=clamp(angleDiff(aim,c.heading)*3,-1,1);const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;const desired=Math.min(targetSpeed(track,c.s,c.conditions),targetSpeed(track,c.s+brakingLook,c.conditions))*(track.width<15?.65+c.index*.01:.78+c.index*.018);throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;}
  if(c.ai&&c.tyreLife<35&&(laps===Infinity||laps*track.length-c.progress>track.length*.45))c.pitRequested=true;
  if(c.pitRequested){const ahead=pitAhead(c,track);if(ahead<Math.max(110,c.v*c.v/44+25)&&c.v>22){throttle=0;brake=1;}}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
@@ -121,7 +121,7 @@ export function draftStrength(c,cars){
  return strength;
 }
 export function stepRace(cars,inputs,track,dt,elapsed,laps,stepDriver=stepCar){
- preparePitTraffic(cars);
+ preparePitTraffic(cars,track);
  for(const c of cars){
   if(c.finished){c.slipstream=0;continue;}
   c.slipstream=draftStrength(c,cars);

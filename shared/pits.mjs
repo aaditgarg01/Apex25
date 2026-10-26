@@ -1,22 +1,9 @@
-import {sample,wrap,angleDiff} from './tracks.mjs';
+import {wrap} from './tracks.mjs';
 import {clearImpact} from './motion.mjs';
 import {TYRES,fitTyres} from './tyres.mjs';
-const layouts=new WeakMap(),smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
+import {pitLayout,pitRoadPose} from './pit-layout.mjs';
+export {pitLayout,pitRoadPose} from './pit-layout.mjs';
 export const PIT_SPEED=80/3.6,PIT_SERVICE_SECONDS=3;
-// Shared, marked service lanes on a straight near the start/finish. Their path
-// stays on the existing paved ribbon so no trackside walls are crossed.
-export function pitLayout(track){
- if(layouts.has(track))return layouts.get(track);
- const length=Math.min(240,track.length*.08),zone=Math.min(800,track.length*.20);let best=null;
- for(let center=-zone;center<=zone;center+=12){
-  const p=sample(track,center);let bend=0;
-  for(let d=-length/2;d<=length/2;d+=12)bend+=Math.abs(angleDiff(sample(track,center+d).heading,p.heading));
-  const cost=bend+Math.abs(center)/zone*.35;
-  if(!best||cost<best.cost)best={center,cost};
- }
- const plan={entry:wrap(best.center-length/2,track.length),length,box:length*.52,offset:-(track.width/2-2.1),width:3.8,taper:Math.min(45,length*.20)};
- layouts.set(track,plan);return plan;
-}
 export const pitAhead=(car,track)=>wrap(pitLayout(track).entry-car.s,track.length);
 export function requestPit(car,compound){
  if(!car||car.finished||car.retired||!Number.isFinite(car.tyreLife)||car.pitState!=='none')return false;
@@ -28,18 +15,20 @@ export function tryPitEntry(car,track,previousS){
  if(!car.pitRequested||car.pitState!=='none'||car.v<0)return false;
  const layout=pitLayout(track),travel=wrap(car.s-previousS,track.length),ahead=wrap(layout.entry-previousS,track.length);
  if(travel>15||ahead>travel)return false;
+ // The booking does not pull a car across the racing line: steer to the
+ // signed entrance at the edge before assistance takes over.
+ if(layout.side*(car.lateral||0)<track.width/2-3.4)return false;
  car.pitState='lane';car.pitRequested=false;car.pitTravel=travel-ahead;
  if(!Number.isFinite(car.tyreRaceLaps))car.invalidLap=true;
  car.pitEntryProgress=car.progress-car.pitTravel;car.pitEntryOffset=car.lateral||0;car.pitTimer=0;car.pitFitted=false;car.v=Math.min(PIT_SPEED,Math.max(0,car.v));clearImpact(car);
  return true;
 }
 export function pitPose(car,track,distance=car.pitTravel){
- const plan=pitLayout(track),at=d=>{const entry=smooth(d/plan.taper),exit=smooth((plan.length-d)/plan.taper),offset=(car.pitEntryOffset||0)*(1-entry)+plan.offset*entry*exit;return sample(track,plan.entry+d,offset);};
- const p=at(distance),a=at(distance-.2),b=at(distance+.2),dx=b.x-a.x,dz=b.z-a.z;
- return {...p,heading:Math.atan2(dx,dz),pitch:Math.atan2(b.y-a.y,Math.hypot(dx,dz))};
+ return pitRoadPose(track,distance,0,car.pitEntryOffset);
 }
-export function preparePitTraffic(cars){
+export function preparePitTraffic(cars,track){
  for(const c of cars){c.pitClearance=Infinity;if(c.pitState==='none')continue;for(const other of cars){if(c===other||other.finished||other.pitState==='none')continue;const gap=other.pitTravel-c.pitTravel;if(gap>=0&&(gap>0||c.index>other.index))c.pitClearance=Math.min(c.pitClearance,Math.max(0,gap-8));}}
+ if(track){const plan=pitLayout(track);for(const c of cars)if(c.pitState==='exit'&&c.pitTravel>plan.length-plan.taper){for(const other of cars){if(c===other||other.finished||other.pitState!=='none'||other.v<5)continue;const ahead=wrap(plan.entry+plan.length-other.s,track.length);if(ahead<Math.max(35,other.v*1.1))c.pitClearance=Math.min(c.pitClearance,Math.max(0,plan.length-12-c.pitTravel));}}}
 }
 export function stepPit(car,track,dt){
  if(!car.pitState||car.pitState==='none')return false;
@@ -53,8 +42,8 @@ export function stepPit(car,track,dt){
  }else{
   const remaining=car.pitState==='lane'?plan.box-car.pitTravel:plan.length-car.pitTravel;
   const stopAtBox=car.pitState==='lane',safeSpeed=stopAtBox?Math.sqrt(Math.max(0,2*18*remaining)):PIT_SPEED;
-  car.v=Math.min(PIT_SPEED,car.v+dt*8,safeSpeed);const move=Math.max(0,Math.min(car.v*dt,remaining,car.pitClearance??Infinity));
-  if(move<car.v*dt-.001)car.v=move/dt;
+  car.v=Math.min(PIT_SPEED,car.v+dt*8,safeSpeed);const a=pitPose(car,track,car.pitTravel-.2),b=pitPose(car,track,car.pitTravel+.2),rate=Math.max(.4,Math.hypot(b.x-a.x,b.z-a.z)/.4),move=Math.max(0,Math.min(car.v*dt/rate,remaining,car.pitClearance??Infinity));
+  if(move<car.v*dt/rate-.001)car.v=move*rate/dt;
   car.pitTravel+=move;
   if(remaining-move<.03){
    if(stopAtBox){car.pitTravel=plan.box;car.pitState='service';car.pitTimer=PIT_SERVICE_SECONDS;car.v=0;}

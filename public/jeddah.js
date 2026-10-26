@@ -1,3 +1,4 @@
+import {pitReserved} from '/shared/pit-layout.mjs';
 import * as THREE from '/vendor/three.module.js';
 import {Reflector} from '/vendor/Reflector.js';
 import {footprintClear,placeDecoration,disposeRejectedDecorations} from './jeddah-clearance.js';
@@ -151,6 +152,7 @@ function addRunoffAndTecpro(scene,track){
  const tecproGeo=new THREE.BoxGeometry(JEDDAH_TECPRO.width,JEDDAH_TECPRO.height,JEDDAH_TECPRO.length),redMat=material('#d62828',{roughness:.52}),whiteMat=material('#f1f4f6',{roughness:.48}),blueMat=material('#0077b6',{roughness:.5});
  const instances={red:[],white:[],blue:[]},dummy=new THREE.Object3D();
  for(const block of jeddahTecproBlocks(track)){
+  if(pitReserved(track,block.x,block.z))continue;
   dummy.position.set(block.x,block.y,block.z);dummy.rotation.set(0,block.heading,0);dummy.updateMatrix();
   instances[block.color].push(dummy.matrix.clone());
  }

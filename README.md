@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.29.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.30.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 41 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -854,3 +854,42 @@ lookup in RaceScene.makeCar. The conflict threw before the renderer could draw
 even one frame, leaving menus on a blank background. Tyre wear, pit stops and
 multiplayer behaviour are unchanged. Confirmed the live error before the fix;
 verification covers the rendered scene and browser error log after deployment.
+
+## Keyboard tyre choices and external pit lanes — 2.30.0
+
+Use **1 Soft / 2 Medium / 3 Hard / 4 Intermediate / 5 Wet**, or **T** to cycle.
+Before a session, during its countdown and between qualifying/race these select
+starting tyres; during live driving they select the next pit set. **0** restores
+condition-matching Automatic starting tyres. Text/number entry fields retain
+normal typing. The starting selector appears on the driver, Free Play, friends'
+lobby and qualifying-results screens. It remains each driver's own choice,
+including guests; room settings remain host-controlled. Starting tyres lock at
+lights out; next-stop choices lock only while the crew is changing tyres.
+
+Pits now use a separate six-metre asphalt lane beyond the racing ribbon. Shared
+geometry defines a dedicated edge entrance, gradual entry/exit connectors, service
+box, divider, outer walls, terrain clearance and blue route markings. The selected
+side near the start line avoids nearby branches of the circuit. Existing street
+wall width clamps do not fold the new lane boundaries back onto its entrance.
+Only conflicting Jeddah Tecpro blocks are omitted from the reserved corridor;
+scenery is cleared before batching. These remain generated gameplay pit lanes,
+not surveyed replicas of each circuit's real pit complex.
+
+Request with **P**, then steer to the marked left/right entrance. A booking no
+longer drags a car across the racing line. Missing the entrance retains the booking
+for the next lap. Pit assist holds 80 km/h along the actual path, queues at the box,
+changes tyres in three seconds and yields to approaching traffic before merging.
+AI drivers steer toward the same entrance. Existing tyre wear, racing collision
+rules and multiplayer tracking remain in place.
+
+The server validates per-driver starting/pit choices. Full snapshots carry starting
+preferences and existing strategy motion rows carry the next set. Health/config
+advertise `tyreSelection` and `externalPits`; no input protocol version changed.
+Refresh all players and create a fresh room after deployment.
+
+Verification: syntax, undefined-name/shadow checks, module loading and production
+packaging; all 42 service lanes lie outside the racing ribbon and their sampled
+paths have no solid-barrier contacts. Local UI inspection confirmed number-key
+starting selection, a different next pit set during a parked practice session,
+and rendered external asphalt/divider without browser errors. No driving playtest
+or full test suite was run.

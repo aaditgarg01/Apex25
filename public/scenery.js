@@ -1,3 +1,4 @@
+import {clearPitScenery} from './pit-lane.js';
 import {addLasVegas} from './las-vegas.js';
 import {addMadrid} from './madrid.js';
 import {addSingapore} from './singapore.js';
@@ -88,6 +89,6 @@ export async function addMappedScenery(scene,track){
  mesh=new THREE.Mesh(new THREE.ShapeGeometry(shape),f.kind==='water'?waterMat:forestMat);
  mesh.rotation.x=-Math.PI/2;const cx=f.points.reduce((s,p)=>s+p[0],0)/f.points.length,cz=f.points.reduce((s,p)=>s+p[1],0)/f.points.length;mesh.position.y=terrainHeight(track,cx,cz)+(f.kind==='building'?-.3:-.045);mesh.userData.mappedStatic=true;mesh.castShadow=f.kind==='building';mesh.receiveShadow=true;originalGroup.add(mesh);added++;
  }
- campusBuildings?.finish();batchMapped(originalGroup);const credit=document.getElementById('map-credit');if(credit)credit.hidden=!added;return added>0;
+ campusBuildings?.finish();clearPitScenery(originalGroup,track);batchMapped(originalGroup);const credit=document.getElementById('map-credit');if(credit)credit.hidden=!added;return added>0;
  }catch{return false;}
 }

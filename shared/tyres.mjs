@@ -9,15 +9,27 @@ export const TYRES=Object.freeze({
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const defaultTyre=conditions=>conditions==='wet'?'wet':conditions==='intermediate'?'intermediate':'medium';
 export const tyreProfile=id=>TYRES[id]||TYRES.medium;
+export const validTyreChoice=id=>id==='auto'||Object.hasOwn(TYRES,id);
+export const normalizeTyreChoice=id=>validTyreChoice(id)?id:'auto';
 export function tyreStintLaps(laps,compound='medium'){
  const distance=Number.isFinite(laps)&&laps>0?laps:8;
  // One/two-lap sprints do not require a stop simply to reach the finish.
  return Math.max(1.5,distance<3?distance*1.7:distance*tyreProfile(compound).life);
 }
-export function prepareTyres(car,laps=Infinity){
- car.tyreCompound=defaultTyre(car.conditions);car.tyreLife=100;car.tyreRaceLaps=laps;
+export function prepareTyres(car,laps=Infinity,starting=car.startTyre||'auto'){
+ car.startTyre=normalizeTyreChoice(starting);car.tyreCompound=car.startTyre==='auto'?defaultTyre(car.conditions):car.startTyre;car.tyreLife=100;car.tyreRaceLaps=laps;
  car.tyreBoostHeat=0;car.tyreDistance=0;car.pitStops=0;car.pitState='none';car.pitRequested=false;
  car.pitCompound=car.tyreCompound;car.pitTimer=0;car.pitTravel=0;car.tyreImpactCooldown=0;
+}
+export function chooseStartingTyres(session,car,choice){
+ if(!car||!validTyreChoice(choice)||session.elapsed>=0&&!session.phase.endsWith('results'))return false;
+ car.startTyre=choice;
+ if(session.elapsed<0)prepareTyres(car,car.tyreRaceLaps,choice);
+ return true;
+}
+export function choosePitTyres(car,compound){
+ if(!car||car.finished||car.retired||!Object.hasOwn(TYRES,compound)||car.pitState==='service')return false;
+ car.pitCompound=compound;return true;
 }
 export function tyreGrip(car){
  if(!Number.isFinite(car.tyreLife))return 1;

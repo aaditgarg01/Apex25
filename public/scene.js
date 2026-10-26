@@ -1,4 +1,5 @@
-import {addPitLane} from './pit-lane.js';
+import {addPitLane,clearPitScenery} from './pit-lane.js';
+import {pitGroundHeight,pitRoadPose,pitLayout} from '/shared/pit-layout.mjs';
 import {tyreProfile} from '/shared/tyres.mjs';
 import {vegasTerrainHeight} from './las-vegas.js';
 import {madridTerrainHeight} from './madrid.js';
@@ -63,7 +64,7 @@ export class RaceScene{
  const ps=track.points,terrainMargin=track.id==='es-2026'?1100:['sa-2021','az-2016','sg-2008','us-2023'].includes(track.id)?1500:track.id==='mc-1929'?1200:track.id==='be-1925'?950:track.id==='bh-2002'?1600:track.id==='cn-2004'?950:450,minX=Math.min(...ps.map(p=>p.x))-terrainMargin,maxX=Math.max(...ps.map(p=>p.x))+terrainMargin,minZ=Math.min(...ps.map(p=>p.z))-terrainMargin,maxZ=Math.max(...ps.map(p=>p.z))+terrainMargin,width=maxX-minX,depth=maxZ-minZ;
  const landmarkSite=track.campus||['au-1953','cn-2004','jp-1962','bh-2002','be-1925','mc-1929','sa-2021','az-2016','sg-2008','es-2026','us-2023'].includes(track.id)?null:venuePlan(track);
  const cell=track.id==='es-2026'?20:track.id==='sg-2008'?16:['au-1953','jp-1962','be-1925','sa-2021','az-2016','sg-2008','es-2026','us-2023'].includes(track.id)?12:track.id==='mc-1929'?12:track.campus?8:24;const geo=new THREE.PlaneGeometry(width,depth,Math.ceil(width/cell),Math.ceil(depth/cell));geo.rotateX(-Math.PI/2);const verts=geo.attributes.position;
- for(let i=0;i<verts.count;i++){const x=verts.getX(i)+(minX+maxX)/2,z=verts.getZ(i)+(minZ+maxZ)/2;let y=track.id==='us-2023'?vegasTerrainHeight(track,x,z,cell):track.id==='es-2026'?madridTerrainHeight(track,x,z,cell):track.id==='sg-2008'?singaporeTerrainHeight(track,x,z,cell):track.id==='az-2016'?bakuTerrainHeight(track,x,z,cell):track.id==='sa-2021'?jeddahTerrainHeight(track,x,z,cell):track.id==='mc-1929'?monacoTerrainHeight(track,x,z,cell):track.id==='be-1925'?spaTerrainHeight(track,x,z,cell):track.id==='bh-2002'?bahrainTerrainHeight(track,x,z,cell):track.id==='jp-1962'?suzukaTerrainHeight(track,x,z,cell):track.id==='cn-2004'?shanghaiTerrainHeight(track,x,z):track.id==='au-1953'?albertTerrainHeight(track,x,z,cell):terrainVertexHeight(track,x,z,cell);if(landmarkSite){const distance=Math.hypot(x-landmarkSite.x,z-landmarkSite.z),blend=Math.max(0,Math.min(1,(landmarkSite.radius+10-distance)/10));y+=(landmarkSite.y-.15-y)*blend;}verts.setXYZ(i,x,y,z);geo.attributes.uv.setXY(i,x/16,z/16);}geo.computeVertexNormals();
+ for(let i=0;i<verts.count;i++){const x=verts.getX(i)+(minX+maxX)/2,z=verts.getZ(i)+(minZ+maxZ)/2;let y=track.id==='us-2023'?vegasTerrainHeight(track,x,z,cell):track.id==='es-2026'?madridTerrainHeight(track,x,z,cell):track.id==='sg-2008'?singaporeTerrainHeight(track,x,z,cell):track.id==='az-2016'?bakuTerrainHeight(track,x,z,cell):track.id==='sa-2021'?jeddahTerrainHeight(track,x,z,cell):track.id==='mc-1929'?monacoTerrainHeight(track,x,z,cell):track.id==='be-1925'?spaTerrainHeight(track,x,z,cell):track.id==='bh-2002'?bahrainTerrainHeight(track,x,z,cell):track.id==='jp-1962'?suzukaTerrainHeight(track,x,z,cell):track.id==='cn-2004'?shanghaiTerrainHeight(track,x,z):track.id==='au-1953'?albertTerrainHeight(track,x,z,cell):terrainVertexHeight(track,x,z,cell);if(landmarkSite){const distance=Math.hypot(x-landmarkSite.x,z-landmarkSite.z),blend=Math.max(0,Math.min(1,(landmarkSite.radius+10-distance)/10));y+=(landmarkSite.y-.15-y)*blend;}y=pitGroundHeight(track,x,z,y);verts.setXYZ(i,x,y,z);geo.attributes.uv.setXY(i,x/16,z/16);}geo.computeVertexNormals();
  const groundColors=[],baseColor=new THREE.Color(this.profile.ground);for(let i=0;i<verts.count;i++){const factor=.93+.065*Math.sin(verts.getX(i)*.017)*Math.cos(verts.getZ(i)*.021);groundColors.push(baseColor.r*factor,baseColor.g*factor,baseColor.b*factor);}geo.setAttribute('color',new THREE.Float32BufferAttribute(groundColors,3));const ground=new THREE.Mesh(geo,this.surfaces.material(['mc-1929','az-2016','sg-2008','us-2023'].includes(track.id)?'concrete':['bh-2002','sa-2021'].includes(track.id)?'sand':'grass','#ffffff',true));ground.receiveShadow=true;this.group.add(ground);const horizon=new THREE.Mesh(new THREE.PlaneGeometry(16000,16000),mat(this.profile.ground));horizon.rotation.x=-Math.PI/2;horizon.position.y=['jp-1962','be-1925','mc-1929','az-2016','sg-2008'].includes(track.id)?-24:track.campus?Math.min(...track.points.map(p=>p.y))-2:-3;this.group.add(horizon);this.surfaces.build();this.buildBarriers(track);if(track.id==='es-2026')this.wallMesh(trackBarriers(track).walls.filter(w=>w.kind==='tunnel'),'#a7ada6','concrete');
  // High-contrast unlit chevrons, aligned with the road slope.
  prepareRacingLine(track);const count=76,shape=new THREE.Shape();shape.moveTo(-.9,1.7);shape.lineTo(0,.8);shape.lineTo(.9,1.7);shape.lineTo(.9,-.4);shape.lineTo(0,-1.4);shape.lineTo(-.9,-.4);shape.closePath();
@@ -78,7 +79,7 @@ export class RaceScene{
   const {s,offset}=gridSlot(i),p=sample(track,s,offset),slot=new THREE.Group();slot.position.set(p.x,p.y+.11,p.z);slot.rotation.set(-p.pitch,p.heading,0,'YXZ');this.group.add(slot);
   this.box(2.8,.025,.12,'#e1e0d5',0,0,2.85,slot);this.box(.12,.025,5.4,'#e1e0d5',offset<0?-1.4:1.4,0,.2,slot);
  }
- this.pitLane=addPitLane(this,track);this.batchStats=batchBoxes(this.group);batchMapped(this.group);this.setConditions(this.conditions);
+ clearPitScenery(this.group,track);this.pitLane=addPitLane(this,track);this.wallMesh(trackBarriers(track).walls.filter(w=>w.kind==='pit-divider'||w.kind==='pit-wall'),'#e7e5d9','concrete');this.batchStats=batchBoxes(this.group);batchMapped(this.group);this.setConditions(this.conditions);
  }
  setConditions(value){
  const condition=conditionProfile(value);this.conditions=condition.id;this.weather.setConditions(condition.id);
@@ -103,11 +104,11 @@ export class RaceScene{
  }
  updateGuide(car,now){
  if(!this.guide||!car||!this.showLine||now-this.guideAt<80)return;
- this.guideAt=now;const dummy=new THREE.Object3D(),color=new THREE.Color(),condition=conditionProfile(this.conditions),speed=Math.max(0,car.v);
+ this.guideAt=now;const track=this.track,dummy=new THREE.Object3D(),color=new THREE.Color(),condition=conditionProfile(this.conditions),speed=Math.max(0,car.v);
  for(let i=0;i<this.guide.count;i++){
-  const distance=i*4-8,s=car.s+distance,p=sampleGuide(this.track,s),limit=racingSpeedAt(this.track,s,this.conditions),forecast=Math.min(car.boostActive?BOOST_TOP_SPEED:Math.max(TOP_SPEED,speed),Math.sqrt(speed*speed+2*8*condition.traction*Math.min(70,Math.max(0,distance))));
+  const distance=i*4-8,s=car.s+distance,plan=pitLayout(track),pitDistance=car.pitState!=='none'?car.pitTravel+distance:((car.s-plan.entry+track.length*1.5)%track.length-track.length*.5)+distance,guidePit=(car.pitRequested||car.pitState!=='none')&&pitDistance>=0&&pitDistance<=plan.length,p=guidePit?pitRoadPose(track,pitDistance):sampleGuide(track,s),limit=racingSpeedAt(this.track,s,this.conditions),forecast=Math.min(car.boostActive?BOOST_TOP_SPEED:Math.max(TOP_SPEED,speed),Math.sqrt(speed*speed+2*8*condition.traction*Math.min(70,Math.max(0,distance))));
   const next=racingSpeedAt(this.track,s+12,this.conditions),overspeed=forecast-limit;
-  const tint=overspeed>3?'#ff4230':overspeed>-.8&&next<limit-.8?'#ffca00':'#52ff2e';
+  const tint=guidePit?'#68e2ef':overspeed>3?'#ff4230':overspeed>-.8&&next<limit-.8?'#ffca00':'#52ff2e';
   dummy.position.set(p.x,p.y+.16,p.z);dummy.rotation.set(-p.pitch,p.heading,0,'YXZ');dummy.scale.set(.9,1,.9);dummy.updateMatrix();this.guide.setMatrixAt(i,dummy.matrix);this.guide.setColorAt(i,color.set(tint));
   dummy.position.y-=.025;dummy.scale.set(1.1,1,1.08);dummy.updateMatrix();this.guideBorder.setMatrixAt(i,dummy.matrix);
  }

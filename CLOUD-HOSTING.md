@@ -776,3 +776,13 @@ per-driver pit requests, selected compounds, active phases and current pit state
 Existing input versions and motion row lengths are unchanged; an optional
 `strategy` array carries wear/service updates alongside the usual car poses.
 Restarted rooms and freshly refreshed clients get new scaled tyre stints.
+
+## Per-driver tyre selection and external pits — 2.30.0
+
+Deploy Railway before the frontend. The backend adds `tyreSelection` / `externalPits`
+capabilities and validates `tyre-choice` messages for each driver. Lobby preferences
+and countdown changes affect that driver's starting set; active-session messages
+can select the next pit set, without refitting tyres on track. Guests retain their
+own starting choice independently of the host's locked/shared session controls.
+New shared pit-layout geometry drives both client rendering and authoritative
+server pit movement/barriers; use fresh clients and fresh rooms after deployment.

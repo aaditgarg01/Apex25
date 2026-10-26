@@ -1,4 +1,5 @@
 import {damageTyres} from './tyres.mjs';
+import {pitBoundary,pitReserved} from './pit-layout.mjs';
 import {velocityOf,setVelocity} from './motion.mjs';
 import {madridLayout,madridTunnelLayout} from './madrid.mjs';
 import {jeddahBoundaryOffset,jeddahTecproBlocks} from './jeddah.mjs';
@@ -12,6 +13,7 @@ const cache=new WeakMap(),CELL=12,HALF_WIDTH=1.24,HALF_LENGTH=2.6;
 const wrap=(n,m)=>((n%m)+m)%m,angle=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];return {x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,y:a.y+(b.y-a.y)*t,groundY:a.groundY+(b.groundY-a.groundY)*t,heading:a.heading+angle(b.heading,a.heading)*t};}
 function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,offset);return {x:p.x+Math.cos(p.heading)*o,z:p.z-Math.sin(p.heading)*o,y:p.y};}
+function pitEdge(track,i,offset){const p=track.points[i];return {x:p.x+Math.cos(p.heading)*offset,z:p.z-Math.sin(p.heading)*offset,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
  const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',jeddah=track.id==='sa-2021',wideRunoff=shanghai||bahrain||spa||jeddah,concreteWalls=melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
@@ -25,6 +27,13 @@ export function trackBarriers(track){
  // subway retaining walls, portal pillars and roundabout island below.
  if(!track.campus)for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
   const next=(i+1)%track.points.length,inner=wideRunoff?boundaryOffset(track,i,side)-.35:half+(track.id==='sg-2008'?.65:track.id==='az-2016'?.3:track.id==='mc-1929'?.35:6.5),outer=wideRunoff?boundaryOffset(track,i,side)+.35:half+(track.id==='sg-2008'?1.2:['mc-1929','az-2016'].includes(track.id)?.8:7.2);
+  const pa=pitBoundary(track,i*track.step),pb=pitBoundary(track,next*track.step);
+  if(pa?.side===side&&pb?.side===side){
+   const oa=Math.max((inner+outer)/2,pa.outer),ob=Math.max((inner+outer)/2,pb.outer),a=pitEdge(track,i,side*oa),b=pitEdge(track,next,side*ob),normal={x:-Math.cos(track.points[i].heading)*side,z:Math.sin(track.points[i].heading)*side};
+   add(a,b,.5,1.05,'track',normal);add({...a,y:a.y+1.05},{...b,y:b.y+1.05},.12,2.9,'fence',normal);
+   if(pa.divider&&pb.divider){const da=pitEdge(track,i,side*(half+.65)),db=pitEdge(track,next,side*(half+.65));add(da,db,.35,1.05,'pit-divider');}
+   continue;
+  }
   const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*(wideRunoff?boundaryOffset(track,next,side)-.35:inner)),bo=edge(track,next,side*(wideRunoff?boundaryOffset(track,next,side)+.35:outer)),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
   const cx=(track.points[i].x+track.points[next].x)/2,cz=(track.points[i].z+track.points[next].z)/2,nx=cx-(a.x+b.x)/2,nz=cz-(a.z+b.z)/2,n=Math.hypot(nx,nz);
   const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2);
@@ -34,7 +43,12 @@ export function trackBarriers(track){
   // collision barrier without putting a second debris fence in front of it.
   if(!(track.id==='az-2016'&&side===1&&i*track.step>=2470&&i*track.step<=2760))add(fa,fb,.12,concreteWalls||spa?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
  }
- if(jeddah)for(const block of jeddahTecproBlocks(track))add(block.a,block.b,block.width,block.height,'tecpro',block.inward);
+ if(track.campus)for(let i=0;i<track.points.length;i++){
+  const next=(i+1)%track.points.length,a=pitBoundary(track,i*track.step),b=pitBoundary(track,next*track.step);if(!a||!b)continue;
+  add(pitEdge(track,i,a.side*a.outer),pitEdge(track,next,b.side*b.outer),.4,1.05,'pit-wall');
+  if(a.divider&&b.divider)add(pitEdge(track,i,a.side*(half+.65)),pitEdge(track,next,b.side*(half+.65)),.35,1.05,'pit-divider');
+ }
+ if(jeddah)for(const block of jeddahTecproBlocks(track))if(!pitReserved(track,(block.a.x+block.b.x)/2,(block.a.z+block.b.z)/2))add(block.a,block.b,block.width,block.height,'tecpro',block.inward);
  function wallPair(s,length,offset,width,height,kind){
   const p=roadPoint(track,s),tx=Math.sin(p.heading),tz=Math.cos(p.heading),rx=Math.cos(p.heading),rz=-Math.sin(p.heading);
   for(const side of [-1,1]){const x=p.x+rx*offset*side,z=p.z+rz*offset*side;add({x:x-tx*length/2,z:z-tz*length/2,y:p.y},{x:x+tx*length/2,z:z+tz*length/2,y:p.y},width,height,kind,{x:-rx*side,z:-rz*side});}
