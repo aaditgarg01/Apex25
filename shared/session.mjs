@@ -24,7 +24,7 @@ export function endSession(s){
 }
 export function advanceToRace(s,track){
  if(s.phase!=='qualifying-results')return false;
- s.cars=qualifyingOrder(s.cars).map((c,i)=>{const next=createCar(track,c.id,c.name,i,c.ai,c.colorId,s.conditions);prepareTyres(next,s.laps,c.startTyre);return next;});s.phase='race';s.elapsed=-4;initializeWeather(s,s.weatherMode||s.conditions,s.weather);return true;
+ s.cars=qualifyingOrder(s.cars).map((c,i)=>{const next=createCar(track,c.id,c.name,i,c.ai,c.colorId,s.conditions);if(s.weather){next.trackWetness=s.weather.wetness;next.rainIntensity=s.weather.rain;}prepareTyres(next,s.laps,c.startTyre);return next;});s.phase='race';s.elapsed=-4;initializeWeather(s,s.weatherMode||s.conditions,s.weather);return true;
 }
 export function stepSession(s,inputs,track,dt,stepDriver=stepCar){
  if(!['practice','qualifying','race'].includes(s.phase))return;
@@ -49,7 +49,7 @@ export function addQualifyingDriver(s,track,driver){
  if(!canJoinQualifying(s)||s.cars.some(c=>c.id===driver.id))return null;
  const replace=s.cars.findIndex(c=>c.ai),old=replace>=0?s.cars[replace]:null,index=old?.index??Math.max(-1,...s.cars.map(c=>c.index))+1;
  const car=createCar(track,driver.id,driver.name,index,false,driver.colorId,s.conditions),p=sample(track,0);
- prepareTyres(car,Infinity,driver.startTyre);Object.assign(car,p,{s:0,progress:0,motionHeading:p.heading,motionYawRate:0,v:0,qualifying:true,outLap:true,lapStart:Math.max(0,s.elapsed)});
+ if(s.weather){car.trackWetness=s.weather.wetness;car.rainIntensity=s.weather.rain;}prepareTyres(car,Infinity,driver.startTyre);Object.assign(car,p,{s:0,progress:0,motionHeading:p.heading,motionYawRate:0,v:0,qualifying:true,outLap:true,lapStart:Math.max(0,s.elapsed)});
  if(replace>=0)s.cars.splice(replace,1,car);else s.cars.push(car);
  applyWeather(s);return {car,replacedId:old?.id??null};
 }
