@@ -57,7 +57,7 @@ export function nearest(track,x,z,previous=0){
  for(let d=-24;d<=24;d++){const i=wrap(center+d,n),a=track.points[i],b=track.points[(i+1)%n],dx=b.x-a.x,dz=b.z-a.z,t=clamp(((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz),0,1),px=a.x+dx*t,pz=a.z+dz*t,dist=Math.hypot(x-px,z-pz);if(dist<best.distance){const h=a.heading+angleDiff(b.heading,a.heading)*t;best={s:wrap((i+t)*track.step,track.length),distance:dist,offset:(x-px)*Math.cos(h)-(z-pz)*Math.sin(h),heading:h};}}
  return best;
 }
-export function targetSpeed(track,s,conditions='normal'){return racingSpeedAt(track,s,conditions);}
+export function targetSpeed(track,s,conditions='normal',wetness){return racingSpeedAt(track,s,conditions,wetness);}
 
 export function terrainHeight(track,x,z){
  let nearest=Infinity,closest=track.points[0],second=Infinity,other=closest;

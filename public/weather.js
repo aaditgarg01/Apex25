@@ -15,12 +15,12 @@ export class WeatherEffects{
   this.spray=new THREE.Points(sprayGeometry,material);this.spray.frustumCulled=false;this.spray.visible=false;scene.add(this.spray);
  }
  reset(){for(const p of this.pool)p.life=0;this.emitters.clear();this.spray.geometry.setDrawRange(0,0);}
- setConditions(value){const next=conditionProfile(value);if(next.id!==this.profile.id)this.reset();this.profile=next;this.rain.visible=next.wetness>0;this.spray.visible=next.wetness>0;this.rain.material.opacity=next.id==='wet'?.27:.13;this.rain.geometry.setDrawRange(0,(next.id==='wet'?this.count:190)*2);}
+ setConditions(value,weather){const next=conditionProfile(value,weather?.wetness);this.profile=next;this.rainIntensity=weather?.rain??next.wetness;this.rainCount=Math.round(this.count*this.rainIntensity);this.rain.visible=this.rainCount>0;this.spray.visible=next.wetness>.01;this.rain.material.opacity=.10+.17*this.rainIntensity;this.rain.geometry.setDrawRange(0,this.rainCount*2);}
  frame(cars,focus,dt,camera){
-  if(!this.profile.wetness||!focus)return;
+  if(!(this.profile.wetness||this.rainIntensity)||!focus)return;
   dt=Math.min(dt,.08);this.clock+=dt;const wet=this.profile.wetness,windX=.8+Math.sin(this.clock*.24)*1.3,windZ=.4+Math.cos(this.clock*.19)*.8;
   const anchorX=Math.round(focus.x/40)*40,anchorZ=Math.round(focus.z/40)*40;this.rain.position.set(anchorX,focus.y,anchorZ);
-  const count=this.profile.id==='wet'?this.count:190;
+  const count=this.rainCount||0;
   for(let i=0;i<count;i++){
    const speed=19+wet*14+(i%7)*.35,x=wrap(i*37.73+this.clock*windX-anchorX+70,140)-70,z=wrap(i*19.17+this.clock*windZ-anchorZ+70,140)-70,y=wrap(i*7.39-this.clock*speed,48)+.5,j=i*6,tail=(.65+wet*.8)*(1+(i%3)*.12);
    this.positions[j]=x;this.positions[j+1]=y;this.positions[j+2]=z;this.positions[j+3]=x-windX*.12;this.positions[j+4]=y+tail;this.positions[j+5]=z-windZ*.12;

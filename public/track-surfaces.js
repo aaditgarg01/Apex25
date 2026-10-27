@@ -73,6 +73,7 @@ export class TrackSurfaces{
   if(track.id==='fr-1969')for(const side of [-1,1])for(let band=0;band<4;band++){
    const p=side*(half+2.2+band),q=side*(half+3.2+band);scene.ribbon(track,Math.min(p,q),Math.max(p,q),band<3?'#316a9e':'#a74037',.055,false,{kind:'paint',mask:this.outsideMask[side]});
   }
+  if(track.id==='mx-1962'){const mask=track.points.map((_,i)=>i*track.step/track.length>.835&&i*track.step/track.length<.91);scene.ribbon(track,-half,half,'#55595b',.056,false,{kind:'paint',mask});}
   this.rubber();this.repairs();
  }
  repairs(){

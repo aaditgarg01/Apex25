@@ -65,7 +65,7 @@ export class MultiplayerTracking {
   const old=this.local&&!reset?this.localPose(now):null;
   this.record(s,now);this.session=s;this.lastAt=now;
   if(reset){this.controls=[];this.error=zero();}
-  this.local=copy(c);this.local.conditions=s.conditions||c.conditions||'normal';
+  this.local=copy(c);this.local.conditions=s.conditions||c.conditions||'normal';if(s.weather){this.local.trackWetness=s.weather.wetness;this.local.rainIntensity=s.weather.rain;}
   this.baseAt=now-(this.liveInput&&active(s)?clamp(this.rtt,0,250):0);this.localAt=this.baseAt;
   this.advance(now);
   const next=copy(this.local);this.project(next,clamp((now-this.localAt)/1000,0,1/60));

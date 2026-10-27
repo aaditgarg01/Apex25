@@ -893,3 +893,61 @@ paths have no solid-barrier contacts. Local UI inspection confirmed number-key
 starting selection, a different next pit set during a parked practice session,
 and rendered external asphalt/divider without browser errors. No driving playtest
 or full test suite was run.
+
+## Mexico City, dynamic weather and tyre strategy — 2.31.0
+
+**Dynamic / changing weather** is a fourth conditions choice in solo and friends'
+room setup. Sessions begin dry; a front can arrive after 30–70 seconds, then change
+again at irregular 45–110 second intervals. Rain ramps rather than switching
+instantly. Water accumulates over about 34 seconds and dries much more slowly,
+so a clearing sky does not immediately restore dry grip. The server owns the
+weather; full and compact snapshots carry the same actual rain/surface state to
+all drivers, including mid-qualifying joiners. The future schedule stays private.
+Qualifying time, the single outlap and valid-lap classification are unchanged.
+
+Tyre performance interpolates continuously with surface water. At full life on a
+dry surface, intermediates have 66% grip / 86% speed factor / 2.25× wear and full
+wets 48% grip / 75% speed factor / 3.05× wear relative to a medium slick. In heavy
+rain, slicks have about 36% compound grip before speed-dependent aquaplaning,
+while inters have 72%; wets suit standing water. Weather itself further reduces
+traction, braking and speed, and worn tyres compound these effects. Lower speed
+ceilings bleed off overspeed progressively, avoiding an instantaneous speed snap.
+These are game-balance coefficients, not measured real tyre data. Existing boost,
+scrub, off-track and impact wear continue to apply. The racing line and AI pace
+also respond to surface water, compound grip and wear.
+
+The starting tyre selector shows an **estimated fastest strategy** over the chosen
+race distance, including compound degradation and the pit-time cost. It respects
+a manually chosen starting compound. The live HUD shows the best next set; the
+Esc menu explains whether a stop is estimated to save time over staying out.
+**Y** selects the recommended starting or next-pit set. It does not book a stop or
+overwrite a driver's selection automatically. **P** books/cancels a stop. Advice
+assumes the currently observed surface continues; unpredictable future weather,
+traffic, incidents and driver pace can change the best decision. Long races use
+at most 60 planning intervals to keep setup responsive.
+
+A pit booking no longer applies the brakes before the entrance. The 80 km/h
+assist begins only when the car crosses the marked entry gate on the correct
+side. Mexico's generated gameplay lane follows the inside of the final corner
+onto the pit straight, with a longer service corridor. It remains an approximation
+rather than a survey of the real pit entry/exit footprint.
+
+Mexico City now has a dedicated procedural environment: opposing, tiered GNP
+stadium banks with crowds and Mexican flags, screens and a podium; a 33-bay pit
+building and control tower; a roofed main grandstand; football fields, park paths,
+vegetation, a copper sports-palace dome and hazy distant urban blocks. No generic
+stadium is duplicated. Free Practice offers a **Mexico stadium approach** start.
+The existing geographic centreline is retained. Coarse SRTM relief is reduced to
+a near-flat 2.6 m surface blockout, avoiding building/tree-height bumps. A 0.78
+air-density factor reduces drag and aerodynamic cornering support, preserving
+Mexico's high straight-line speeds. Stadium resurfacing is visually distinct.
+Architecture is an original artistic representation, not a laser-scanned model.
+Engine/turbo thermal simulation and surveyed variable widths are not implemented.
+
+Reference: the FIA's [2025 circuit/pit drawing](https://www.fia.com/system/files/decision-document/2025_mexico_city_grand_prix_-_event_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_and_quarantine_zone_area.pdf)
+and Mercedes' [high-altitude explanation](https://www.mercedesamgf1.com/news/what-impact-does-high-altitude-have-on-an-f1-car).
+
+Verification: production packaging, syntax/undefined-name/shadow checks, tyre
+coefficient and strategy calculations, weather snapshot round-trip and all 42
+pit-route clearance checks. A parked local graphics inspection rendered Mexico's
+new environment without browser errors. No driving playtest or full suite run.

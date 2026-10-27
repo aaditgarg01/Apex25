@@ -17,6 +17,8 @@ export function applyElevation(id,points,length,elevations){
  profile=[...SPA_ALTITUDES,[990,396.5],[1080,409.7]].sort((a,b)=>a[0]-b[0]).map(([s,y])=>[s/7004*length,y]);source='Official Spa altitude markers · interpolated';}
  else if(profile){profile=profile.map(([t,y])=>[t*length,y]);}
  if(!profile||profile.length<4)return {source,min:0,max:0,range:0};
+ // Coarse 90 m terrain includes buildings/trees. Reduce that relief for Mexico's near-flat racing surface.
+ if(id==='mx-1962'){const mean=profile.reduce((sum,p)=>sum+p[1],0)/profile.length;profile=profile.map(([s,y])=>[s,2240+(y-mean)*.16]);source='Near-flat race-surface blockout · reduced coarse terrain relief';}
  const base=Math.min(...profile.map(p=>p[1]));for(let i=0;i<points.length;i++)points[i].y=interpolateProfile(profile,i/points.length*length)-base;
  return {source,min:base,max:Math.max(...profile.map(p=>p[1])),range:Math.max(...profile.map(p=>p[1]))-base};
 }

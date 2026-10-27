@@ -25,9 +25,9 @@ export function prepareRacingLine(track){
  track.racingLine={points,curvature,step,length:track.length,speeds:new Map()};return track.racingLine;
 }
 export function sampleGuide(track,s){const line=prepareRacingLine(track),f=wrap(s,line.length)/line.step,i=Math.floor(f),t=f-i,a=line.points[i],b=line.points[(i+1)%line.points.length];return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,pitch:a.pitch+(b.pitch-a.pitch)*t,heading:a.heading+angle(b.heading,a.heading)*t,offset:a.offset+(b.offset-a.offset)*t};}
-function speedProfile(track,value){
- const line=prepareRacingLine(track),condition=conditionProfile(value);if(line.speeds.has(condition.id))return line.speeds.get(condition.id);
- const wet=condition.wetness,base=20-10.5*wet,aero=.0042-.00255*wet,max=110*(1-.10*wet),n=line.points.length;
+function speedProfile(track,value,wetness){
+ const line=prepareRacingLine(track),condition=conditionProfile(value,Number.isFinite(wetness)?Math.round(wetness*20)/20:undefined),key=String(condition.wetness);if(line.speeds.has(key))return line.speeds.get(key);
+ const wet=condition.wetness,base=20-10.5*wet,aero=(.0042-.00255*wet)*(track.id==='mx-1962'?.78:1),max=110*(1-.10*wet),n=line.points.length;
  const speeds=line.curvature.map(k=>{const corner=k>aero?Math.sqrt(base/(k-aero)):max;const steering=k>.025?3.8*condition.steering/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;return clamp(Math.min(corner,steering),8,max);});
  // Backward braking and forward acceleration passes link corners to straights,
  // including the seam of the closed lap and uphill/downhill braking distances.
@@ -35,6 +35,6 @@ function speedProfile(track,value){
   for(let i=n-1;i>=0;i--){const next=(i+1)%n,ds=Math.max(1,Math.hypot(line.points[next].x-line.points[i].x,line.points[next].z-line.points[i].z)),brake=Math.max(5,33*condition.braking+9.81*Math.sin(line.points[i].pitch));speeds[i]=Math.min(speeds[i],Math.sqrt(speeds[next]**2+2*brake*ds));}
   for(let i=0;i<n;i++){const previous=wrap(i-1,n),ds=Math.max(1,Math.hypot(line.points[i].x-line.points[previous].x,line.points[i].z-line.points[previous].z));speeds[i]=Math.min(speeds[i],Math.sqrt(speeds[previous]**2+2*9*condition.traction*ds));}
  }
- line.speeds.set(condition.id,speeds);return speeds;
+ line.speeds.set(key,speeds);return speeds;
 }
-export function racingSpeedAt(track,s,conditions='normal'){const line=prepareRacingLine(track),speeds=speedProfile(track,conditions),f=wrap(s,line.length)/line.step,i=Math.floor(f),t=f-i;return speeds[i]+(speeds[(i+1)%speeds.length]-speeds[i])*t;}
+export function racingSpeedAt(track,s,conditions='normal',wetness){const line=prepareRacingLine(track),speeds=speedProfile(track,conditions,wetness),f=wrap(s,line.length)/line.step,i=Math.floor(f),t=f-i;return speeds[i]+(speeds[(i+1)%speeds.length]-speeds[i])*t;}

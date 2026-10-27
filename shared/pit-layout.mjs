@@ -19,6 +19,8 @@ export function pitLayout(track){
   for(let d=taper;d<=length-taper;d+=15){const p=point(track,plan,d),s=wrap(plan.entry+d,track.length);for(let j=0;j<track.points.length;j+=8){const arc=Math.abs(j*track.step-s);if(Math.min(arc,track.length-arc)<110)continue;const q=track.points[j],distance=Math.hypot(p.x-q.x,p.z-q.z);if(Math.abs(p.y-q.y)<5&&distance<track.width/2+8)cost+=(track.width/2+8-distance)*5;}}
   if(!best||cost<best.cost)best={...plan,cost};
  }
+ // Mexico branches from the final stadium exit onto the inside of the pit straight.
+ if(track.id==='mx-1962')best={entry:track.length*.94,length:650,box:350,offset:-(track.width/2+5),entryOffset:-(track.width/2-1.8),side:-1,width:6,taper:95};
  best.samples=[];best.grid=new Map();
  for(let d=0;d<=best.length;d+=3){const p={...point(track,best,d),d};best.samples.push(p);const key=Math.floor(p.x/16)+':'+Math.floor(p.z/16);if(!best.grid.has(key))best.grid.set(key,[]);best.grid.get(key).push(p);}
  cache.set(track,best);return best;
