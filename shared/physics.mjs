@@ -73,6 +73,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  const near=nearest(track,c.x,c.z,c.s);c.lateral=near.offset;let delta=near.s-prev;if(delta>track.length/2)delta-=track.length;if(delta<-track.length/2)delta+=track.length;
  // No teleports or shortcuts: progress advances only near the expected ribbon.
  if(Math.abs(delta)<40&&near.distance<track.width/2+40){c.s=near.s;c.progress+=delta;}
+ if(tryPitEntry(c,track,prev)){updateLap(c,track,elapsed,laps);return;}
  const half=roadHalfWidth(track,near.s);
  if(near.distance>half+1.0){if(!c.offtrack)c.offtrackTime=0;c.offtrack=true;c.offtrackTime+=dt;if(c.offtrackTime>.4&&!c.offtrackPenalty){c.penalty+=1;c.offtrackPenalty=true;c.invalidLap=true;}}else{c.offtrack=false;c.offtrackPenalty=false;}
  if(near.distance>half+24){c.v*=Math.exp(-dt*4);const p=sample(track,c.s);c.x+=(p.x-c.x)*dt*.6;c.z+=(p.z-c.z)*dt*.6;}
@@ -81,7 +82,6 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  c.y=fall?surface.y*(1-fall)+(terrainHeight(track,c.x,c.z)-.9)*fall:surface.y;
  c.pitch=surface.pitch;
  wearTyres(c,track,dt,Math.hypot(c.x-previousPose.x,c.z-previousPose.z),boost);
- tryPitEntry(c,track,prev);
  updateLap(c,track,elapsed,laps);
 }
 function updateLap(c,track,elapsed,laps){

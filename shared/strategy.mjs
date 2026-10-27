@@ -29,7 +29,7 @@ export function raceStrategy(track,laps,weather='normal',starting='auto'){
 export function strategyLabel(plan){return plan.stints.map((stint,i)=>(i?'lap '+Math.round(stint.from)+' → ':'')+tyreProfile(stint.compound).name).join(' · ');}
 export function liveTyreAdvice(track,session,car){
  const remaining=session.phase==='race'?clamp(session.laps-car.progress/track.length,0,session.laps):2;
- const wetness=surfaceWetness(car),raceLaps=Number.isFinite(car.tyreRaceLaps)?car.tyreRaceLaps:8;
+ const wetness=surfaceWetness(car),raceLaps=Number.isFinite(car.tyreRaceLaps)?car.tyreRaceLaps:car.practice?24:8;
  const ranked=ids.map(compound=>({compound,cost:stintCost(track,Math.max(.1,remaining),raceLaps,compound,wetness)})).sort((a,b)=>a.cost-b.cost),best=ranked[0];
  const stay=stintCost(track,Math.max(.1,remaining),raceLaps,car.tyreCompound,wetness,car.tyreLife);
  const gain=stay-best.cost-estimatedPitLoss(track),box=remaining>.35&&gain>2;

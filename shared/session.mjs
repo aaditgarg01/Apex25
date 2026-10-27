@@ -14,7 +14,7 @@ export function createSession(track,drivers,{mode='weekend',laps=3,practiceStart
  conditions=normalizeConditions(conditions);
  const s={conditions,mode:SESSION_MODES.includes(mode)?mode:'weekend',laps:normalizeLapCount(laps),elapsed:-4,phase:mode==='practice'?'practice':mode==='race'?'race':'qualifying',cars:drivers.map((d,i)=>createCar(track,d.id,d.name,i,!!d.ai,d.colorId,conditions)),qualifying:[]};
  initializeWeather(s,conditions);
- for(const [i,c]of s.cars.entries())prepareTyres(c,s.phase==='race'?s.laps:Infinity,drivers[i].startTyre);
+ for(const [i,c]of s.cars.entries()){c.practice=s.phase==='practice';prepareTyres(c,s.phase==='race'?s.laps:Infinity,drivers[i].startTyre);}
  if(s.phase!=='race')for(const c of s.cars){const start=s.phase==='practice'?(practiceStart==='mexico-stadium'&&track.id==='mx-1962'?track.length*.825:practiceStart==='eau-rouge'&&track.id==='be-1925'?650/7004*track.length:practiceStart==='sector2'?track.length/3:practiceStart==='sector3'?track.length*2/3:0):0;const spawn=s.phase==='practice'?start-c.index*8:start,p=sample(track,spawn);Object.assign(c,{...p,s:wrap(spawn,track.length),progress:spawn,motionHeading:p.heading,motionYawRate:0,v:0,qualifying:s.phase==='qualifying',invalidLap:start>0,outLap:s.phase==='qualifying'||start>0});}
  return s;
 }

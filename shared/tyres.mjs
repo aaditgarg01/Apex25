@@ -11,15 +11,15 @@ export const defaultTyre=conditions=>{const w=typeof conditions==='object'?surfa
 export const tyreProfile=id=>TYRES[id]||TYRES.medium;
 export const validTyreChoice=id=>id==='auto'||Object.hasOwn(TYRES,id);
 export const normalizeTyreChoice=id=>validTyreChoice(id)?id:'auto';
-export function tyreStintLaps(laps,compound='medium'){
- const distance=Number.isFinite(laps)&&laps>0?laps:8;
+export function tyreStintLaps(laps,compound='medium',practice=false){
+ const distance=Number.isFinite(laps)&&laps>0?laps:practice?24:8;
  // One/two-lap sprints do not require a stop simply to reach the finish.
  return Math.max(1.5,distance<3?distance*1.7:distance*tyreProfile(compound).life);
 }
 export function prepareTyres(car,laps=Infinity,starting=car.startTyre||'auto'){
  car.startTyre=normalizeTyreChoice(starting);car.tyreCompound=car.startTyre==='auto'?defaultTyre(car):car.startTyre;car.tyreLife=100;car.tyreRaceLaps=laps;
  car.tyreBoostHeat=0;car.tyreDistance=0;car.pitStops=0;car.pitState='none';car.pitRequested=false;
- car.pitCompound=car.tyreCompound;car.pitTimer=0;car.pitTravel=0;car.tyreImpactCooldown=0;
+ car.pitCompound=car.tyreCompound;car.pitTimer=0;car.pitTravel=0;car.pitMerge=null;car.tyreImpactCooldown=0;
 }
 export function chooseStartingTyres(session,car,choice){
  if(!car||!validTyreChoice(choice)||session.elapsed>=0&&!session.phase.endsWith('results'))return false;
@@ -57,7 +57,7 @@ export function wearTyres(car,track,dt,distance,boosting=false){
  if(distance<=0||!Number.isFinite(distance))return;
  const scrub=Math.min(.35,Math.abs(car.steer||0)*speed/140),boostWear=boosting&&moving?.25+.55*car.tyreBoostHeat:0;
  const mismatch=tyreWearFactor(car);
- const wear=100*distance/(track.length*tyreStintLaps(car.tyreRaceLaps,car.tyreCompound))*(1+scrub+boostWear+(car.sliding?.2:0)+(car.offtrack?.3:0))*mismatch;
+ const wear=100*distance/(track.length*tyreStintLaps(car.tyreRaceLaps,car.tyreCompound,car.practice))*(1+scrub+boostWear+(car.sliding?.2:0)+(car.offtrack?.3:0))*mismatch;
  car.tyreDistance=(car.tyreDistance||0)+distance;car.tyreLife=clamp(car.tyreLife-wear,0,100);
 }
 export function damageTyres(car,closingSpeed){

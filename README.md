@@ -951,3 +951,31 @@ Verification: production packaging, syntax/undefined-name/shadow checks, tyre
 coefficient and strategy calculations, weather snapshot round-trip and all 42
 pit-route clearance checks. A parked local graphics inspection rendered Mexico's
 new environment without browser errors. No driving playtest or full suite run.
+
+## Late pit entry and longer practice tyres — 2.31.1
+
+A requested stop can now activate after the entrance line when the car merges
+into the physical pit lane before the service box. Detection projects the car
+onto the nearby lane segments, checks height, direction and the expected circuit
+branch, and rejects cars merely passing nearby on the racing surface. Pit assist
+starts at the car's actual position and blends into the lane; progress is retained
+rather than credited from the original entrance. Valid pit entry is recognized
+before ordinary off-track penalties are evaluated. The normal three-second tyre
+change increments the stop count once. Joining beyond the box is a drive-through
+and shows `MISSED BOX`; it does not claim a tyre change that never happened.
+Existing barriers still apply. Press **P** to request the stop as before.
+
+Merge offsets travel as optional compact metadata, preserving the existing
+motion/strategy row formats. They are discarded when the blend completes.
+
+Free Practice uses a 24-lap reference distance instead of eight for its wear
+balance, making distance-based tyre life **three times longer**. Mediums have a
+nominal 19.2-lap stint rather than 6.4 before driving/wetness adjustments; softs
+and hards scale likewise. Heavy boost, sliding, wrong-condition tyres and collision
+damage still shorten life. Qualifying and finite race-distance wear are unchanged.
+The pit menu and tyre advice use the same practice wear balance.
+
+Focused checks covered 168 late-entry/service scenarios across all 42 circuits,
+racing-surface/reverse/missed-box rejection, continuous merge positioning, compact
+snapshot preservation and the 3:1 practice/qualifying wear ratio. Production
+packaging and syntax/name checks passed. No driving playtest or full suite run.

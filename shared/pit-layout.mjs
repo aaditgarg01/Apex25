@@ -29,6 +29,18 @@ export function pitRoadPose(track,d,across=0,entryOffset){
  const plan=pitLayout(track),p=point(track,plan,d,across,entryOffset),a=point(track,plan,d-.2,across,entryOffset),b=point(track,plan,d+.2,across,entryOffset),dx=b.x-a.x,dz=b.z-a.z;
  return {...p,heading:Math.atan2(dx,dz),pitch:Math.atan2(b.y-a.y,Math.hypot(dx,dz))};
 }
+// Project onto the physical lane, independently of crossing its first station.
+// The spatial grid keeps late-entry checks local and avoids neighboring branches.
+export function locatePitLane(track,car){
+ const plan=pitLayout(track);let best=null;
+ for(let gx=Math.floor(car.x/16)-1;gx<=Math.floor(car.x/16)+1;gx++)for(let gz=Math.floor(car.z/16)-1;gz<=Math.floor(car.z/16)+1;gz++)for(const a of plan.grid.get(gx+':'+gz)||[]){
+  const end=Math.min(plan.length,a.d+3);if(end===a.d)continue;
+  const b=point(track,plan,end),dx=b.x-a.x,dz=b.z-a.z,t=clamp(((car.x-a.x)*dx+(car.z-a.z)*dz)/(dx*dx+dz*dz||1),0,1),x=a.x+dx*t,z=a.z+dz*t,y=a.y+(b.y-a.y)*t,distance=Math.hypot(car.x-x,car.z-z);
+  if(Math.abs((car.y??y)-y)>2||best&&distance>=best.distance)continue;
+  best={d:a.d+(end-a.d)*t,x,y,z,distance,heading:Math.atan2(dx,dz)};
+ }
+ return best;
+}
 export function pitGroundHeight(track,x,z,height){
  const plan=pitLayout(track);let best=Infinity,closest=null;
  for(let gx=Math.floor(x/16)-1;gx<=Math.floor(x/16)+1;gx++)for(let gz=Math.floor(z/16)-1;gz<=Math.floor(z/16)+1;gz++)for(const p of plan.grid.get(gx+':'+gz)||[]){const d=Math.hypot(x-p.x,z-p.z);if(d<best){best=d;closest=p;}}

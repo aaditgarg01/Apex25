@@ -1,7 +1,7 @@
-import {wrap} from './tracks.mjs';
+import {wrap,angleDiff} from './tracks.mjs';
 import {clearImpact} from './motion.mjs';
 import {TYRES,fitTyres} from './tyres.mjs';
-import {pitLayout,pitRoadPose} from './pit-layout.mjs';
+import {pitLayout,pitRoadPose,locatePitLane} from './pit-layout.mjs';
 export {pitLayout,pitRoadPose} from './pit-layout.mjs';
 export const PIT_SPEED=80/3.6,PIT_SERVICE_SECONDS=3;
 export const pitAhead=(car,track)=>wrap(pitLayout(track).entry-car.s,track.length);
@@ -12,19 +12,31 @@ export function requestPit(car,compound){
  car.pitRequested=!car.pitRequested;return true;
 }
 export function tryPitEntry(car,track,previousS){
- if(!car.pitRequested||car.pitState!=='none'||car.v<0)return false;
- const layout=pitLayout(track),travel=wrap(car.s-previousS,track.length),ahead=wrap(layout.entry-previousS,track.length);
- if(travel>15||ahead>travel)return false;
- // The booking does not pull a car across the racing line: steer to the
- // signed entrance at the edge before assistance takes over.
- if(layout.side*(car.lateral||0)<track.width/2-3.4)return false;
- car.pitState='lane';car.pitRequested=false;car.pitTravel=travel-ahead;
+ if(!car.pitRequested||car.pitState!=='none'||car.v<0||car.finished||car.retired)return false;
+ const layout=pitLayout(track),travel=wrap(car.s-previousS,track.length),ahead=wrap(layout.entry-previousS,track.length),lane=locatePitLane(track,car);
+ if(!lane||Math.cos(angleDiff(car.heading,lane.heading))<=0)return false;
+ const branch=wrap(layout.entry+lane.d-car.s,track.length);if(Math.min(branch,track.length-branch)>30)return false;
+ const gate=travel<=15&&ahead<=travel&&layout.side*(car.lateral||0)>=track.width/2-3.4&&lane.distance<=layout.width/2+1;
+ // Beyond the marked entrance, the car must actually be inside the pit ribbon.
+ // Proximity on the racing track cannot activate a stop or grant skipped progress.
+ const late=lane.d>.05&&lane.d<layout.length-layout.taper&&lane.distance<=layout.width/2-.65;
+ if(!gate&&!late)return false;
+ car.pitTravel=gate?Math.max(0,travel-ahead):lane.d;
+ car.pitState=car.pitTravel<layout.box-.03?'lane':'exit';car.pitRequested=false;
+ car.pitEntryOffset=gate?(car.lateral||0):layout.entryOffset;
+ car.pitMerge=null;
+ if(!gate){const p=pitRoadPose(track,car.pitTravel);car.pitMerge={start:car.pitTravel,length:Math.min(24,(car.pitState==='lane'?layout.box:layout.length)-car.pitTravel),x:car.x-p.x,y:car.y-p.y,z:car.z-p.z};}
  if(!Number.isFinite(car.tyreRaceLaps))car.invalidLap=true;
- car.pitEntryProgress=car.progress-car.pitTravel;car.pitEntryOffset=car.lateral||0;car.pitTimer=0;car.pitFitted=false;car.v=Math.min(PIT_SPEED,Math.max(0,car.v));clearImpact(car);
+ car.pitEntryProgress=car.progress-car.pitTravel;car.pitTimer=0;car.pitFitted=false;car.v=Math.min(PIT_SPEED,Math.max(0,car.v));clearImpact(car);
+ car.offtrack=false;car.offtrackTime=0;car.offtrackPenalty=false;car.boostActive=false;
  return true;
 }
 export function pitPose(car,track,distance=car.pitTravel){
- return pitRoadPose(track,distance,0,car.pitEntryOffset);
+ const p=pitRoadPose(track,distance,0,car.pitEntryOffset),merge=car.pitMerge;if(!merge)return p;
+ const weight=d=>{const t=Math.max(0,Math.min(1,(d-merge.start)/Math.max(.1,merge.length)));return 1-t*t*(3-2*t);};
+ const shifted=d=>{const base=pitRoadPose(track,d,0,car.pitEntryOffset),w=weight(d);return {...base,x:base.x+merge.x*w,y:base.y+merge.y*w,z:base.z+merge.z*w};};
+ const w=weight(distance),a=shifted(distance-.2),b=shifted(distance+.2),current={...p,x:p.x+merge.x*w,y:p.y+merge.y*w,z:p.z+merge.z*w},dx=b.x-a.x,dz=b.z-a.z;
+ return {...current,heading:Math.atan2(dx,dz),pitch:Math.atan2(b.y-a.y,Math.hypot(dx,dz))};
 }
 export function preparePitTraffic(cars,track){
  for(const c of cars){c.pitClearance=Infinity;if(c.pitState==='none')continue;for(const other of cars){if(c===other||other.finished||other.pitState==='none')continue;const gap=other.pitTravel-c.pitTravel;if(gap>=0&&(gap>0||c.index>other.index))c.pitClearance=Math.min(c.pitClearance,Math.max(0,gap-8));}}
@@ -51,5 +63,6 @@ export function stepPit(car,track,dt){
   }
  }
  const p=pitPose(car,track);Object.assign(car,p);car.s=wrap(plan.entry+car.pitTravel,track.length);car.progress=car.pitEntryProgress+car.pitTravel;car.motionHeading=p.heading;car.motionYawRate=0;car.lateral=plan.offset;
+ if(car.pitMerge&&car.pitTravel>=car.pitMerge.start+car.pitMerge.length)car.pitMerge=null;
  return true;
 }
