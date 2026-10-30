@@ -9,12 +9,13 @@ export const TYRES=Object.freeze({
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const defaultTyre=conditions=>{const w=typeof conditions==='object'?surfaceWetness(conditions):typeof conditions==='number'?conditions:conditions==='wet'?1:conditions==='intermediate'?.45:0;return w>=.72?'wet':w>=.25?'intermediate':'medium';};
 export const tyreProfile=id=>TYRES[id]||TYRES.medium;
+export const tyreLifePercent=value=>Math.ceil(clamp(Number.isFinite(value)?value:0,0,100));
 export const validTyreChoice=id=>id==='auto'||Object.hasOwn(TYRES,id);
 export const normalizeTyreChoice=id=>validTyreChoice(id)?id:'auto';
 export function tyreStintLaps(laps,compound='medium',practice=false){
  const distance=Number.isFinite(laps)&&laps>0?laps:practice?24:8;
  // One/two-lap sprints do not require a stop simply to reach the finish.
- return Math.max(1.5,distance<3?distance*1.7:distance*tyreProfile(compound).life);
+ return Math.ceil(Math.max(1.5,distance<3?distance*1.7:distance*tyreProfile(compound).life));
 }
 export function prepareTyres(car,laps=Infinity,starting=car.startTyre||'auto'){
  car.startTyre=normalizeTyreChoice(starting);car.tyreCompound=car.startTyre==='auto'?defaultTyre(car):car.startTyre;car.tyreLife=100;car.tyreRaceLaps=laps;

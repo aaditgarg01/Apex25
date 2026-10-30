@@ -979,3 +979,32 @@ Focused checks covered 168 late-entry/service scenarios across all 42 circuits,
 racing-surface/reverse/missed-box rejection, continuous merge positioning, compact
 snapshot preservation and the 3:1 practice/qualifying wear ratio. Production
 packaging and syntax/name checks passed. No driving playtest or full suite run.
+
+## Whole-lap weather periods and integer tyre life — 2.32.0
+
+Dynamic weather now holds one exact dry, intermediate or wet preset for **1–3
+whole leader laps**. Short races cap the interval so a three-lap race can change
+before its finish. Wall-clock time no longer changes weather: parking for several
+minutes keeps the same condition. Rain, surface water and grip stay fixed within
+each period, avoiding rapid transitions through several categories in one lap.
+The next preset is chosen only at the lap boundary and differs from the current
+one. The HUD shows an integer number of leader laps left in the current period.
+Everyone in a room shares that state, and late joiners do not restart its clock.
+
+A sector-based practice start begins its own full-lap-distance period from that
+position. Moving from qualifying to a race preserves the current condition and
+starts a fresh whole-lap period. No new front is selected after the race winner
+has finished. Qualification duration and outlap/flying-lap rules are unchanged.
+
+Nominal tyre life in laps now uses `Math.ceil` in the shared model, so physics,
+strategy and the pit-menu estimate agree on an integer lifespan. For example,
+Free Practice mediums round from 19.2 to **20 laps**. Remaining tyre percentages
+and their HUD bar also round upwards: 50.01% displays **51%**, while a fully worn
+set displays **0%**. Internal wear remains fractional, so per-frame rounding
+cannot stop tyres from wearing down. Wrong-condition, boost, sliding and collision
+wear remain active; Free Practice retains its longer reference distance.
+
+Focused arithmetic/state checks covered whole-lap boundaries, stationary cars,
+practice sector starts, late joins, qualifying-to-race transitions, shared weather
+snapshots and ceiling rounding. Production packaging and syntax checks passed.
+No driving playtest or full suite run.

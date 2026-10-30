@@ -1,7 +1,7 @@
 import {tyreGrip} from './tyres.mjs';
 // Arcade surface presets. The normal preset retains the original dry handling.
 export const CONDITIONS=Object.freeze({
- dynamic:Object.freeze({id:'dynamic',label:'Dynamic / changing weather',description:'Rain can arrive or clear during the session. Surface water builds up and dries gradually; everyone shares the same weather.',wetness:0,traction:1,braking:1,steering:1,pace:1,lateral:Infinity,alignment:Infinity,curbGrip:1}),
+ dynamic:Object.freeze({id:'dynamic',label:'Dynamic / changing weather',description:'Each condition lasts 1–3 whole leader laps before it can change. Everyone shares the same weather.',wetness:0,traction:1,braking:1,steering:1,pace:1,lateral:Infinity,alignment:Infinity,curbGrip:1}),
  normal:Object.freeze({id:'normal',label:'Normal / dry',description:'Dry surface, full grip and normal braking.',wetness:0,traction:1,braking:1,steering:1,pace:1,lateral:Infinity,alignment:Infinity,curbGrip:1}),
  intermediate:Object.freeze({id:'intermediate',label:'Intermediate / damp',description:'Damp surface and light rain. Brake earlier and feed in the throttle.',wetness:.45,traction:.82,braking:.76,steering:.92,pace:.82,lateral:17,alignment:6,curbGrip:.80}),
  wet:Object.freeze({id:'wet',label:'Wet / rain',description:'Heavy rain and low grip. Longer braking distances, more sliding and slippery kerbs.',wetness:1,traction:.63,braking:.54,steering:.80,pace:.65,lateral:11,alignment:3.6,curbGrip:.62})
