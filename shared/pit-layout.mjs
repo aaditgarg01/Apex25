@@ -2,25 +2,45 @@ import {sample,wrap,angleDiff} from './tracks.mjs';
 const cache=new WeakMap(),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
 function point(track,plan,d,across=0,entryOffset=plan.entryOffset){
- const enter=smooth(d/plan.taper),leave=smooth((plan.length-d)/plan.taper);
- const offset=entryOffset*(1-enter)+plan.offset*enter*leave+plan.entryOffset*(1-leave);
- return sample(track,plan.entry+d,offset+across);
+ const road=sample(track,plan.entry+d),frame=plan.frame,rx=Math.cos(frame.heading),rz=-Math.sin(frame.heading),fx=Math.sin(frame.heading),fz=Math.cos(frame.heading);
+ const longitudinal=(road.x-frame.x)*fx+(road.z-frame.z)*fz,enter=smooth(d/plan.taper),leave=smooth((plan.length-d)/plan.taper),body=enter*leave;
+ const start=sample(track,plan.entry+d,entryOffset),end=sample(track,plan.entry+d,plan.entryOffset),bx=frame.x+fx*longitudinal+rx*plan.offset,bz=frame.z+fz*longitudinal+rz*plan.offset;
+ // The service corridor has one fixed axis. Only the two road connections bend.
+ const nx=Math.cos(road.heading)*(1-body)+rx*body,nz=-Math.sin(road.heading)*(1-body)+rz*body,n=Math.hypot(nx,nz);
+ return {...road,x:start.x*(1-enter)+end.x*enter*(1-leave)+bx*body+nx/n*across,z:start.z*(1-enter)+end.z*enter*(1-leave)+bz*body+nz/n*across};
 }
-// A dedicated off-track lane, with two gradual connections to the road edge.
-// Search both sides near the start line to avoid neighboring circuit branches.
+function mainStraight(track){
+ const bound=Math.min(1200,track.length*.23);let best=null;
+ // Search only the segment containing the start/finish, never another nearby straight.
+ for(let seed=-120;seed<=120;seed+=12){
+  const heading=sample(track,seed).heading;let start=seed,end=seed;
+  while(start-6>=-bound&&Math.abs(angleDiff(sample(track,start-6).heading,heading))<.12)start-=6;
+  while(end+6<=bound&&Math.abs(angleDiff(sample(track,end+6).heading,heading))<.12)end+=6;
+  if(start>0||end<0)continue;
+  const length=end-start;if(!best||length>best.length)best={start,end,length};
+ }
+ return best||{start:-75,end:75,length:150};
+}
+// Match established mapped pit complexes. Other circuits prefer the infield.
+// Service-box stations fitted to the existing pit-building assets (metres from start/finish).
+const PIT_BOXES={'cn-2004':-69,'jp-1962':-102,'be-1925':12,'sa-2021':-303,'az-2016':-150,'sg-2008':-36,'es-2026':-20,'mx-1962':65,'us-2023':-85};
+const PIT_SIDES={'cn-2004':-1,'jp-1962':-1,'be-1925':-1,'sa-2021':1,'az-2016':1,'sg-2008':1,'es-2026':1,'mx-1962':-1,'us-2023':-1,'mc-1929':-1};
 export function pitLayout(track){
  if(cache.has(track))return cache.get(track);
- const length=Math.min(400,track.length*.12),taper=Math.min(95,length*.25),zone=Math.min(1000,track.length*.23),candidates=[];
- for(let center=-zone;center<=zone;center+=18){const p=sample(track,center);let bend=0;for(let d=-length/2;d<=length/2;d+=15)bend+=Math.abs(angleDiff(sample(track,center+d).heading,p.heading));candidates.push({center,cost:bend+Math.abs(center)/zone*.3});}
- candidates.sort((a,b)=>a.cost-b.cost);let best=null;
- for(const candidate of candidates.slice(0,12))for(const side of [-1,1]){
-  const plan={entry:wrap(candidate.center-length/2,track.length),length,box:length*.52,offset:side*(track.width/2+5),entryOffset:side*(track.width/2-1.8),side,width:6,taper};
-  let cost=candidate.cost;
-  for(let d=taper;d<=length-taper;d+=15){const p=point(track,plan,d),s=wrap(plan.entry+d,track.length);for(let j=0;j<track.points.length;j+=8){const arc=Math.abs(j*track.step-s);if(Math.min(arc,track.length-arc)<110)continue;const q=track.points[j],distance=Math.hypot(p.x-q.x,p.z-q.z);if(Math.abs(p.y-q.y)<5&&distance<track.width/2+8)cost+=(track.width/2+8-distance)*5;}}
-  if(!best||cost<best.cost)best={...plan,cost};
+ const straight=mainStraight(track),available=straight.length-24,lengths=[Math.min(650,available),520,400,280,180].filter((length,i,all)=>length<=available&&length>=120&&all.indexOf(length)===i);let best=null;
+ if(!lengths.length)lengths.push(Math.max(90,available));
+ const startFrame=sample(track,0),centroid=track.points.reduce((v,p)=>({x:v.x+p.x/track.points.length,z:v.z+p.z/track.points.length}),{x:0,z:0}),preferred=PIT_SIDES[track.id]||Math.sign((centroid.x-startFrame.x)*Math.cos(startFrame.heading)-(centroid.z-startFrame.z)*Math.sin(startFrame.heading))||1;
+ for(const length of lengths){
+  const anchor=PIT_BOXES[track.id]??0,center=clamp(anchor,straight.start+12+length/2,straight.end-12-length/2),entry=center-length/2,a=sample(track,entry),b=sample(track,entry+length),frame={...sample(track,center),heading:Math.atan2(b.x-a.x,b.z-a.z)},rx=Math.cos(frame.heading),rz=-Math.sin(frame.heading),taper=Math.min(95,length*.22);
+  for(const side of [preferred,-preferred]){
+   let edge=track.width/2;
+   for(let d=taper;d<=length-taper;d+=6){const p=sample(track,entry+d),extent=side*((p.x-frame.x)*rx+(p.z-frame.z)*rz)+track.width/2;edge=Math.max(edge,extent);}
+   const plan={entry:wrap(entry,track.length),length,box:PIT_BOXES[track.id]===undefined?length*.52:clamp(anchor-entry,taper+16,length-taper-16),offset:side*(edge+5),entryOffset:side*(track.width/2-1.8),side,width:6,taper,frame,straight};
+   let cost=(650-length)*.002+(side===preferred?0:2);
+   for(let d=taper;d<=length-taper;d+=12){const p=point(track,plan,d),s=wrap(plan.entry+d,track.length);for(let j=0;j<track.points.length;j+=4){const arc=Math.abs(j*track.step-s);if(Math.min(arc,track.length-arc)<80)continue;const q=track.points[j],distance=Math.hypot(p.x-q.x,p.z-q.z);if(Math.abs(p.y-q.y)<5&&distance<track.width/2+5)cost+=(track.width/2+5-distance)*1000;}}
+   if(!best||cost<best.cost)best={...plan,cost};
+  }
  }
- // Mexico branches from the final stadium exit onto the inside of the pit straight.
- if(track.id==='mx-1962')best={entry:track.length*.94,length:650,box:350,offset:-(track.width/2+5),entryOffset:-(track.width/2-1.8),side:-1,width:6,taper:95};
  best.samples=[];best.grid=new Map();
  for(let d=0;d<=best.length;d+=3){const p={...point(track,best,d),d};best.samples.push(p);const key=Math.floor(p.x/16)+':'+Math.floor(p.z/16);if(!best.grid.has(key))best.grid.set(key,[]);best.grid.get(key).push(p);}
  cache.set(track,best);return best;

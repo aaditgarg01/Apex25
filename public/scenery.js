@@ -1,3 +1,4 @@
+import {pitLayout} from '/shared/pit-layout.mjs';
 import {addMexicoCity} from './mexico-city.js';
 import {clearPitScenery} from './pit-lane.js';
 import {addLasVegas} from './las-vegas.js';
@@ -48,12 +49,12 @@ export function addVenue(scene,track){
  // Safety barriers, catch fencing, pit garages and distance boards add depth.
  const postsCount=Math.ceil(track.length/18)*2,posts=new THREE.InstancedMesh(new THREE.CylinderGeometry(.06,.07,3.5,4),material('#6f777c'),postsCount);let f=0;
  for(let s=0;s<track.length;s+=18)for(const side of [-1,1]){const p=sample(track,s,ribbonOffset(track,Math.floor(s/track.step),side*(half+(track.urban?3.2:8))));dummy.position.set(p.x,p.y+1.75,p.z);dummy.scale.set(1,1,1);dummy.rotation.set(0,0,0);dummy.updateMatrix();posts.setMatrixAt(f++,dummy.matrix);}posts.count=f;group.add(posts);
- const start=safeBoxSite(track,track.length-95,23,84,1),pit=new THREE.Group();pit.position.set(start.x,start.y,start.z);pit.rotation.y=start.heading;group.add(pit);
+ const plan=pitLayout(track),front=-plan.side,start=safeBoxSite(track,plan.entry+plan.box,23,84,plan.side),pit=new THREE.Group();pit.position.set(start.x,start.y,start.z);pit.rotation.y=plan.frame.heading;group.add(pit);
  scene.box(43,.24,166,'#686d70',0,.05,0,pit);scene.box(13,6,155,'#c5c6bd',0,3,0,pit);scene.box(13.3,2,155.3,'#324653',0,5,0,pit);scene.box(16,.5,160,'#e9e8dc',0,6.3,0,pit);
- const pitName=trackSign(track.city.toUpperCase()+'  •  PIT LANE',145,1.1,'#223742','#ecebe0');pitName.position.set(-6.73,5.25,0);pitName.rotation.y=-Math.PI/2;pit.add(pitName);
+ const pitName=trackSign(track.city.toUpperCase()+'  •  PIT LANE',145,1.1,'#223742','#ecebe0');pitName.position.set(front*6.73,5.25,0);pitName.rotation.y=front*Math.PI/2;pit.add(pitName);
  for(let i=0;i<16;i++){
-  const team=LIVERIES[i%LIVERIES.length],z=-71+i*9;scene.box(.1,3.2,6.5,team.side,-6.55,1.65,z,pit);scene.box(.11,.2,6.5,team.accent,-6.64,3.32,z,pit);
-  const name=trackSign(team.label,6.4,.62,team.side,team.ink);name.position.set(-6.73,3.9,z);name.rotation.y=-Math.PI/2;pit.add(name);
+  const team=LIVERIES[i%LIVERIES.length],z=-71+i*9;scene.box(.1,3.2,6.5,team.side,front*6.55,1.65,z,pit);scene.box(.11,.2,6.5,team.accent,front*6.64,3.32,z,pit);
+  const name=trackSign(team.label,6.4,.62,team.side,team.ink);name.position.set(front*6.73,3.9,z);name.rotation.y=front*Math.PI/2;pit.add(name);
  }
  // Occupied stepped grandstands run parallel to local track tangent.
  for(const location of [120,track.length*.26,track.length*.58,track.length*.82]){

@@ -1008,3 +1008,30 @@ Focused arithmetic/state checks covered whole-lap boundaries, stationary cars,
 practice sector starts, late joins, qualifying-to-race transitions, shared weather
 snapshots and ceiling rounding. Production packaging and syntax checks passed.
 No driving playtest or full suite run.
+
+## Pit lanes alongside the main straight — 2.33.0
+
+Pit placement is now anchored to the straight containing the existing start/finish
+line. The search cannot jump to a longer neighboring straight. A lane shortens to
+fit that segment: Monaco uses about 192 m and Las Vegas about 306 m, rather than
+placing their service areas beside a different part of the circuit.
+
+The service corridor follows one fixed axis parallel to that straight's chord.
+Only the entrance and exit connectors bend back toward the racing-road edge.
+Width remains six metres, with about two metres between the service-lane edge
+and racing surface. The corridor follows the local road elevation. Its ground,
+markings, service box, barrier openings, limiter and late-entry detection all use
+the same shared geometry.
+
+Existing mapped pit-building sides and service stations guide dedicated venues;
+other circuits prefer the infield when it is clear of other road branches.
+Generic garages move to the selected lane side and service station, run parallel
+to the corridor, and face their doors toward it. Entrance paint now agrees with
+the HUD's left/right directions. These remain artistic gameplay pit layouts,
+not surveyed reproductions of every venue's real pit complex.
+
+Focused geometry checks covered all 42 circuits: service sections parallel to
+their main-straight axis, no racing-surface overlap, a minimum sampled edge gap
+of 1.97 m, and no solid-barrier obstruction along the route. Late-entry, tyre
+service/counting and exit checks passed in 84 scenarios. Production packaging
+and syntax checks passed. No driving playtest or full suite run.

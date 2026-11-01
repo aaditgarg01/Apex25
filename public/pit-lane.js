@@ -20,7 +20,7 @@ export function addPitLane(scene,track){
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
   const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.2,1.6),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4})),p=pitRoadPose(track,distance);sign.position.set(p.x,p.y+.09,p.z);sign.rotation.set(-Math.PI/2,p.heading,0,'YXZ');group.add(sign);
  }
- label(plan.side<0?'PIT LEFT':'PIT RIGHT',8);label('BOX',plan.box-10);label('PIT OUT',plan.length-12);
+ label(plan.side>0?'PIT LEFT':'PIT RIGHT',8);label('BOX',plan.box-10);label('PIT OUT',plan.length-12);
  // Low-cost crew animation is visible only while a car is being serviced;
  // no scenery poles, walls or props are added to the racing path.
  const crew=[];
