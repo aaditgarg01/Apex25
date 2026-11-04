@@ -108,3 +108,15 @@ The additional Cadillac scheme is an original procedural interpretation of the
 team's black-and-white 2026 debut livery, applied to this game's original car
 geometry. No official logo bitmap or external 3D car model is bundled.
 Reference: https://www.cadillacf1team.com/news/cadillac-formula-1-r-team-reveals-historic-first-livery
+
+## Interlagos lake and permanent architecture outlines
+
+The `osm` object in `public/data/interlagos-architecture.js` is derived from
+© OpenStreetMap contributors and licensed under ODbL 1.0:
+https://www.openstreetmap.org/copyright . Retrieved 2026-11-04 through
+https://api.openstreetmap.org/api/0.6/map?bbox=-46.701,-23.706,-46.692,-23.696 .
+Source way IDs and complete longitude/latitude outlines are included with each
+feature, including lake 138417940, pit pavilion 33779114 and stand M 138420844.
+The surrounding `anchors`, procedural models, generic signage and artistic surface
+plan are original game code; source photos, maps and trademarked sponsor artwork
+are references only and are not redistributed as game assets.

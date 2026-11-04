@@ -6,8 +6,8 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.30.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
-41 circuits, improved multiplayer prediction and rendering, and purple sectors
+Current source version: **2.34.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
 ## Run locally
@@ -1035,3 +1035,62 @@ their main-straight axis, no racing-surface overlap, a minimum sampled edge gap
 of 1.97 m, and no solid-barrier obstruction along the route. Late-entry, tyre
 service/counting and exit checks passed in 84 scenarios. Production packaging
 and syntax checks passed. No driving playtest or full suite run.
+
+## Interlagos bowl, crowd and reference-fitted runoff — 2.34.0
+
+Interlagos now replaces the generic scenery with a dedicated São Paulo environment:
+
+- A long, multi-storey pit pavilion, glass hospitality/control room and podium face
+  the existing external service corridor. Permanent B/M stand stations come from
+  cached OpenStreetMap footprints; reference-fitted D/H/R/G/A stands and two grass
+  crowd banks frame Senna S, Curva do Sol, the back straight and the climb.
+- The infield lake uses OSM way 138417940's shoreline, with reeds, subdued ripples
+  and a 256px planar reflection refreshed at most every 180ms. The reflection
+  target is disposed when changing circuits. No live external map requests.
+- Rolling grass banks stay below the unchanged road and expanded escape surfaces;
+  subtropical broadleaf trees, palms, araucaria-inspired pines, low-rise housing,
+  rooftop tanks and distant apartment silhouettes give the circuit a local setting.
+- 14,475 instanced spectators, 97 shader-animated original green/yellow/blue flags,
+  187 trees, 159 background buildings, raised-arm fans and subtle crowd haze. Static
+  boxes and signs batch spatially; the dedicated scenery has 93 full-scene draw
+  calls after batching (roughly 1.07 million instanced triangles). This count
+  excludes the existing road, cars, terrain and planar-reflection pass; it is not
+  a frame-rate guarantee or benchmark on a physical mid-range laptop.
+- Original colour-block sponsor-style boards, 150/100/50 braking markers, marshals,
+  camera cranes and instanced LED panels responding to local off-track/sliding
+  cautions. No new licensed sponsor artwork, liveries, audio or game assets.
+- Reference-fitted grass/paved/green-painted escape areas and selected gravel:
+  broad Senna S escape, Descida do Lago gravel behind a paved apron, selective
+  Ferradura gravel, and tighter grass verges in the infield and on the climb.
+  One shared boundary plan positions renderer and collision walls. Dark covered
+  impact-wall sections reuse those exact wall solids rather than extra cosmetic
+  or invisible colliders. Existing off-track/tyre behaviour is retained.
+- Circuit-only warm humid cloud lighting, more overcast grey-purple wet skies and
+  darker wet vegetation alongside existing rain, asphalt wetness and spray.
+  Dynamic whole-lap weather timing remains unchanged.
+- Free Practice offers **Senna S approach · out lap**; existing starts remain.
+
+**Retained:** the centreline, 17m game driving width, road mesh, cached elevation
+profile, car model, handling, tyre physics, lap timing, multiplayer messages and
+external pit path. Only the environment's safety-boundary positions and the new
+optional practice start change the shared session's environment configuration.
+
+**Approximations / photo comparison:** temporary stand dimensions and roofs,
+housing, vegetation species, grass-bank terrain, runoff/gravel extents and surface
+colours are reference-fitted, not surveyed. The reference set spans a 2022 aerial,
+2025 FIA map and 2026 organiser map; temporary structures/surface changes may differ
+between editions. The pit pavilion is shortened to fit the game's generated pit
+corridor. The lake keeps its mapped outline but its level and reflection treatment
+are artistic. Optional access tunnels/footbridges were omitted rather than guessing
+structural positions or altering the road elevations.
+
+**Verified:** syntax and browser-module imports; undefined-name and shadow checks;
+`npm run build` and `npm run build:vercel`; complete footprint checks against all
+racing/safety and external pit branches; rendered model envelopes vs reservations;
+381 reservations, no rejected placements, no intrusions, minimum conservative
+scenery clearance **4.70m**, minimum sampled wall-to-driving-edge clearance **3.45m**.
+Parked dry/wet rendering and console inspection are recorded with the release.
+The game's test suite and a full driving/multiplayer playtest were not run.
+
+References and ODbL attribution are in `TRACK-SOURCES.md`,
+`TRACK-DATA-LICENSE.md` and `public/data/track-visual-references.json`.

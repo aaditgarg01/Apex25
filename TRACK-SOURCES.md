@@ -86,3 +86,37 @@ Background references: Stanford Dynamic Design Lab, [A Sequential Two-step Algor
 for Fast Generation of Vehicle Racing Trajectories](https://ddl.stanford.edu/publications/conference-proceeding/sequential-two-step-algorithm-fast-generation-vehicle-racing),
 and Formula 1's [Silverstone aerodynamic-efficiency discussion](https://www.formula1.com/en/latest/article/tech-tuesday-why-aerodynamic-efficiency-now-rules-at-silverstone.65XAovu8LiK7IEqysQ4Sx0).
 The game implementation is a simpler bounded heuristic, not the research solver.
+
+## Interlagos dedicated environment — 2.34.0
+
+The [GP São Paulo organiser sector guide](https://f1saopaulo.com.br/arquibancadas/)
+and [2026 event map](https://f1saopaulo.com.br/wp-content/uploads/2026/10/Mapa-completo-v2.webp)
+locate main-straight sectors B/M, Senna S sector D, Curva do Sol H/R, Reta Oposta G,
+sector A and the infield lake. Temporary stands change between events. The
+[government aerial, Beto Issa / GP São Paulo, 2022](https://www.flickr.com/photos/governosp/52497080967/)
+is a visual reference for roof massing, green paved escapes, grass banks and
+surrounding low-rise neighbourhoods; no photo texture or sponsor artwork is bundled.
+The [FIA 2025 circuit/pit map](https://www.fia.com/system/files/decision-document/2025_sao_paulo_grand_prix_-_event_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_quarantine_zone_and_red_zones_map.pdf)
+informs corner numbering and infrastructure relationships. Junção is T12;
+T13–15 form the climb back to the straight. The [municipal circuit description](https://autodromodeinterlagos.prefeitura.sp.gov.br/pistaoficial)
+and [runoff/safety maintenance report](https://prefeitura.sp.gov.br/w/noticia/prefeitura-conclui-mais-uma-etapa-da-requalificacao-do-autodromo-de-interlagos)
+provide topography and gravel/guardrail context.
+
+`public/data/interlagos-architecture.js` caches original reference-fitted anchors
+and a separate `osm` object downloaded on 2026-11-04 from the direct OSM map API
+(bbox -46.701,-23.706,-46.692,-23.696). © OpenStreetMap contributors, ODbL 1.0.
+The lake uses way **138417940**'s actual polygon (not its bounding rectangle).
+Permanent main-straight stand stations use way **138420844** (M) and **138550780**;
+pit pavilion way **33779114** and adjacent permanent footprints are retained for
+comparison. The pit building is intentionally fitted parallel to the existing
+2.33.0 generated service corridor; the corridor is not replaced by a surveyed pit route.
+
+`shared/interlagos-boundary.mjs` specifies original, approximate corner-specific
+surface widths: broad green/paved escape at Senna S, a paved apron then selected
+gravel at Descida do Lago, more selective Ferradura gravel, and grass-dominated
+infield/climb verges. These widths are fitted to the existing game coordinates,
+limited against other branches and corner radius, and shared by visible boundary
+geometry and collision. This is not an exact reconstruction of every year's gravel
+or resurfacing work. Existing centreline, road mesh, elevations, pit layout,
+vehicle physics and transport protocol are retained. Terrain outside those surfaces
+is artistic, road-height-constrained rolling landscape, not LiDAR terrain.

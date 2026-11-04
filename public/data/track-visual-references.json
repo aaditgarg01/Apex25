@@ -162,7 +162,7 @@
       "url": "https://www.openstreetmap.org/relation/9542146"
     },
     {
-      "feature": "Madrid named corners, La Monumental 550m/24% bank, C\u00e1rcavas climb and Norte tunnel context",
+      "feature": "Madrid named corners, La Monumental 550m/24% bank, Cárcavas climb and Norte tunnel context",
       "url": "https://www.madring.com/en/circuit"
     },
     {
@@ -176,6 +176,38 @@
     {
       "feature": "Madrid covered exhibition paddock context",
       "url": "https://www.ifema.es/en/doc/2024-annual-report/memoria-anual-en-2024.pdf"
+    },
+    {
+      "feature": "Interlagos permanent B/M stands, temporary D/H/R/G stands, hillside crowd banks and lake placement; temporary event structures vary",
+      "url": "https://f1saopaulo.com.br/arquibancadas/"
+    },
+    {
+      "feature": "Interlagos 2026 organiser sector map; visual reference, not bundled artwork",
+      "url": "https://f1saopaulo.com.br/wp-content/uploads/2026/10/Mapa-completo-v2.webp"
+    },
+    {
+      "feature": "Interlagos pit complex, green runoff, grass banks, urban surroundings and lake aerial, Beto Issa / GP São Paulo, 2022",
+      "url": "https://www.flickr.com/photos/governosp/52497080967/"
+    },
+    {
+      "feature": "Interlagos official circuit map, corner numbers, marshal posts and pit lane drawing, 2025",
+      "url": "https://www.fia.com/system/files/decision-document/2025_sao_paulo_grand_prix_-_event_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_quarantine_zone_and_red_zones_map.pdf"
+    },
+    {
+      "feature": "Interlagos lake shoreline, cached OSM way 138417940, ODbL",
+      "url": "https://www.openstreetmap.org/way/138417940"
+    },
+    {
+      "feature": "Interlagos pit pavilion footprint, cached OSM way 33779114, ODbL",
+      "url": "https://www.openstreetmap.org/way/33779114"
+    },
+    {
+      "feature": "Interlagos grandstand M footprint, cached OSM way 138420844, ODbL",
+      "url": "https://www.openstreetmap.org/way/138420844"
+    },
+    {
+      "feature": "Interlagos runoff gravel maintenance, tyre walls, guardrails and grooved escape areas",
+      "url": "https://prefeitura.sp.gov.br/w/noticia/prefeitura-conclui-mais-uma-etapa-da-requalificacao-do-autodromo-de-interlagos"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
