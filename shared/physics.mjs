@@ -1,3 +1,5 @@
+import {zandvoortSurfaceAt} from './zandvoort.mjs';
+import {bankSupport,surfaceAttitude} from './banked-road.mjs';
 import {prepareTyres,wearTyres,tyreGrip,tyreSpeedFactor,defaultTyre} from './tyres.mjs';
 import {stepPit,tryPitEntry,pitAhead,preparePitTraffic,pitLayout} from './pits.mjs';
 import {clearImpact,dampImpact,velocityOf,setVelocity} from './motion.mjs';
@@ -13,7 +15,7 @@ export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
 export const GRID_ROW_SPACING=16,GRID_STAGGER=8,GRID_LATERAL_OFFSET=3.6;
 export function gridSlot(index){return {s:-12-Math.floor(index/2)*GRID_ROW_SPACING-(index%2)*GRID_STAGGER,offset:(index%2?1:-1)*GRID_LATERAL_OFFSET};}
-export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);const car={id,name,index,ai,airDensity:track.id==='mx-1962'?.78:1,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};prepareTyres(car);return car;}
+export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);const car={id,name,index,ai,airDensity:track.id==='mx-1962'?.78:1,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,roll:p.roll||0,bankedRoad:track.id==='nl-1948',s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};prepareTyres(car);return car;}
 export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;clearImpact(c);c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
  if(c.finished||isQualifying||c.qualifying||c.pitState!=='none')return false;
@@ -35,15 +37,16 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.ai&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)&&(laps===Infinity||laps*track.length-c.progress>track.length*.45)){c.pitCompound=defaultTyre(c);c.pitRequested=true;}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
- const road=sample(track,c.s);
- const roadOffset=conditions.wetness?nearest(track,c.x,c.z,c.s).offset:0;
+ const roadOffset=conditions.wetness||track.id==='nl-1948'?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
+ if(duneSurface){const bank=duneSurface.bank;c.bankedRoad=true;c.bankRoll=bank.roll;c.bankTurnSign=-bank.outerSide;c.roadCurvature=angleDiff(sample(track,c.s+5).heading,sample(track,c.s-5).heading)/10;c.bankNormalLoad=bankSupport(bank.bank,Math.abs(c.v),1/Math.max(.0001,Math.abs(c.roadCurvature)),conditions.wetness).normalLoad;}
  c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>roadHalfWidth(track,c.s)-.8?conditions.curbGrip:1):1;
+ if(duneSurface)c.surfaceGrip*=duneSurface.grip;
  c.cornerGrip=(1-conditions.wetness*(brake*.24+throttle*.10))*(track.id==='mx-1962'?.92:1);
  const rubber=tyreGrip(c),speedLimit=(boost?BOOST_TOP_SPEED:TOP_SPEED)*tyreSpeedFactor(c),density=track.id==='mx-1962'?.78:1;
  const traction=conditions.traction*c.surfaceGrip*rubber,braking=33*conditions.braking*c.surfaceGrip*rubber;
- const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032*density)*(1-slip*0.3)+(c.offtrack?c.v*.5:0)+Math.max(0,c.v-speedLimit)*1.25;
+ const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032*density)*(1-slip*0.3)+(duneSurface?Math.abs(c.v)*duneSurface.drag:c.offtrack?c.v*.5:0)+Math.max(0,c.v-speedLimit)*1.25;
  c.slipstream=0;
- const gravity=-9.81*Math.sin(road.pitch);
+ const travelPitch=duneSurface?surfaceAttitude(road,c.motionHeading??c.heading).pitch:road.pitch,gravity=-9.81*Math.sin(travelPitch);
  if(input.park){if(c.v>0)c.v=Math.max(0,c.v-(braking+drag)*dt);else if(c.v<0)c.v=Math.min(0,c.v+(braking+drag)*dt);}
  else if(c.v>=0){
   if(c.v<=.2&&brake&&!throttle&&!c.ai){c.v=Math.max(-12,c.v-(7.5*traction-gravity)*dt);}
@@ -59,7 +62,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  const impactMotion=Math.hypot(c.impactVX,c.impactVZ)>.01||Math.abs(c.impactYaw)>.001?velocityOf(c):null;
  c.heading+=(rate+c.impactYaw)*dt;
  const oldMotion=Number.isFinite(c.motionHeading)?c.motionHeading:c.heading;
- if((conditions.wetness||rubber<.9)&&speed>2){
+ if((conditions.wetness||rubber<.9||duneSurface&&c.surfaceGrip<.9)&&speed>2){
   const alignment=(Number.isFinite(conditions.alignment)?conditions.alignment:22)*Math.max(.35,rubber)*c.surfaceGrip*(brake?.72:1);
   c.motionHeading=oldMotion+angleDiff(c.heading,oldMotion)*(1-Math.exp(-alignment*dt));
  }else c.motionHeading=c.heading;
@@ -67,20 +70,19 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  // Impact rotation turns the chassis, not its world-space momentum. Tyre grip
  // damps the resulting lateral slip on subsequent ticks, without adding energy.
  if(impactMotion)setVelocity(c,impactMotion.x,impactMotion.z);
- c.sliding=(conditions.wetness>0||rubber<.9)&&speed>8&&Math.abs(angleDiff(c.heading,c.motionHeading))>.10||Math.hypot(c.impactVX,c.impactVZ)>1.2;
- c.x+=(Math.sin(c.motionHeading)*c.v*Math.cos(road.pitch)+c.impactVX)*dt;c.z+=(Math.cos(c.motionHeading)*c.v*Math.cos(road.pitch)+c.impactVZ)*dt;
+ c.sliding=(conditions.wetness>0||rubber<.9||duneSurface&&c.surfaceGrip<.9)&&speed>8&&Math.abs(angleDiff(c.heading,c.motionHeading))>.10||Math.hypot(c.impactVX,c.impactVZ)>1.2;
+ c.x+=(Math.sin(c.motionHeading)*c.v*Math.cos(travelPitch)+c.impactVX)*dt;c.z+=(Math.cos(c.motionHeading)*c.v*Math.cos(travelPitch)+c.impactVZ)*dt;
  moveWithBarriers(c,track,previousPose);
  const near=nearest(track,c.x,c.z,c.s);c.lateral=near.offset;let delta=near.s-prev;if(delta>track.length/2)delta-=track.length;if(delta<-track.length/2)delta+=track.length;
  // No teleports or shortcuts: progress advances only near the expected ribbon.
  if(Math.abs(delta)<40&&near.distance<track.width/2+40){c.s=near.s;c.progress+=delta;}
  if(tryPitEntry(c,track,prev)){updateLap(c,track,elapsed,laps);return;}
  const half=roadHalfWidth(track,near.s);
- if(near.distance>half+1.0){if(!c.offtrack)c.offtrackTime=0;c.offtrack=true;c.offtrackTime+=dt;if(c.offtrackTime>.4&&!c.offtrackPenalty){c.penalty+=1;c.offtrackPenalty=true;c.invalidLap=true;}}else{c.offtrack=false;c.offtrackPenalty=false;}
- if(near.distance>half+24){c.v*=Math.exp(-dt*4);const p=sample(track,c.s);c.x+=(p.x-c.x)*dt*.6;c.z+=(p.z-c.z)*dt*.6;}
+ if(near.distance>half+1.0){if(!c.offtrack)c.offtrackTime=0;c.offtrack=true;c.offtrackTime+=dt;if(c.offtrackTime>.4&&!c.offtrackPenalty){c.penalty+=duneSurface?.kind==='tarmac'?.5:1;c.offtrackPenalty=true;c.invalidLap=true;}}else{c.offtrack=false;c.offtrackPenalty=false;}
+ if(near.distance>(duneSurface?duneSurface.boundary+3:half+24)){c.v*=Math.exp(-dt*4);const p=sample(track,c.s);c.x+=(p.x-c.x)*dt*.6;c.z+=(p.z-c.z)*dt*.6;}
  const surface=sample(track,c.s);
  const fall=clamp(near.distance-(half+6.5),0,1);
- c.y=fall?surface.y*(1-fall)+(terrainHeight(track,c.x,c.z)-.9)*fall:surface.y;
- c.pitch=surface.pitch;
+ if(track.id==='nl-1948'){const slope=sample(track,c.s,near.offset);const attitude=surfaceAttitude(slope,c.heading);c.y=slope.y;c.pitch=attitude.pitch;c.roll=attitude.roll;}else{c.y=fall?surface.y*(1-fall)+(terrainHeight(track,c.x,c.z)-.9)*fall:surface.y;c.pitch=surface.pitch;}
  wearTyres(c,track,dt,Math.hypot(c.x-previousPose.x,c.z-previousPose.z),boost);
  updateLap(c,track,elapsed,laps);
 }

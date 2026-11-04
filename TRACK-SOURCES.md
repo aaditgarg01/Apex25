@@ -120,3 +120,42 @@ geometry and collision. This is not an exact reconstruction of every year's grav
 or resurfacing work. Existing centreline, road mesh, elevations, pit layout,
 vehicle physics and transport protocol are retained. Terrain outside those surfaces
 is artistic, road-height-constrained rolling landscape, not LiDAR terrain.
+
+## Zandvoort banked road, dunes and runoff — 2.35.0
+
+The [official corner guide](https://www.circuitzandvoort.nl/en/corners/) identifies
+progressive Hugenholtz banking up to 18° and Arie Luyendyk banking of 15–18°;
+these official values take precedence over secondary reports quoting 19°.
+Named constants and smooth entry/exit station profiles are in
+`shared/zandvoort-road-data.mjs`, re-exported by `public/data/zandvoort-road.js`.
+Inner Hugenholtz camber (4°), station limits and the progressive transverse curve
+are artistic fits, not measured road cross-sections. No extra Tarzan banking was
+added because a reliable numeric angle was not established.
+
+The same guide describes Gerlach gravel; a paved Hugenholtz escape; grass/paved
+changes at Slotemaker; Scheivlak gravel and tyre protection; a Masters exit strip;
+Hans Ernst paved escape plus gravel; and Turn 13 gravel/tyre protection.
+Those distinctions inform the complete per-turn surface table. Widths and exact
+polygons are approximate, constrained to the existing game centreline and nearby
+branches. Red/white kerbs and dark rubber follow the banked road. The [official
+Dutch GP event map](https://www.dutchgp.com/en/circuit-map/) and its [2024/2025
+hospitality/map brochure](https://dutchgp.com/app/uploads/2023/11/DutchGP-Hospitality-2024-2025-V3.pdf)
+provide grandstand and paddock relationships; temporary stand shapes vary by year.
+
+The road's modest dune relief is an original landmark-fitted profile, informed by
+previously cached SRTM and the official descriptions of Hunserug, Slotemaker,
+Scheivlak and the final approach. It is **not** a set of surveyed asphalt heights:
+SRTM alone flattened the dune character to ~5.38m in the previous game profile.
+The new local-base anchor range is 12m; the pit straight is level and periodic
+shape-preserving interpolation joins the anchors. The geographic centreline is
+unchanged. Elevation and progressive cross-slope are shared by server/local/client
+simulation, road rendering, kerbs, barriers, guide line, AI and camera pose.
+
+`public/data/zandvoort-architecture.js` includes OSM ways 52473177 (Pitgebouw) and
+52473180 (Hoofdtribune), fetched 2026-11-05 via the direct map API, bbox
+4.535,52.381,4.553,52.394. © OpenStreetMap contributors, ODbL 1.0. The pit complex
+is intentionally fitted to the existing generated external service corridor.
+Dune banks, temporary stands, town/hotel silhouettes, vegetation and distant
+wind turbines are original approximations. Turbines do not assert a mapped
+wind-farm location. The North Sea is an artistic distant western horizon.
+No reference photos, licensed sponsor graphics or official game assets are included.

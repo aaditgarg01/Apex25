@@ -1,3 +1,4 @@
+import {bankingAt,bankSupport} from './banked-road.mjs';
 import {ribbonOffset} from './surface.mjs';
 import {conditionProfile} from './conditions.mjs';
 const wrap=(n,m)=>((n%m)+m)%m,clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),angle=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
@@ -18,17 +19,17 @@ export function prepareRacingLine(track){
   const path=base.map((p,i)=>({x:p.x+Math.cos(p.heading)*offsets[i],z:p.z-Math.sin(p.heading)*offsets[i]}));
   offsets=offsets.map((offset,i)=>{const a=path[wrap(i-2,n)],b=path[wrap(i-1,n)],c=path[i],d=path[(i+1)%n],e=path[(i+2)%n],dx=a.x-4*b.x+6*c.x-4*d.x+e.x,dz=a.z-4*b.z+6*c.z-4*d.z+e.z,p=base[i];return clamp(offset-.045*(dx*Math.cos(p.heading)-dz*Math.sin(p.heading))+.025*(desired[i]-offset),bounds[i].low,bounds[i].high);});
  }
- const points=base.map((p,i)=>({...p,x:p.x+Math.cos(p.heading)*offsets[i],z:p.z-Math.sin(p.heading)*offsets[i],offset:offsets[i]}));
- points.forEach((p,i)=>{const a=points[wrap(i-2,n)],b=points[(i+2)%n];p.heading=Math.atan2(b.x-a.x,b.z-a.z);});
+ const points=base.map((p,i)=>({...p,y:p.y+bankingAt(track,i*step,offsets[i]).height,roll:bankingAt(track,i*step,offsets[i]).roll,x:p.x+Math.cos(p.heading)*offsets[i],z:p.z-Math.sin(p.heading)*offsets[i],offset:offsets[i]}));
+ points.forEach((p,i)=>{const a=points[wrap(i-2,n)],b=points[(i+2)%n];p.heading=Math.atan2(b.x-a.x,b.z-a.z);if(track.id==='nl-1948')p.pitch=Math.atan2(b.y-a.y,Math.hypot(b.x-a.x,b.z-a.z));});
  let curvature=points.map((p,i)=>{const a=points[wrap(i-2,n)],b=points[(i+2)%n];return Math.abs(angle(b.heading,a.heading))/Math.max(step*2,Math.hypot(b.x-a.x,b.z-a.z));});
  for(let pass=0;pass<2;pass++)curvature=curvature.map((k,i)=>(curvature[wrap(i-1,n)]+k*2+curvature[(i+1)%n])/4);
  track.racingLine={points,curvature,step,length:track.length,speeds:new Map()};return track.racingLine;
 }
-export function sampleGuide(track,s){const line=prepareRacingLine(track),f=wrap(s,line.length)/line.step,i=Math.floor(f),t=f-i,a=line.points[i],b=line.points[(i+1)%line.points.length];return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,pitch:a.pitch+(b.pitch-a.pitch)*t,heading:a.heading+angle(b.heading,a.heading)*t,offset:a.offset+(b.offset-a.offset)*t};}
+export function sampleGuide(track,s){const line=prepareRacingLine(track),f=wrap(s,line.length)/line.step,i=Math.floor(f),t=f-i,a=line.points[i],b=line.points[(i+1)%line.points.length];return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,pitch:a.pitch+(b.pitch-a.pitch)*t,heading:a.heading+angle(b.heading,a.heading)*t,offset:a.offset+(b.offset-a.offset)*t,roll:(a.roll||0)+((b.roll||0)-(a.roll||0))*t};}
 function speedProfile(track,value,wetness){
  const line=prepareRacingLine(track),condition=conditionProfile(value,Number.isFinite(wetness)?Math.round(wetness*20)/20:undefined),key=String(condition.wetness);if(line.speeds.has(key))return line.speeds.get(key);
  const wet=condition.wetness,base=20-10.5*wet,aero=(.0042-.00255*wet)*(track.id==='mx-1962'?.78:1),max=110*(1-.10*wet),n=line.points.length;
- const speeds=line.curvature.map(k=>{const corner=k>aero?Math.sqrt(base/(k-aero)):max;const steering=k>.025?3.8*condition.steering/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;return clamp(Math.min(corner,steering),8,max);});
+ const speeds=line.curvature.map((k,i)=>{let corner=k>aero?Math.sqrt(base/(k-aero)):max,steering=k>.025?3.8*condition.steering/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;if(track.id==='nl-1948'){const bank=bankingAt(track,i*line.step,line.points[i].offset);for(let pass=0;pass<3;pass++){const support=bankSupport(bank.bank,Math.min(corner,max),1/Math.max(.0001,k),wet),gain=1+support.gain;corner=k>aero*gain?Math.sqrt((base*gain+support.extraLateral)/(k-aero*gain)):max;steering=k>.025?3.8*condition.steering*(1+support.extraLateral/Math.max(base,1))/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;}}return clamp(Math.min(corner,steering),8,max);});
  // Backward braking and forward acceleration passes link corners to straights,
  // including the seam of the closed lap and uphill/downhill braking distances.
  for(let pass=0;pass<4;pass++){

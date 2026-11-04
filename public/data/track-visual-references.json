@@ -208,6 +208,26 @@
     {
       "feature": "Interlagos runoff gravel maintenance, tyre walls, guardrails and grooved escape areas",
       "url": "https://prefeitura.sp.gov.br/w/noticia/prefeitura-conclui-mais-uma-etapa-da-requalificacao-do-autodromo-de-interlagos"
+    },
+    {
+      "feature": "Zandvoort official banking values, progressive Hugenholtz profile, dune landmarks and corner-specific escape/gravel changes",
+      "url": "https://www.circuitzandvoort.nl/en/corners/"
+    },
+    {
+      "feature": "Zandvoort official grandstand, paddock and dune viewing relationships",
+      "url": "https://www.dutchgp.com/en/circuit-map/"
+    },
+    {
+      "feature": "Dutch GP official 2024/2025 hospitality and event map reference",
+      "url": "https://dutchgp.com/app/uploads/2023/11/DutchGP-Hospitality-2024-2025-V3.pdf"
+    },
+    {
+      "feature": "Zandvoort pit-building outline, OSM ODbL",
+      "url": "https://www.openstreetmap.org/way/52473177"
+    },
+    {
+      "feature": "Zandvoort main-grandstand outline, OSM ODbL",
+      "url": "https://www.openstreetmap.org/way/52473180"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

@@ -120,3 +120,13 @@ feature, including lake 138417940, pit pavilion 33779114 and stand M 138420844.
 The surrounding `anchors`, procedural models, generic signage and artistic surface
 plan are original game code; source photos, maps and trademarked sponsor artwork
 are references only and are not redistributed as game assets.
+
+## Zandvoort permanent architecture
+
+The `features` array of `public/data/zandvoort-architecture.js` contains outlines
+of OSM ways 52473177 (Pitgebouw) and 52473180 (Hoofdtribune), retrieved 2026-11-05:
+https://api.openstreetmap.org/api/0.6/map?bbox=4.535,52.381,4.553,52.394 .
+© OpenStreetMap contributors, ODbL 1.0, https://www.openstreetmap.org/copyright .
+The adjacent anchor definitions, bank/elevation/surface profiles and 3D assets are
+original approximate game data/code. Reference images and sponsor artwork are not
+redistributed. Prior cached scenery data retains its original ODbL attribution.

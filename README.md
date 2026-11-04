@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.34.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.35.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1094,3 +1094,85 @@ The game's test suite and a full driving/multiplayer playtest were not run.
 
 References and ODbL attribution are in `TRACK-SOURCES.md`,
 `TRACK-DATA-LICENSE.md` and `public/data/track-visual-references.json`.
+
+## Zandvoort banking, dunes and mixed runoff — 2.35.0
+
+Zandvoort now has dedicated coastal scenery and a shared banked-road model:
+
+- **Hugenholtz T3 and Arie Luyendyk T14:** progressive cross-slope, up to the official
+  circuit guide's 18° outer-edge maximum, with smooth quintic entry/exit ramps.
+  Named angles and station profiles live in `shared/zandvoort-road-data.mjs`, also
+  exposed from `public/data/zandvoort-road.js`. Hugenholtz's fitted inner slope is
+  4°; Luyendyk uses the published 15–18° range. Other reports quote 19°; this model
+  follows the circuit's guide. Tarzan has no newly invented numeric camber.
+- **Shared driving geometry:** `banked-road.mjs` supplies cross-slope heights,
+  gravity/normal-load support and road-normal attitude. The sampler, vehicle
+  simulation, AI speed plan, guide/rubber, asphalt subdivisions, kerbs, walls,
+  fences and car/camera orientation use it. Server and local/client prediction
+  run the same simulation. Roll is derived at presentation time from the same
+  surface, without changing the compact motion fields or input protocol.
+- **Banking physics:** normal load includes the centripetal contribution on the
+  bank; gravity supplies lateral support, and wet conditions attenuate usable
+  tyre support. Grip saturation remains understeer, not steering assistance.
+  Forward grip and braking continue to use the existing tyre/weather system.
+- **Dune elevation:** the retained geographic centreline now follows a smooth,
+  periodic landmark-fitted elevation profile, including Hunserug/Scheivlak crests,
+  short dips, a rise before the final bank and a level pit straight. This is an
+  artistic improvement informed by cached coarse SRTM and circuit descriptions,
+  not surveyed asphalt or new measured altitude data. The 12m local-base anchor
+  range is intentionally labelled approximate.
+- **One shared surface/boundary plan:** paved apron plus gravel at Tarzan;
+  Gerlach gravel; Hugenholtz paved escape; grass/paved Slotemaker transitions;
+  Scheivlak gravel; Masters exit tarmac; selected T9/T10 gravel; Hans Ernst
+  paved escape plus gravel; T13 gravel; close sand/grass and protection at T14.
+  Surface widths taper and cap against other branches. Renderer and collision
+  share their outer safety-wall geometry; covered impact sections reuse those
+  exact solids. Sand/gravel/grass are traversable terrain, not invisible walls.
+- **Surface behaviour:** tarmac runoff keeps near-normal grip and has a smaller
+  time penalty while still invalidating an illegal timed lap. Gravel and sand
+  add heavy drag and low grip; grass loses more grip in rain; deep dune ground
+  strongly slows the car. Existing track-limit invalidation, recovery and tyre
+  scrub/off-track wear continue. Surface effects are scoped to Zandvoort.
+- **Scenery:** mapped pit/main-stand anchors, external pit-facing garage pavilion,
+  podium, orange crowd stands and dune banks around Tarzan, Hugenholtz, Hunserug,
+  Scheivlak, the arena and the final corner. Pale dunes, instanced beach grass,
+  pine/scrub/broadleaf groups, distant town/hotel silhouettes, original sponsor
+  placeholders, marshals, cranes, distance boards, animated flags, restrained
+  orange smoke, western North Sea horizon and distant artistic wind turbines.
+- **Weather:** cool coastal light and haze, slow sky movement, dry sand mist and
+  gentle sea waves. Wet modes darken sand and vegetation while retaining existing
+  rain, spray, reflective asphalt and dynamic whole-lap weather.
+- **Free Practice:** **Tarzan approach** and **Banked final corner** starts.
+
+**Madrid and other tracks:** the previous Madrid code had visual scenery banks,
+not a shared driving-bank model. There was no existing Madrid physics mechanism
+that could be reused honestly. The new model is enabled only for `nl-1948`;
+Madrid's road/handling/scenery path is retained. Car models, other geographic
+centrelines, multiplayer packet formats and session rules remain unchanged.
+
+**Placement/performance:** whole envelopes are reserved against every racing,
+runoff/safety and external-pit branch before rendering. Dune grass, vegetation,
+crowds and flags are instanced; static structures batch spatially. The design
+budget is ~12–16k spectators, ~100 flags and ~3–5k grass tufts, with an estimated
+100–130 scenery draw calls. These are targets, not measured counts or FPS claims.
+Animations update at most every 80ms; shared materials/textures are disposed by
+normal circuit cleanup. No live external map requests during play.
+
+**Uncertain / compare manually:** exact banking start/end stations and inner
+Hugenholtz camber; unmeasured crest heights; individual gravel/tarmac/sand widths;
+season-specific temporary stands; dune vegetation and town/turbine silhouettes.
+Only two permanent architecture footprints were present in the downloaded map
+subset. All other scenery is explicitly approximate. No additional photos were
+attached to this brief; the official corner photos and organiser map were used
+as references, without redistributing them as textures.
+
+**Testing left to the user:** no game tests, banking/elevation regression checks,
+clearance audit, static-name/shadow checker, browser render or multiplayer playtest
+were run for this release, at the user's request. Placement reservations execute
+when the circuit is built; they are an implementation safeguard, not a claim of
+independent verification. Production packaging is reported separately. In
+particular, Madrid regression equivalence, final visual placement, bank feel,
+runoff overlap, surface balance and frame rate remain for manual testing.
+
+References and ODbL attribution: `TRACK-SOURCES.md`, `TRACK-DATA-LICENSE.md`,
+`public/data/track-visual-references.json` and `public/data/zandvoort-architecture.js`.

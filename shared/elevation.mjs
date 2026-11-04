@@ -1,3 +1,4 @@
+import {ZANDVOORT_ELEVATION_INFO} from './zandvoort-road-data.mjs';
 // Spa anchors transcribed from the circuit's 2026 official access/track map.
 // https://www.spa-francorchamps.be/assets/e70cff50-ae5d-4aaa-896b-54c8a953a357/all-plan-acces.pdf
 export const SPA_ALTITUDES=[[0,418],[220,424],[310,419],[690,403],[890,391],[1130,415],[1490,446],[2200,463],[2470,470],[2870,455],[3110,438],[3600,402],[4280,377],[4740,375],[5100,373],[5700,388],[6000,398],[6540,408],[7004,418]];
@@ -15,6 +16,7 @@ export function applyElevation(id,points,length,elevations){
  if(id==='be-1925'){// Two shaping points concentrate the climb between published markers,
  // approximating Raidillon's steep ramp without changing measured endpoints.
  profile=[...SPA_ALTITUDES,[990,396.5],[1080,409.7]].sort((a,b)=>a[0]-b[0]).map(([s,y])=>[s/7004*length,y]);source='Official Spa altitude markers · interpolated';}
+ else if(id==='nl-1948'){profile=ZANDVOORT_ELEVATION_INFO.anchors.map(([s,y])=>[s/ZANDVOORT_ELEVATION_INFO.nominalLength*length,y]);source=ZANDVOORT_ELEVATION_INFO.source;}
  else if(profile){profile=profile.map(([t,y])=>[t*length,y]);}
  if(!profile||profile.length<4)return {source,min:0,max:0,range:0};
  // Coarse 90 m terrain includes buildings/trees. Reduce that relief for Mexico's near-flat racing surface.

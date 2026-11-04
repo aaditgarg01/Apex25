@@ -1,3 +1,5 @@
+import {zandvoortBoundaries} from '/shared/zandvoort.mjs';
+import {bankedHeight,bankingAt} from '/shared/banked-road.mjs';
 import {interlagosBoundaries} from '/shared/interlagos-boundary.mjs';
 import {pitReserved} from '/shared/pit-layout.mjs';
 import {roadClearance} from '/shared/venues.mjs';
@@ -11,7 +13,7 @@ export function trackAppearance(track){
  const theme=track.campus?'campus':VENUES[track.id]?.theme||'fields',street=track.urban&&!track.campus;
  const sand=['desert','dunes'].includes(theme),forest=['forest','alpine'].includes(theme);
  const colors={desert:'#aaa18b',dunes:'#929174',forest:'#596d4b',alpine:'#657451',tropical:'#657d51',coast:'#78876b',fields:'#79815b',campus:'#738360',skyline:'#777e78',city:'#78806c',neon:'#717579',marina:'#728681'};
- return {theme,street,sand,forest,ground:track.id==='br-1940'?'#5c7e47':track.id==='us-2023'?'#35363b':track.id==='es-2026'?'#b1a783':track.id==='sg-2008'?'#1f2c32':track.id==='az-2016'?'#b7ae99':track.id==='sa-2021'?'#cbb894':track.id==='mc-1929'?'#b5af9c':track.id==='be-1925'?'#526f43':track.id==='bh-2002'?'#cdbb9b':track.id==='jp-1962'?'#567448':colors[theme]||'#74815a',kerb:track.id==='br-1940'?['#e4d13f','#4c8d58']:track.id==='sa-2021'?['#0a7e4a','#eceae2']:track.id==='be-1925'?['#bd3729','#e8ba2d']:track.campus?['#35383a','#dfdccd']:['#bd3730','#e8e5dc'],runoff:track.id==='sa-2021'?'#155b78':track.id==='fr-1969'?'#376b9c':track.id==='ae-2009'?'#609ba5':track.id==='us-2012'?'#a34b40':'#548475',gravel:(track.id==='jp-1962'||forest||theme==='fields')&&track.id!=='sa-2021',fog:street?.00044:sand?.00055:.00036};
+ return {theme,street,sand,forest,ground:track.id==='nl-1948'?'#b6af8d':track.id==='br-1940'?'#5c7e47':track.id==='us-2023'?'#35363b':track.id==='es-2026'?'#b1a783':track.id==='sg-2008'?'#1f2c32':track.id==='az-2016'?'#b7ae99':track.id==='sa-2021'?'#cbb894':track.id==='mc-1929'?'#b5af9c':track.id==='be-1925'?'#526f43':track.id==='bh-2002'?'#cdbb9b':track.id==='jp-1962'?'#567448':colors[theme]||'#74815a',kerb:track.id==='br-1940'?['#e4d13f','#4c8d58']:track.id==='sa-2021'?['#0a7e4a','#eceae2']:track.id==='be-1925'?['#bd3729','#e8ba2d']:track.campus?['#35383a','#dfdccd']:['#bd3730','#e8e5dc'],runoff:track.id==='sa-2021'?'#155b78':track.id==='fr-1969'?'#376b9c':track.id==='ae-2009'?'#609ba5':track.id==='us-2012'?'#a34b40':'#548475',gravel:(track.id==='jp-1962'||forest||theme==='fields')&&track.id!=='sa-2021',fog:street?.00044:sand?.00055:.00036};
 }
 function noiseTexture(kind){
  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');let seed=1979;
@@ -63,7 +65,7 @@ export class TrackSurfaces{
   for(const side of [-1,1]){
    const edge=side*half,limit=side*(half+(track.campus?1.8:6.5));scene.ribbon(track,Math.min(edge,limit),Math.max(edge,limit),a.ground,-.08,false,{kind:track.id==='sg-2008'?'concrete':['bh-2002','sa-2021'].includes(track.id)?'sand':'grass'});
    const shoulder=side*(half+(a.street?.65:track.campus?1.4:1.6));scene.ribbon(track,Math.min(edge,shoulder),Math.max(edge,shoulder),a.street?'#777f80':'#b8b4a7',.015,false,{kind:'paint'});
-   if(!track.campus&&!a.street&&!['br-1940','bh-2002','be-1925','sa-2021'].includes(track.id)){
+   if(!track.campus&&!a.street&&!['nl-1948','br-1940','bh-2002','be-1925','sa-2021'].includes(track.id)){
     const lo=side*(half+1.6),hi=side*(half+6.3),kind=a.gravel?'gravel':'asphalt',color=a.gravel?'#c0b79d':'#a0a09a';scene.ribbon(track,Math.min(lo,hi),Math.max(lo,hi),color,.022,false,{kind,mask:this.outsideMask[side]});
     const p=side*(half+1.6),q=side*(half+3);if(track.id!=='jp-1962')scene.ribbon(track,Math.min(p,q),Math.max(p,q),a.runoff,.04,false,{kind:'paint',mask:this.outsideMask[side]});
    }
@@ -77,8 +79,22 @@ export class TrackSurfaces{
    const p=side*(half+2.2+band),q=side*(half+3.2+band);scene.ribbon(track,Math.min(p,q),Math.max(p,q),band<3?'#316a9e':'#a74037',.055,false,{kind:'paint',mask:this.outsideMask[side]});
   }
   if(track.id==='mx-1962'){const mask=track.points.map((_,i)=>i*track.step/track.length>.835&&i*track.step/track.length<.91);scene.ribbon(track,-half,half,'#55595b',.056,false,{kind:'paint',mask});}
-  if(track.id==='br-1940')this.interlagosRunoff();
+  if(track.id==='br-1940')this.interlagosRunoff();if(track.id==='nl-1948')this.zandvoortRunoff();
   this.rubber();this.repairs();
+ }
+ zandvoortRunoff(){
+  const track=this.track,half=track.width/2,sections=zandvoortBoundaries(track);
+  for(const side of [-1,1])for(const kind of ['tarmac','gravel','grass','sand']){
+   const positions=[],uv=[];
+   for(let i=0;i<track.points.length;i++){
+    const next=(i+1)%track.points.length,range=row=>{let lo=half;for(const type of ['tarmac','gravel','grass','sand']){const hi=lo+row[type];if(type===kind)return [lo,hi];lo=hi;}},a=range(sections[side][i]),b=range(sections[side][next]);
+    if(a[1]-a[0]<.08||b[1]-b[0]<.08)continue;
+    const corners=[[i,a[0]],[next,b[0]],[i,a[1]],[i,a[1]],[next,b[0]],[next,b[1]]].map(([n,o])=>{const p=track.points[n],offset=ribbonOffset(track,n,side*o);return {x:p.x+Math.cos(p.heading)*offset,y:bankedHeight(track,n*track.step,offset,p.y)+.026,z:p.z-Math.sin(p.heading)*offset};});
+    if(corners.some(p=>pitReserved(track,p.x,p.z,5)))continue;
+    for(const [j,p]of corners.entries()){positions.push(p.x,p.y,p.z);uv.push(j%2*4,i*.6);}
+   }
+   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,this.material(kind==='tarmac'?'asphalt':kind,kind==='tarmac'?'#767e7d':kind==='gravel'?'#b8aa8c':kind==='sand'?'#d5c6a1':'#81906c'));mesh.receiveShadow=true;this.scene.group.add(mesh);
+  }
  }
  interlagosRunoff(){
   const track=this.track,half=track.width/2,boundaries=interlagosBoundaries(track);
@@ -119,7 +135,7 @@ export class TrackSurfaces{
   const track=this.track,line=prepareRacingLine(track),n=Math.ceil(track.length/4),step=track.length/n,positions=[],uv=[],indices=[];
   for(const offset of [-.85,.85]){
    const start=positions.length/3;
-   for(let i=0;i<=n;i++){const s=i*step,p=sampleGuide(track,s);for(const edge of [offset-.22,offset+.22]){positions.push(p.x+Math.cos(p.heading)*edge,p.y+.077,p.z-Math.sin(p.heading)*edge);uv.push(edge,i*.3);}
+   for(let i=0;i<=n;i++){const s=i*step,p=sampleGuide(track,s);for(const edge of [offset-.22,offset+.22]){positions.push(p.x+Math.cos(p.heading)*edge,bankedHeight(track,s,p.offset+edge,p.y-bankingAt(track,s,p.offset).height)+.077,p.z-Math.sin(p.heading)*edge);uv.push(edge,i*.3);}
     if(i<n){const k=start+i*2,j=Math.floor((s%track.length)/line.step);if(line.curvature[j]>.002||s<75||s>track.length-140)indices.push(k,k+2,k+1,k+1,k+2,k+3);}
    }
   }
@@ -138,7 +154,7 @@ export class TrackSurfaces{
   const jeddah=this.track.id==='sa-2021',singapore=['sg-2008','us-2023'].includes(this.track.id);
   for(const m of this.materials.values()){
    const kind=m.userData.surfaceKind;
-   if(this.track.id==='br-1940'&&['grass','gravel'].includes(kind)){m.userData.interlagosDryColor??=m.color.clone();m.color.copy(m.userData.interlagosDryColor).multiplyScalar(1-wetness*.2);m.roughness=.94-wetness*.26;}
+   if(['nl-1948','br-1940'].includes(this.track.id)&&['grass','gravel','sand'].includes(kind)){m.userData.interlagosDryColor??=m.color.clone();m.color.copy(m.userData.interlagosDryColor).multiplyScalar(1-wetness*.2);m.roughness=.94-wetness*.26;}
    if(kind==='asphalt'){const coat=Math.max(singapore?.15:jeddah?.24:0,wetness*.72);if((m.clearcoat>0)!==(coat>0))m.needsUpdate=true;m.roughness=(singapore?.72:jeddah?.74:.86)-wetness*.48;m.clearcoat=coat;m.bumpScale=.018-wetness*.01;m.color.set(wetness?'#939b9f':'#ffffff');}
    else if(kind==='concrete'){m.roughness=(jeddah?.58:.92)-wetness*.18;if(jeddah||singapore)m.metalness=.06;}
    else if(kind==='paint'){m.roughness=(jeddah?.42:.9)-wetness*.28;if(jeddah||singapore)m.metalness=.12;}

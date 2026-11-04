@@ -1,3 +1,4 @@
+import {bankingAt} from './banked-road.mjs';
 import {prepareCampus} from './campus.mjs';
 import {racingSpeedAt} from './racing-line.mjs';
 import {applyElevation} from './elevation.mjs';
@@ -51,7 +52,7 @@ export function makeTracks(data,elevations={}){
  return {id,country,city,code,turns,round:round<24?round+1:null,category:campus?'Campus circuit':round<24?'2025 season':'More circuits',origin:{lon,lat},name:f.properties.Name,officialLength:f.properties.length*scale,elevation,length,step,points,width:f.properties.width||(id==='mc-1929'?13:17),arid,urban,campus};
  });
 }
-export function sample(track,s,offset=0){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];const heading=a.heading+angleDiff(b.heading,a.heading)*t;return {x:a.x+(b.x-a.x)*t+Math.cos(heading)*offset,z:a.z+(b.z-a.z)*t-Math.sin(heading)*offset,y:a.y+(b.y-a.y)*t,pitch:a.pitch+(b.pitch-a.pitch)*t,grade:a.grade+(b.grade-a.grade)*t,heading};}
+export function sample(track,s,offset=0){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];const heading=a.heading+angleDiff(b.heading,a.heading)*t;const bank=bankingAt(track,s,offset),centerY=a.y+(b.y-a.y)*t,baseGrade=a.grade+(b.grade-a.grade)*t;let grade=baseGrade;if(track.id==='nl-1948')grade+=(bankingAt(track,s+.5,offset).height-bankingAt(track,s-.5,offset).height);return {x:a.x+(b.x-a.x)*t+Math.cos(heading)*offset,z:a.z+(b.z-a.z)*t-Math.sin(heading)*offset,y:centerY+bank.height,pitch:track.id==='nl-1948'?Math.atan(grade):a.pitch+(b.pitch-a.pitch)*t,grade,heading,roll:bank.roll};}
 export function nearest(track,x,z,previous=0){
  const center=Math.floor(wrap(previous,track.length)/track.step),n=track.points.length;let best={distance:Infinity};
  for(let d=-24;d<=24;d++){const i=wrap(center+d,n),a=track.points[i],b=track.points[(i+1)%n],dx=b.x-a.x,dz=b.z-a.z,t=clamp(((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz),0,1),px=a.x+dx*t,pz=a.z+dz*t,dist=Math.hypot(x-px,z-pz);if(dist<best.distance){const h=a.heading+angleDiff(b.heading,a.heading)*t;best={s:wrap((i+t)*track.step,track.length),distance:dist,offset:(x-px)*Math.cos(h)-(z-pz)*Math.sin(h),heading:h};}}

@@ -1,3 +1,4 @@
+import {bankSupport} from './banked-road.mjs';
 import {tyreGrip} from './tyres.mjs';
 // Arcade surface presets. The normal preset retains the original dry handling.
 export const CONDITIONS=Object.freeze({
@@ -24,11 +25,11 @@ export function yawRate(car){
  const speed=Math.abs(car.v),profile=conditionProfile(car.conditions,car.trackWetness);
  const rate=speed>1?Math.min(speed/9,1)*(1.9/(1+speed*.025)):0;
  const requested=(car.v>=0?1:-1)*(car.steer||0)*rate*profile.steering*tyreGrip(car);
- const rubber=tyreGrip(car);if(!profile.wetness&&rubber>=.9&&(car.airDensity??1)===1)return requested;
+ const rubber=tyreGrip(car);if(!car.bankedRoad&&!profile.wetness&&rubber>=.9&&(car.airDensity??1)===1)return requested;
  const grip=car.surfaceGrip??1;
  // Aero provides grip at speed, but hard braking / acceleration uses up some
  // of the available tyre grip. Saturation produces understeer, not assistance.
  const lateral=Number.isFinite(profile.lateral)?profile.lateral:30;
- const limit=(lateral+speed*speed*.0025*(car.airDensity??1))*rubber*grip*(car.cornerGrip??1)/Math.max(1,speed);
- return Math.max(-limit,Math.min(limit,requested));
+ const support=bankSupport(car.bankedRoad?car.bankRoll||0:0,speed,Math.max(6,1/Math.max(.0001,Math.abs(car.roadCurvature||0))),profile.wetness),usable=(lateral+speed*speed*.0025*(car.airDensity??1))*rubber*grip*(car.cornerGrip??1),assisted=car.bankedRoad&&requested*(car.bankTurnSign||0)>0,limit=(usable*(1+support.gain)+(assisted?support.extraLateral:0))/Math.max(1,speed),demand=requested*(assisted?1+support.extraLateral/Math.max(lateral,1):1);
+ return Math.max(-limit,Math.min(limit,demand));
 }

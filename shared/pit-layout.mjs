@@ -7,7 +7,7 @@ function point(track,plan,d,across=0,entryOffset=plan.entryOffset){
  const start=sample(track,plan.entry+d,entryOffset),end=sample(track,plan.entry+d,plan.entryOffset),bx=frame.x+fx*longitudinal+rx*plan.offset,bz=frame.z+fz*longitudinal+rz*plan.offset;
  // The service corridor has one fixed axis. Only the two road connections bend.
  const nx=Math.cos(road.heading)*(1-body)+rx*body,nz=-Math.sin(road.heading)*(1-body)+rz*body,n=Math.hypot(nx,nz);
- return {...road,x:start.x*(1-enter)+end.x*enter*(1-leave)+bx*body+nx/n*across,z:start.z*(1-enter)+end.z*enter*(1-leave)+bz*body+nz/n*across};
+ return {...road,...(track.id==='nl-1948'?{y:start.y*(1-enter)+end.y*enter*(1-leave)+road.y*body}:{}),x:start.x*(1-enter)+end.x*enter*(1-leave)+bx*body+nx/n*across,z:start.z*(1-enter)+end.z*enter*(1-leave)+bz*body+nz/n*across};
 }
 function mainStraight(track){
  const bound=Math.min(1200,track.length*.23);let best=null;
