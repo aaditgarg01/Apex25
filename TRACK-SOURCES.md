@@ -263,3 +263,45 @@ before gravel. Access conflicts mask both runoff overlays and their grip samplin
 Walls and fences are created from the same shared solid list used by collisions.
 No new driving banking or bumps are invented. No downloaded reference photos,
 official artwork, sponsor graphics, logos or bull sculptures are distributed.
+
+
+## Mexico City stadium and full-lap dressing refresh — 2.39.0
+
+- [FIA 2025 circuit, sector and pit drawings](https://www.fia.com/system/files/decision-document/2025_mexico_city_grand_prix_-_event_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_and_quarantine_zone_area.pdf).
+- [Official Mexican GP spectator access and stand locations](https://www.mexicogp.mx/informacion/accesos/?IDM=LANG_EN).
+- [Official Mexican GP corner names](https://www.mexicogp.mx/noticia/mexico-gp-como-se-llaman-las-curvas-del-autodromo-hermanos-rodriguez/).
+- [Official T4–8 viewing stand context](https://www.mexicogp.mx/boleto/generales-grada-11/?IDM=LANG_EN).
+- [Formula 1 4.304km circuit, park setting and retained final Peraltada section](https://www.formula1.com/en/racing/2025/mexico).
+- [Copper-domed sports arena architectural context](https://www.palaciodelosdeportes.mx/nosotros).
+- [OSM architecture, stadium and road snapshot 2026-11-05](https://api.openstreetmap.org/api/0.6/map?bbox=-99.107,19.390,-99.078,19.414).
+- [Public aerial reference, stadium canopy and surrounding park; image not redistributed](https://commons.wikimedia.org/wiki/File:Vista_a%C3%A9rea_del_Aut%C3%B3dromo_Hermanos_Rodr%C3%ADguez_01.jpg).
+- [SRTM 90m elevation cross-check dataset](https://www.opentopodata.org/datasets/srtm/).
+
+`public/data/mexico-architecture.js` retains full OSM source outlines and IDs for
+stadium stand ways 377679562/1315400018, pit 377679570, three main stands,
+central copper arena 126607350, sports facilities, urban and park references.
+`shared/mexico-access.mjs` retains the linear road subset for road-clear placement,
+re-exported by the public module; no OSM requests are made during racing. Seven
+pedestrian bridge paths remain reference-only because heights and two-pier
+clearance were not verified. Nearby baseball stadium 828705077 is also reference
+data rather than a claim of a new roof model.
+
+The retained road is 4,307.28m sampled vs 4.304km official. Original XY, elevations
+and pit route are unchanged. Nine fresh SRTM 90m samples span 4m; they only
+cross-check the near-flat setting and do not replace the original 2.56m game
+profile or establish centimetre accuracy. No new banking/camber is added.
+
+Stadium stand inner edges use OSM; canopy, deck heights and temporary event stands
+are artistic. Three stand patches narrow and two end patches are omitted for
+roads. Pit frontage fits at 29.44×280.6m on the mapped centre, aligned to the
+existing generated pit lane. The arena model fits a 176m central circular footprint;
+its 226m outer annex envelope is not fully built. Old-banking remnant slope is
+artistic and the remnants are not a second driving route. The official history
+supports a stadium bypass that retains the final section of Peraltada.
+
+`public/data/mexico-runoff.js` re-exports the complete shared per-corner table;
+all numeric widths, barrier distances/styles and kerb details are fitted
+approximations. No gravel trap location was verified, so gravel widths are zero.
+FIA map offsets inform cosmetic sector paint, not a change to existing timing.
+See `docs/MEXICO-AUDIT-2.39.0.md` for the full baseline audit and fitted widths.
+No raw photos/PDF, licensed logos or real sponsor/team/venue artwork are bundled.

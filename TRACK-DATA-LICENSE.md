@@ -187,3 +187,23 @@ rounding, bilinear interpolation and road-profile blending are adaptations by
 APEX 25; they do not imply endorsement by the European Union. The retained SRTM
 anchor provenance remains recorded separately in `public/data/elevations.json`.
 No source photographs, official branding or licensed external 3D assets are bundled.
+
+
+## Mexico City architecture, sports park and access-road data — 2.39.0
+
+`public/data/mexico-architecture.js` and `shared/mexico-access.mjs` contain derived
+OpenStreetMap geometry © OpenStreetMap contributors, licensed under ODbL 1.0:
+https://www.openstreetmap.org/copyright . Retrieved 2026-11-05 from
+https://api.openstreetmap.org/api/0.6/map?bbox=-99.107,19.390,-99.078,19.414 .
+Full source outlines/road polylines, way identifiers and derived local envelopes
+are retained and available in the shipped modules under ODbL. Examples: stadium
+stands 377679562/1315400018, pit 377679570, main stands 377679571/377679572/
+736211980, arena 126607350 and older raceway 772755822. Cached bridge and nearby
+baseball-stadium outlines are reference data; not all references are rendered.
+
+The nine SRTM 90m sample heights in `demVerification` are a coarse public-data
+cross-check retrieved via Open Topo Data, https://www.opentopodata.org/datasets/srtm/ .
+Original road elevation provenance remains separately recorded in elevations.json.
+Models, procedural textures/lettering, surface width tables, flags, placement fits
+and festival artwork are original game code/data. Reference photographs, official
+maps, real branded signage and external 3D assets are not redistributed.

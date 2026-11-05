@@ -1,10 +1,12 @@
+import {gridSlot} from '/shared/physics.mjs';
+import {mexicoBoundaries,MEXICO_CORNERS,mexicoRunoffAllowed} from '/shared/mexico.mjs';
 import {redbullringBoundaries,REDBULLRING_CORNERS,redbullringRunoffAllowed,redbullringSurfaceY} from '/shared/redbullring.mjs';
 import {silverstoneBoundaries,SILVERSTONE_CORNERS,silverstoneRunoffAllowed} from '/shared/silverstone.mjs';
 import {miamiBoundaries,MIAMI_CORNERS} from '/shared/miami.mjs';
 import {zandvoortBoundaries} from '/shared/zandvoort.mjs';
 import {bankedHeight,bankingAt} from '/shared/banked-road.mjs';
 import {interlagosBoundaries} from '/shared/interlagos-boundary.mjs';
-import {pitReserved} from '/shared/pit-layout.mjs';
+import {pitReserved,pitLayout,pitRoadPose} from '/shared/pit-layout.mjs';
 import {roadClearance} from '/shared/venues.mjs';
 import * as THREE from '/vendor/three.module.js';
 import {sampleGuide,prepareRacingLine} from '/shared/racing-line.mjs';
@@ -68,9 +70,9 @@ export class TrackSurfaces{
  build(){
   const scene=this.scene,track=this.track,half=track.width/2,a=this.appearance;
   for(const side of [-1,1]){
-   const edge=side*half,limit=side*(half+(track.campus?1.8:6.5));if(!['gb-1948','at-1969'].includes(track.id))scene.ribbon(track,Math.min(edge,limit),Math.max(edge,limit),a.ground,-.08,false,{kind:track.id==='sg-2008'?'concrete':['bh-2002','sa-2021'].includes(track.id)?'sand':'grass'});
-   const shoulder=side*(half+(a.street?.65:track.campus?1.4:1.6));if(!['gb-1948','at-1969'].includes(track.id))scene.ribbon(track,Math.min(edge,shoulder),Math.max(edge,shoulder),a.street?'#777f80':'#b8b4a7',.015,false,{kind:'paint'});
-   if(!track.campus&&!a.street&&!['at-1969','gb-1948','us-2022','nl-1948','br-1940','bh-2002','be-1925','sa-2021'].includes(track.id)){
+   const edge=side*half,limit=side*(half+(track.campus?1.8:6.5));if(!['mx-1962','gb-1948','at-1969'].includes(track.id))scene.ribbon(track,Math.min(edge,limit),Math.max(edge,limit),a.ground,-.08,false,{kind:track.id==='sg-2008'?'concrete':['bh-2002','sa-2021'].includes(track.id)?'sand':'grass'});
+   const shoulder=side*(half+(a.street?.65:track.campus?1.4:1.6));if(!['mx-1962','gb-1948','at-1969'].includes(track.id))scene.ribbon(track,Math.min(edge,shoulder),Math.max(edge,shoulder),a.street?'#777f80':'#b8b4a7',.015,false,{kind:'paint'});
+   if(!track.campus&&!a.street&&!['mx-1962','at-1969','gb-1948','us-2022','nl-1948','br-1940','bh-2002','be-1925','sa-2021'].includes(track.id)){
     const lo=side*(half+1.6),hi=side*(half+6.3),kind=a.gravel?'gravel':'asphalt',color=a.gravel?'#c0b79d':'#a0a09a';scene.ribbon(track,Math.min(lo,hi),Math.max(lo,hi),color,.022,false,{kind,mask:this.outsideMask[side]});
     const p=side*(half+1.6),q=side*(half+3);if(track.id!=='jp-1962')scene.ribbon(track,Math.min(p,q),Math.max(p,q),a.runoff,.04,false,{kind:'paint',mask:this.outsideMask[side]});
    }
@@ -84,7 +86,7 @@ export class TrackSurfaces{
    const p=side*(half+2.2+band),q=side*(half+3.2+band);scene.ribbon(track,Math.min(p,q),Math.max(p,q),band<3?'#316a9e':'#a74037',.055,false,{kind:'paint',mask:this.outsideMask[side]});
   }
   if(track.id==='mx-1962'){const mask=track.points.map((_,i)=>i*track.step/track.length>.835&&i*track.step/track.length<.91);scene.ribbon(track,-half,half,'#55595b',.056,false,{kind:'paint',mask});}
-  if(track.id==='br-1940')this.interlagosRunoff();if(track.id==='nl-1948')this.zandvoortRunoff();if(track.id==='us-2022')this.miamiRunoff();if(track.id==='gb-1948')this.silverstoneRunoff();if(track.id==='at-1969')this.redbullringRunoff();
+  if(track.id==='br-1940')this.interlagosRunoff();if(track.id==='nl-1948')this.zandvoortRunoff();if(track.id==='us-2022')this.miamiRunoff();if(track.id==='gb-1948')this.silverstoneRunoff();if(track.id==='at-1969')this.redbullringRunoff();if(track.id==='mx-1962'){this.mexicoRunoff();this.mexicoDressing();}
   this.rubber();this.repairs();
  }
  miamiRunoff(){
@@ -139,6 +141,45 @@ export class TrackSurfaces{
    if(Array.from({length:positions.length/3},(_,i)=>({x:positions[i*3],z:positions[i*3+2]})).some(p=>pitReserved(track,p.x,p.z,5)))continue;
    const faces=[];for(let i=0;i<12;i++){const n=i*2;faces.push(n,n+2,n+1,n+1,n+2,n+3);}
    const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(faces);geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,material);mesh.userData.silverstoneRunoffLettering=corner.turn;this.scene.group.add(mesh);
+  }
+ }
+ mexicoDressing(){
+  const track=this.track,group=this.scene.group,atlas=document.createElement('canvas');atlas.width=1024;atlas.height=1024;const ink=atlas.getContext('2d'),labels=['1','2','3','4','5','6','7','8','S1','S2','SC1','SC2','80','PIT','OUT'],map=new THREE.CanvasTexture(atlas);labels.forEach((text,i)=>{ink.fillStyle='#eee8d7';ink.font='900 130px Arial';ink.textAlign='center';ink.textBaseline='middle';ink.fillText(text,i%4*256+128,Math.floor(i/4)*256+128,245);});map.colorSpace=THREE.SRGBColorSpace;map.needsUpdate=true;const material=new THREE.MeshBasicMaterial({map,transparent:true,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4});this.textures.set('mexico-road-labels',map);this.materials.set('mexico-road-labels',material);
+  const label=(text,p,width=1.4,height=2)=>{const i=labels.indexOf(text),geometry=new THREE.PlaneGeometry(width,height),uv=geometry.attributes.uv;for(let k=0;k<uv.count;k++)uv.setXY(k,(i%4+uv.getX(k))/4,1-(Math.floor(i/4)+1-uv.getY(k))/4);geometry.rotateX(-Math.PI/2);const mesh=new THREE.Mesh(geometry,material);mesh.position.set(p.x,p.y+.105,p.z);mesh.rotation.y=p.heading;mesh.userData.mappedStatic=true;group.add(mesh);};
+  for(let i=0;i<8;i++){const slot=gridSlot(i);label(String(i+1),sample(track,slot.s,slot.offset+(slot.offset<0?1.8:-1.8)));}
+  const linePositions=[],stripe=(s,offset,width,length=.18)=>{for(const [along,across]of [[0,-1],[0,1],[length,-1],[length,-1],[0,1],[length,1]]){const p=sample(track,s+along,offset+across*width/2);linePositions.push(p.x,p.y+.09,p.z);}};
+  for(const [text,s]of [['S1',1998-136],['S2',3605-242]]){stripe(s,0,track.width-.6);label(text,sample(track,s-5,-track.width/2+1.8),2,3);}
+  const pit=pitLayout(track);for(const [text,distance]of [['SC1',-18],['SC2',pit.length+12],['80',12],['PIT',22],['OUT',pit.length-15]]){const p=pitRoadPose(track,distance);if(text.startsWith('SC'))stripe(pit.entry+distance,0,track.width-.6);label(text,p,text.length>2?2.8:2.1,2.2);}
+  const lineGeo=new THREE.BufferGeometry();lineGeo.setAttribute('position',new THREE.Float32BufferAttribute(linePositions,3));const lineMaterial=new THREE.MeshBasicMaterial({color:'#c9d2bb',side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3});this.materials.set('mexico-sector-lines',lineMaterial);group.add(new THREE.Mesh(lineGeo,lineMaterial));
+  // Flush cosmetic tyre marbles and fine oil streaks; these do not add solids.
+  const marble=new THREE.InstancedMesh(new THREE.CircleGeometry(.045,4),new THREE.MeshBasicMaterial({color:'#222729',transparent:true,opacity:.55,depthWrite:false}),600),dummy=new THREE.Object3D();for(let i=0;i<600;i++){const corner=MEXICO_CORNERS[i%MEXICO_CORNERS.length],s=corner.s-70+(i*.618033%1)*100,p=sample(track,s,(i%2?1:-1)*(track.width/2-.7-i%4*.18));dummy.position.set(p.x,p.y+.093,p.z);dummy.rotation.set(-Math.PI/2,p.heading,0,'YXZ');dummy.scale.set(1+i%3*.25,1,1);dummy.updateMatrix();marble.setMatrixAt(i,dummy.matrix);}marble.computeBoundingSphere();group.add(marble);
+  const oil=[];for(const corner of MEXICO_CORNERS.filter(c=>[1,4,6,12].includes(c.turn)))for(let i=0;i<20;i++){const s=corner.s-50+i*1.5,p=sample(track,s,-1),q=sample(track,s+1.5,-.8);oil.push(p.x,p.y+.094,p.z,q.x,q.y+.094,q.z,p.x+.08,p.y+.094,p.z);}const oilGeo=new THREE.BufferGeometry();oilGeo.setAttribute('position',new THREE.Float32BufferAttribute(oil,3));const oilMaterial=new THREE.MeshBasicMaterial({color:'#3c3f36',transparent:true,opacity:.17,side:THREE.DoubleSide,depthWrite:false});this.materials.set('mexico-oil',oilMaterial);group.add(new THREE.Mesh(oilGeo,oilMaterial));
+ }
+ mexicoRunoff(){
+  const track=this.track,half=track.width/2,rows=mexicoBoundaries(track);
+  for(const side of [-1,1])for(const kind of ['asphalt','paint','accent','gravel','grass']){
+   const positions=[],uv=[];
+   const range=p=>kind==='asphalt'?[half,half+p.paved]:kind==='paint'?[half+1.25,half+p.paint]:kind==='accent'?[half+Math.max(1.6,p.paint-.55),half+p.paint-.2]:kind==='gravel'?[half+p.paved,half+p.paved+p.gravel]:[half+p.paved+p.gravel,p.offset];
+   for(let i=0;i<track.points.length;i++){
+    if(!mexicoRunoffAllowed(track,i,side))continue;const j=(i+1)%track.points.length,a=range(rows[side][i]),b=range(rows[side][j]);if(a[1]-a[0]<.08||b[1]-b[0]<.08)continue;
+    const vertices=[[i,a[0]],[j,b[0]],[i,a[1]],[i,a[1]],[j,b[0]],[j,b[1]]].map(([n,o])=>{const p=track.points[n],offset=ribbonOffset(track,n,side*o);return {x:p.x+Math.cos(p.heading)*offset,y:p.y+(kind==='accent'?.054:kind==='paint'?.049:.028),z:p.z-Math.sin(p.heading)*offset};});
+    if(vertices.some(p=>pitReserved(track,p.x,p.z,5)))continue;for(const p of vertices){positions.push(p.x,p.y,p.z);uv.push(p.x/12,p.z/12);}
+   }
+   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,this.material(kind==='accent'?'paint':kind,kind==='accent'?'#cdbb99':kind==='paint'?'#557d72':kind==='gravel'?'#c1b395':kind==='grass'?'#778c62':'#777e7c'));mesh.receiveShadow=true;this.scene.group.add(mesh);
+  }
+  // Original painted venue lettering, embedded in the runoff surface rather
+  // than a floating sign. Subdivide so letters follow the retained road height.
+  const lettering=document.createElement('canvas');lettering.width=1024;lettering.height=256;
+  const ink=lettering.getContext('2d');ink.clearRect(0,0,1024,256);ink.fillStyle='#fff5df';ink.font='italic 900 190px Arial';ink.textAlign='center';ink.textBaseline='middle';ink.fillText('CIUDAD',512,132,960);
+  const map=new THREE.CanvasTexture(lettering);map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=8;this.textures.set('mexico-lettering',map);
+  const material=new THREE.MeshBasicMaterial({map,transparent:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2});this.materials.set('mexico-lettering',material);
+  for(const corner of MEXICO_CORNERS.filter(c=>[1,4].includes(c.turn))){
+   const length=30,start=corner.s-length/2,indices=Array.from({length:13},(_,i)=>Math.floor(wrap(start+i*length/12,track.length)/track.step)),paint=Math.min(...indices.map(i=>rows[corner.side][i].paved)),height=Math.min(8,paint-3.5);if(height<2.5||indices.some(i=>!mexicoRunoffAllowed(track,i,corner.side)))continue;
+   const middle=half+1.7+(paint-1.7)/2,positions=[],uv=[];
+   for(let i=0;i<=12;i++)for(const across of [-1,1]){const at=start+i*length/12,p=sample(track,at,corner.side*(middle+across*height/2));positions.push(p.x,p.y+.065,p.z);uv.push(i/12,(across+1)/2);}
+   if(Array.from({length:positions.length/3},(_,i)=>({x:positions[i*3],z:positions[i*3+2]})).some(p=>pitReserved(track,p.x,p.z,5)))continue;
+   const faces=[];for(let i=0;i<12;i++){const n=i*2;faces.push(n,n+2,n+1,n+1,n+2,n+3);}
+   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(faces);geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,material);mesh.userData.mexicoRunoffLettering=corner.turn;this.scene.group.add(mesh);
   }
  }
  redbullringRunoff(){
@@ -234,13 +275,13 @@ export class TrackSurfaces{
   for(const w of walls){const a=w.a,b=w.b,h=w.height,len=Math.hypot(b.x-a.x,b.z-a.z),u=distance/.6,v=(distance+len)/.6;distance+=len;
    for(const [p,t,y] of [[a,u,0],[b,v,0],[b,v,h],[a,u,0],[b,v,h],[a,u,h]]){positions.push(p.x,p.y+y,p.z);uv.push(t,y/.6);}
   }
-  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,this.material('fence',color));mesh.receiveShadow=true;this.scene.group.add(mesh);
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,this.material('fence',color));mesh.userData.wallSolids=walls;mesh.receiveShadow=true;this.scene.group.add(mesh);
  }
  wet(wetness){
   const jeddah=this.track.id==='sa-2021',singapore=['sg-2008','us-2023'].includes(this.track.id);
   for(const m of this.materials.values()){
    const kind=m.userData.surfaceKind;
-   if(['at-1969','gb-1948','us-2022','nl-1948','br-1940'].includes(this.track.id)&&['grass','gravel','sand'].includes(kind)){m.userData.interlagosDryColor??=m.color.clone();m.color.copy(m.userData.interlagosDryColor).multiplyScalar(1-wetness*.2);m.roughness=.94-wetness*.26;}
+   if(['mx-1962','at-1969','gb-1948','us-2022','nl-1948','br-1940'].includes(this.track.id)&&['grass','gravel','sand'].includes(kind)){m.userData.interlagosDryColor??=m.color.clone();m.color.copy(m.userData.interlagosDryColor).multiplyScalar(1-wetness*.2);m.roughness=.94-wetness*.26;}
    if(kind==='asphalt'){const coat=Math.max(singapore?.15:jeddah?.24:0,wetness*.72);if((m.clearcoat>0)!==(coat>0))m.needsUpdate=true;m.roughness=(singapore?.72:jeddah?.74:.86)-wetness*.48;m.clearcoat=coat;m.bumpScale=.018-wetness*.01;m.color.set(wetness?'#939b9f':'#ffffff');}
    else if(kind==='concrete'){m.roughness=(jeddah?.58:.92)-wetness*.18;if(jeddah||singapore)m.metalness=.06;}
    else if(kind==='paint'){m.roughness=(jeddah?.42:.9)-wetness*.28;if(jeddah||singapore)m.metalness=.12;}

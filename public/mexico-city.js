@@ -1,79 +1,94 @@
+import {interlagosContains,localInterlagos} from '/shared/interlagos-scenery.mjs';
 import * as THREE from '/vendor/three.module.js';
-import {sample,terrainHeight} from '/shared/tracks.mjs';
-import {safeBoxSite,roadClearance} from '/shared/venues.mjs';
-import {pitLayout} from '/shared/pit-layout.mjs';
+import {planMexico,mexicoTerrainHeight,mexicoConstrainGround} from '/shared/mexico-scenery.mjs';
+import {MEXICO_ARCHITECTURE} from './data/mexico-architecture.js';
 import {addVegetation} from './vegetation.js';
-import {trackSign,addBrakingBoards,addFacadePanels} from './track-furniture.js';
-import {buildingFacade} from './campus-buildings.js';
-const concrete='#aaa99f',steel='#767c7d';
-const material=(color,extra={})=>new THREE.MeshStandardMaterial({color,roughness:.82,...extra});
-function placed(scene,p){const group=new THREE.Group();group.position.set(p.x,p.y,p.z);group.rotation.y=p.heading;scene.group.add(group);return group;}
-function sign(group,text,w,h,x,y,z,color='#155448',ink='#f3ede0'){
- const panel=trackSign(text,w,h,color,ink);panel.position.set(x,y,z);panel.userData.mappedStatic=true;group.add(panel);return panel;
-}
-function crowd(group,rows,columns,length,side=1){
- const count=rows*columns,dummy=new THREE.Object3D(),people=new THREE.InstancedMesh(new THREE.CapsuleGeometry(.2,.35,2,5),material('#ffffff'),count);
- for(let i=0;i<count;i++){const row=Math.floor(i/columns);dummy.position.set(side*(-19+row*1.3),2.6+row*.63,-length/2+(i%columns)*length/columns);dummy.rotation.set(0,0,0);dummy.scale.setScalar(.9+(i%4)*.035);dummy.updateMatrix();people.setMatrixAt(i,dummy.matrix);people.setColorAt(i,new THREE.Color(['#e8e2d3','#237044','#b72f36','#e78937','#353e49','#285f8c'][i%6]));}people.computeBoundingSphere();group.add(people);
- for(let i=0;i<9;i++){
-  const x=side*(-16+i%4*4),y=5+i%4*1.8,z=-length*.43+i*length*.1;
-  const flag=new THREE.Group();flag.position.set(x,y,z);group.add(flag);
-  for(let band=0;band<3;band++){const m=new THREE.Mesh(new THREE.PlaneGeometry(.45,.8),material(['#176b40','#eae8dd','#bf3437'][band],{side:THREE.DoubleSide}));m.position.x=band*.45;flag.add(m);}sign(flag,'•',.2,.3,.45,0,.02,'#eae8dd','#866a3c');
-  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,2,4),material(steel));pole.position.set(-.22,-.6,0);flag.add(pole);
+const stadiumOutlines=new WeakMap();
+export function mexicoGroundTint(track,x,z){if(!stadiumOutlines.has(track))stadiumOutlines.set(track,MEXICO_ARCHITECTURE.stadiumReference.points.map(p=>localInterlagos(track,p)));return interlagosContains(stadiumOutlines.get(track),x,z)?'#a4a797':null;}
+const jackets=['#28754e','#e8e4d7','#bd3742','#d98a2f','#c54d81','#3f688c','#e8e3d5'];
+export function mexicoGround(track,x,z,cell=20){let y=mexicoTerrainHeight(track,x,z,cell);const plan=planMexico(track,MEXICO_ARCHITECTURE);for(const site of plan.foundations){const c=site.groundCos,s=site.groundSin,dx=Math.abs((x-site.x)*c-(z-site.z)*s)-site.w/2,dz=Math.abs((x-site.x)*s+(z-site.z)*c)-site.d/2,blend=1-Math.max(0,Math.min(1,Math.max(dx,dz)/4));if(blend)y+=(site.y-.14-y)*blend;}return mexicoConstrainGround(track,x,z,y,cell);}
+export function addMexicoCity(scene,track){
+ const plan=planMexico(track,MEXICO_ARCHITECTURE),materials=new Map(),labels=new Map(),crowds=[],flags=[],umbrellas=[],flowers=[],festival=[],sombreros=[],confettiSites=[],spareTyres=[],poles=[],houses=[],panels=[],smokeSites=[],grassSites=[],clock={value:0},dummy=new THREE.Object3D(),tint=new THREE.Color();
+ const mat=(color,extra={})=>{if(extra.map)return new THREE.MeshStandardMaterial({color,roughness:.8,...extra});const key=JSON.stringify([color,extra]);if(!materials.has(key))materials.set(key,new THREE.MeshStandardMaterial({color,roughness:.82,...extra}));return materials.get(key);};
+ function group(site){const g=new THREE.Group();g.position.set(site.x,site.y,site.z);g.rotation.y=site.heading||0;g.userData.mexicoSite=site.id;scene.group.add(g);return g;}
+ function mesh(parent,geometry,material,x=0,y=0,z=0){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.userData.mappedStatic=true;m.receiveShadow=true;parent.add(m);return m;}
+ const signCanvas=document.createElement('canvas');signCanvas.width=2048;signCanvas.height=4096;const signInk=signCanvas.getContext('2d'),signMap=new THREE.CanvasTexture(signCanvas);signMap.colorSpace=THREE.SRGBColorSpace;signMap.anisotropy=8;const signMaterial=new THREE.MeshStandardMaterial({map:signMap,roughness:.8,side:THREE.FrontSide});const signBack=mat('#84908b',{side:THREE.BackSide});
+ function sign(parent,text,w,h,x,y,z,angle=0,color='#253c57'){const key=text+color;if(!labels.has(key)){const slot=labels.size;if(slot>=128)throw Error('Mexico sign atlas capacity exceeded');const cellLeft=slot%4*512,cellTop=Math.floor(slot/4)*128;signInk.fillStyle=color;signInk.fillRect(cellLeft,cellTop,512,128);signInk.fillStyle='#f4eee0';signInk.font='bold 82px Arial';signInk.textAlign='center';signInk.textBaseline='middle';signInk.fillText(text,cellLeft+256,cellTop+68,488);labels.set(key,{left:cellLeft,top:cellTop});}const {left,top}=labels.get(key),geometry=new THREE.PlaneGeometry(w,h),uv=geometry.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,(left+uv.getX(i)*512)/2048,1-(top+(1-uv.getY(i))*128)/4096);const m=mesh(parent,geometry,signMaterial,x,y,z);m.rotation.y=angle;const back=mesh(parent,geometry.clone(),signBack,x,y,z);back.rotation.y=angle;return m;}
+ const world=(site,x,y,z)=>({owner:site.id,x:site.x+Math.cos(site.heading)*x+Math.sin(site.heading)*z,y:site.y+y,z:site.z-Math.sin(site.heading)*x+Math.cos(site.heading)*z,heading:site.heading});
+ function instances(geometry,material,sites,pose,cell=1100){const buckets=new Map();for(const p of sites){const key=Math.floor(p.x/cell)+':'+Math.floor(p.z/cell);if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(p);}const meshes=[];for(const chunk of buckets.values()){const m=new THREE.InstancedMesh(geometry,material,chunk.length);m.userData.mexicoOwners=chunk.map(p=>p.owner||p.id||null);chunk.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.heading||0,0);dummy.scale.set(1,1,1);pose(p,i,dummy);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);if(p.color)m.setColorAt(i,tint.set(p.color));});m.computeBoundingSphere();m.receiveShadow=true;scene.group.add(m);meshes.push(m);}return meshes;}
+ for(const site of plan.sites){
+  if(site.kind==='stadium'){
+   const g=group(site),rows=site.rows,local=(f,across,height)=>{across=across/site.depth*(site.depthA+(site.depthB-site.depthA)*f);const wx=site.a.x+(site.b.x-site.a.x)*f+(site.na.x+(site.nb.x-site.na.x)*f)*across,wz=site.a.z+(site.b.z-site.a.z)*f+(site.na.z+(site.nb.z-site.na.z)*f)*across,dx=wx-site.x,dz=wz-site.z;return {x:dx*Math.cos(site.heading)-dz*Math.sin(site.heading),y:height,z:dx*Math.sin(site.heading)+dz*Math.cos(site.heading)};},patch=(a,b,height,color)=>{const q=[local(0,a,height),local(1,a,height),local(0,b,height),local(1,b,height)],positions=[0,1,2,2,1,3].flatMap(i=>[q[i].x,q[i].y,q[i].z]),geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();mesh(g,geometry,mat(color,{side:THREE.DoubleSide}));},length=(Math.hypot(site.b.x-site.a.x,site.b.z-site.a.z)+Math.hypot(site.b.x+site.nb.x*site.depth-site.a.x-site.na.x*site.depth,site.b.z+site.nb.z*site.depth-site.a.z-site.na.z*site.depth))/2,columns=Math.max(1,Math.floor(length/.85));
+   for(let row=0;row<rows;row++){const across=(row+.5)*site.depth/rows,y=1.1+row*.52+(row>=17?1.5:0);patch(row*site.depth/rows,(row+1)*site.depth/rows,y,row===16?'#b6b1a3':row%3===0?'#a65755':'#aaa99f');for(let col=0;col<columns;col++){const p=local((col+.5)/columns,across,y+.72),person={...world(site,p.x,p.y,p.z),color:jackets[(col+row)%jackets.length],hat:row%3===0};crowds.push(person);if((row+col)%13===0)sombreros.push(person);if((row+col)%27===0)umbrellas.push({...person,y:person.y+.9});}}
+   // A concourse gap separates the lower/upper tiers. Curved canopy patches
+   // use the same checked corners as the complete stand reservation.
+   const roofPositions=[];for(let i=0;i<10;i++){const a=i/10,b=(i+1)/10,at=(f,u)=>local(f,u*site.depth,rows*.52+6+Math.sin(u*Math.PI)*2.2),q=[at(0,a),at(1,a),at(0,b),at(1,b)];for(const k of [0,1,2,2,1,3])roofPositions.push(q[k].x,q[k].y,q[k].z);}const roofGeo=new THREE.BufferGeometry();roofGeo.setAttribute('position',new THREE.Float32BufferAttribute(roofPositions,3));roofGeo.computeVertexNormals();mesh(g,roofGeo,mat('#b9a99b',{side:THREE.DoubleSide,metalness:.16}));
+   const rear=local(.5,site.depth-.4,0),roofHeight=rows*.52+6;scene.box(.18,roofHeight,.18,'#8b918d',rear.x,roofHeight/2,rear.z,g);const mid=local(.5,site.depth*.5,10);if(Number(site.id.split('-').at(-1))%15===0){flags.push(world(site,mid.x,mid.y,mid.z));festival.push(world(site,mid.x,mid.y-1.5,mid.z));}for(const f of [.2,.5,.8]){const flower=local(f,site.depth*.48,10);flowers.push(world(site,flower.x,flower.y,flower.z));}
+  }
+  if(site.kind==='arena'||site.kind==='velodrome'){
+   const g=group(site),radius=site.circleRadius?site.circleRadius-3:Math.min(site.w,site.d)*.36,dome=mesh(g,new THREE.SphereGeometry(radius,28,10,0,Math.PI*2,0,Math.PI/2),mat(site.kind==='arena'?'#aa7e5b':'#7da49a',{metalness:.23,roughness:.64}),0,5,0);dome.scale.y=site.kind==='arena'?.3:.35;if(site.circleRadius)mesh(g,new THREE.CylinderGeometry(site.circleRadius-1,site.circleRadius-1,5,36),mat('#aaa89b'),0,2.5,0);else scene.box(site.w-5,5,site.d-5,'#aaa89b',0,2.5,0,g);for(let i=0;i<16;i++){const a=i*Math.PI/8,ra=radius*.9;scene.box(.14,3,.14,'#c3c3b5',Math.cos(a)*ra,6,Math.sin(a)*ra,g);}
+  }
+  if(site.kind==='utility'){const g=group(site);for(const z of [-site.d*.4,0,site.d*.4]){scene.box(.18,11,.18,'#777b70',0,5.5,z,g);scene.box(3.6,.12,.12,'#898d80',0,10,z,g);}for(const x of [-1.3,0,1.3]){const points=[];for(let i=0;i<=32;i++){const z=-site.d*.4+i*site.d*.8/32;points.push(new THREE.Vector3(x,9.7-Math.sin(i/16*Math.PI)**2*.9,z));}const geo=new THREE.BufferGeometry().setFromPoints(points),wire=new THREE.Line(geo,new THREE.LineBasicMaterial({color:'#626e6d'}));g.add(wire);}}
+  if(site.kind==='screen'){const g=group(site);scene.box(1,8,site.d-3,'#293e44',0,11,0,g);sign(g,'CIUDAD · LIVE',site.d-4,6.5,1,11,0,Math.PI/2);for(const z of [-site.d*.3,site.d*.3])scene.box(.25,12,.25,'#7b8989',0,6,z,g);}
+  if(site.kind==='podium'){const g=group(site);scene.box(site.w-3,1.6,site.d-3,'#a33d5d',0,.8,0,g);scene.box(site.w-3,6,.4,'#2c6b54',0,4,-site.d/2+2,g);sign(g,'FIESTA · PODIUM',site.w-4,3,0,4,-site.d/2+2.25);}
+  if(site.kind==='medical'){const g=group(site);scene.box(site.w-2,6,site.d-2,'#d4d0bf',0,3,0,g);sign(g,'MEDICAL',site.w-3,1.4,0,4,-site.d/2+.9,Math.PI);scene.box(2.6,2.5,5.6,'#ece9dc',0,1.3,0,g);scene.box(2.7,.35,1.1,'#4c8c74',0,1.8,0,g);}
+  if(site.kind==='field'){const g=group(site);scene.box(site.w-1,.03,site.d-1,'#5a8051',0,0,0,g);for(const x of [-site.w/2+2,site.w/2-2])scene.box(.1,.025,site.d-4,'#d3d6bd',x,.03,0,g);for(const z of [-site.d/2+2,0,site.d/2-2])scene.box(site.w-4,.025,.1,'#d3d6bd',0,.03,z,g);}
+  if(site.kind==='fan'){const g=group(site);scene.box(site.w-2,.035,site.d-2,'#9f9d8f',0,-.04,0,g);for(let row=0;row<8;row++)for(let col=0;col<8;col++){const p=world(site,(col-3.5)*5,1,(row-3.5)*6);crowds.push({...p,color:jackets[(row+col)%jackets.length],hat:true});if((row+col)%5===0)sombreros.push(p);}for(const z of [-site.d*.35,site.d*.35]){festival.push(world(site,0,5,z));for(const x of [-site.w*.35,site.w*.35]){flowers.push(world(site,x,1,z));flags.push(world(site,x,6,z));poles.push(world(site,x,0,z));}}smokeSites.push(world(site,site.w*.3,5,0));confettiSites.push(world(site,0,5,0));sign(g,'FIESTA DE VELOCIDAD',site.w*.8,2,0,3,-site.d*.45,Math.PI);}
+  if(site.kind==='banking'){const g=group(site),geometry=new THREE.PlaneGeometry(site.w-.2,site.d-.2);geometry.rotateX(-Math.PI/2);const verts=geometry.attributes.position;for(let i=0;i<verts.count;i++)verts.setY(i,.15+(verts.getX(i)/site.w+.5)*.55);geometry.computeVertexNormals();mesh(g,geometry,mat('#929487'));}
+  if(site.kind==='pits'){
+   const g=group(site),front=-site.side,w=site.w-5,d=site.d-5;
+   scene.box(w,1.8,d,'#aaa99b',0,-.9,0,g);scene.box(w,6.5,d,'#c1c8c6',0,3.25,0,g);scene.box(w*.87,3.2,d*.96,'#63828c',0,8.5,0,g);
+   for(let i=0;i<24;i++){const z=-d/2+(i+.5)*d/24;scene.box(w+1,.3,d/24+.1,'#d8ddda',0,11.2+(i%4)*.35,z,g);scene.box(.16,.7,d/24,'#38765a',front*(w/2+.1),6.9,z,g);scene.box(.12,3.1,.15,'#bfcac6',front*(w*.435+.1),8.6,z,g);}
+   for(let i=0;i<33;i++){const z=-d*.47+i*d*.94/32;scene.box(.15,4.3,7.6,'#3b505b',front*(w/2+.1),2.2,z,g);sign(g,String(i+1).padStart(2,'0'),2,.8,front*(w/2+.2),5.1,z,front*Math.PI/2);}
+   scene.box(4,1.2,17,'#48718b',front*(w/2-2),1,d*.3,g);sign(g,'CIUDAD · PIT & PADDOCK',55,1.8,front*(w/2+.2),6,0,front*Math.PI/2);sign(g,'PODIUM',16,1.4,front*(w/2+.2),2.6,d*.3,front*Math.PI/2);sign(g,'PIT LANE · 80',22,1.4,front*(w/2+.2),4.8,-d*.37,front*Math.PI/2);
+   for(const z of [-d*.4,0,d*.4])poles.push(world(site,-front*(w/2-2),0,z));
+  }
+  if(site.kind==='hospitality'){
+   const g=group(site),w=site.w-3,d=site.d-4,height=7,front=-site.side;
+   scene.box(w,height,d,'#c5c6bb',0,height/2,0,g);scene.box(w+.4,.25,d+.4,'#78868b',0,height+.15,0,g);
+   scene.box(.15,2.8,d*.84,'#607d8b',front*(w/2+.1),height-1.5,0,g);for(let z=-d*.4;z<d*.4;z+=6)scene.box(.2,3,.14,'#b7c5bf',front*(w/2+.17),height-1.5,z,g);
+   sign(g,'PARK HOSPITALITY',d*.8,1.5,front*(w/2+.2),3,0,front*Math.PI/2);
+  }
+  if(site.kind==='stand'){
+   const g=group(site),rows=site.rows,length=site.d-8,cols=Math.floor(length/1.05),step=(site.w-8)/rows,isBank=false;
+   for(let row=0;row<rows;row++){const x=site.side*(-site.w/2+4+row*step),y=.7+row*(isBank?.3:.54);scene.box(step+.04,isBank?.4:.55,length,isBank?'#789164':'#a9b1b0',x,y,0,g);if(!isBank)scene.box(step*.8,.1,length,row%3?'#63798b':'#888c82',x,y+.34,0,g);for(let col=0;col<cols;col++){if(col%27===0)continue;const p={...world(site,x,y+.72,-length/2+(col+.5)*length/cols),color:jackets[(col+row*3)%jackets.length],hat:(col+row)%4===0};crowds.push(p);if((row+col*3)%23===0)umbrellas.push({...p,y:p.y+.9});}}
+   if(site.roof&&!isBank){const h=rows*.54+4;scene.box(site.w-1,.3,site.d-1,'#cfd4d0',0,h,0,g);for(let z=-length/2;z<length/2;z+=20){scene.box(.22,h,.22,'#7e8f91',site.side*(site.w/2-2),h/2,z,g);scene.box(site.w-2,.14,.14,'#a8b6b1',0,h-.4,z,g);}}
+   for(let i=0;i<Math.floor(length/21);i++){const x=site.side*(-site.w/2+5+i%rows*step),y=3+i%rows*.5,z=-length/2+5+i*21;flags.push(world(site,x,y,z));scene.box(.03,2.5,.03,'#93a3a1',x,y-.9,z,g);}
+   sign(g,site.label||'GENERAL ADMISSION',Math.min(length,32),1,-site.side*(site.w/2-1),2.2,0,-site.side*Math.PI/2);if(isBank)smokeSites.push(world(site,site.side*(site.w/2-5),rows*.3+3,0));
+   // Generic video screen stays wholly inside the same stand envelope.
+   scene.box(.25,2.8,4.8,'#253e4e',-site.side*(site.w/2-2),3.8,0,g);sign(g,'APEX 25 · LIVE',4.5,2.4,-site.side*(site.w/2-1.8),3.8,0,-site.side*Math.PI/2);
+  }
+  if(site.kind==='official'){
+   const g=group(site),fit=site.approximateScale||1;g.scale.set(fit,1,fit);scene.box(4.5,.2,5,'#c0c8ba',0,.1,0,g);scene.box(4.6,.2,5.1,'#b9c3bd',0,3,0,g);for(const x of [-2,2])for(const z of [-2,2])scene.box(.1,3,.1,'#718583',x,1.5,z,g);
+   for(let i=0;i<2;i++){scene.box(.4,.65,.3,'#ec8129',i*.65,1,0,g);scene.box(.25,.65,.25,'#d97526',i*.65,.4,0,g);mesh(g,new THREE.SphereGeometry(.16,6,4),mat('#e8ebdd'),i*.65,1.55,0);}
+   scene.box(.1,3,.1,'#6c8280',3,1.5,0,g);scene.box(1.6,1,.15,'#2e4848',3,2.8,0,g);panels.push({...world(site,3*fit,2.8,-.09*fit),heading:site.heading+Math.PI,s:site.s});
+   for(let pile=0;pile<2;pile++)for(let tyre=0;tyre<4;tyre++)spareTyres.push(world(site,(-3+pile*1.1)*fit,.3+tyre*.24,-5*fit));scene.box(.6,1.2,.6,'#b94b36',-3,.6,-3,g);sign(g,'FIRE',1,.4,-3,1.5,-2.65);scene.box(2.1,.08,1.1,'#686d68',-1,.05,-4,g);for(let z=-4;z<5;z+=2)scene.box(.04,.04,1.8,'#565f60',-3,.08,z,g);if(site.crane){scene.box(3,1,4,'#bdab64',7,1,0,g);scene.box(.55,11,.55,'#6b837c',7,6,0,g);const arm=scene.box(.25,.3,12,'#98aaa2',7,10,0,g);arm.rotation.x=-.25;scene.box(.8,.6,.9,'#2f4855',7,11.4,5.8,g);}else scene.box(4,2,5,'#bdc8bd',-1,1.15,4,g);
+  }
+  if(site.kind==='board'||site.kind==='banner'){const g=group(site),banner=site.kind==='banner';sign(g,site.label,banner?site.d-1:1.35,banner?1.2:1.05,0,1.5,0,banner?-site.side*Math.PI/2:Math.PI);scene.box(.08,2,.08,'#758c88',0,1,0,g);}
+  if(site.kind==='grasspatch')for(let i=0;i<80;i++)grassSites.push({...world(site,(i*.618033%1-.5)*(site.w-2),0,(i*.38197%1-.5)*(site.d-2)),color:i%17===0?'#cfb25b':'#6b964f'});if(site.kind==='house')houses.push(site);
  }
+ instances(new THREE.CapsuleGeometry(.17,.32,2,4),mat('#ffffff'),crowds,(p,i,o)=>{o.position.y+=.35;o.rotation.z=.04*Math.sin(i);});instances(new THREE.SphereGeometry(.12,5,4),mat('#b6987a'),crowds,(p,i,o)=>{o.position.y+=.78;});instances(new THREE.CylinderGeometry(.19,.16,.07,7),mat('#aeb4a6'),crowds.filter(p=>p.hat),(p,i,o)=>{o.position.y+=.9;});
+ instances(new THREE.CylinderGeometry(.38,.36,.045,9),mat('#c6a868'),sombreros,(p,i,o)=>{o.position.y+=.99;});instances(new THREE.ConeGeometry(.22,.3,9),mat('#d3ba7d'),sombreros,(p,i,o)=>{o.position.y+=1.16;});
+ instances(new THREE.SphereGeometry(.18,6,4),mat('#e6a23c'),flowers,(p,i,o)=>{o.scale.set(1.5,1,1);});
+ const festiveCanvas=document.createElement('canvas');festiveCanvas.width=256;festiveCanvas.height=64;const festiveInk=festiveCanvas.getContext('2d');for(let i=0;i<8;i++){festiveInk.fillStyle=['#b9477f','#d99a34','#397d65','#e0ddd0'][i%4];festiveInk.fillRect(i*32,0,30,60);festiveInk.globalCompositeOperation='destination-out';for(const y of [15,35])for(const x of [9,22]){festiveInk.beginPath();festiveInk.arc(i*32+x,y,4,0,Math.PI*2);festiveInk.fill();}festiveInk.globalCompositeOperation='source-over';}const festiveMap=new THREE.CanvasTexture(festiveCanvas);festiveMap.colorSpace=THREE.SRGBColorSpace;instances(new THREE.PlaneGeometry(3,1),mat('#ffffff',{map:festiveMap,side:THREE.DoubleSide,alphaTest:.3}),festival,(p,i,o)=>{});
+ const spareGeometry=new THREE.TorusGeometry(.33,.12,5,9);spareGeometry.rotateX(Math.PI/2);instances(spareGeometry,mat('#313a38'),spareTyres,(p,i,o)=>{});
+ instances(new THREE.PlaneGeometry(6,6),mat('#a6a99c',{side:THREE.DoubleSide}),plan.apron,(p,i,o)=>{o.rotation.x=-Math.PI/2;});
+ const wetUmbrellas=instances(new THREE.ConeGeometry(.62,.3,7),mat('#718797'),umbrellas,(p,i,o)=>{});
+ instances(new THREE.CylinderGeometry(.1,.15,13,6),mat('#8b9d98'),poles,(p,i,o)=>{o.position.y+=6.5;});instances(new THREE.BoxGeometry(3.2,.25,1.4),mat('#d4ddd3'),poles,(p,i,o)=>{o.position.y+=13;});
+ instances(new THREE.BoxGeometry(1,1,1),mat('#a69984'),houses,(p,i,o)=>{o.scale.set(p.w-2,p.height,p.d-2);o.position.y+=p.height/2;},2400);const roofGeometry=new THREE.ConeGeometry(1,1,4);roofGeometry.rotateY(Math.PI/4);instances(roofGeometry,mat('#75665e'),houses,(p,i,o)=>{o.scale.set((p.w-1)*.68,3,(p.d-1)*.68);o.position.y+=p.height+1.5;},2400);
+ addVegetation(scene,track,scene.profile,{palms:false,sites:plan.trees.map(p=>({...p,angle:p.heading}))});
+ const blade=new THREE.BufferGeometry(),bladePoints=[];for(let j=0;j<3;j++){const a=j*Math.PI/3;bladePoints.push(-Math.cos(a)*.11,0,-Math.sin(a)*.11,Math.cos(a)*.11,0,Math.sin(a)*.11,.035,.5+j*.08,.025);}blade.setAttribute('position',new THREE.Float32BufferAttribute(bladePoints,3));blade.computeVertexNormals();instances(blade,mat('#ffffff',{side:THREE.DoubleSide}),grassSites,(p,i,o)=>{o.position.y=mexicoGround(track,p.x,p.z)+.12;o.rotation.y=i*1.4;o.scale.setScalar(.7+i%5*.12);});
+ // Public-domain national flag motif; no team or commercial artwork.
+ const flagCanvas=document.createElement('canvas');flagCanvas.width=160;flagCanvas.height=96;const ink=flagCanvas.getContext('2d');for(let band=0;band<3;band++){ink.fillStyle=['#176643','#f1eadd','#b6363d'][band];ink.fillRect(band*160/3,0,160/3,96);}
+ const flagMap=new THREE.CanvasTexture(flagCanvas);flagMap.colorSpace=THREE.SRGBColorSpace;const cloth=mat('#ffffff',{map:flagMap,side:THREE.DoubleSide});cloth.onBeforeCompile=shader=>{shader.uniforms.mexicoClock=clock;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float mexicoClock;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.z+=sin(position.x*5.0+mexicoClock*2.3+instanceMatrix[3].x*.02)*.17*uv.x;');};cloth.customProgramCacheKey=()=> 'mexico-flags-v1';instances(new THREE.PlaneGeometry(1.4,.9,6,2),cloth,flags.filter((p,i)=>i%4!==0),(p,i,o)=>{o.position.x+=.7;});
+ instances(new THREE.PlaneGeometry(1.4,.9,6,2),mat('#ed8a32',{side:THREE.DoubleSide}),flags.filter((p,i)=>i%4===0),(p,i,o)=>{o.position.x+=.7;});
+ const led=new THREE.InstancedMesh(new THREE.PlaneGeometry(1.4,.8),new THREE.MeshBasicMaterial({color:'#ffffff',side:THREE.DoubleSide,toneMapped:false}),panels.length);panels.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.heading,0);dummy.scale.set(1,1,1);dummy.updateMatrix();led.setMatrixAt(i,dummy.matrix);led.setColorAt(i,tint.set('#39d28c'));});led.computeBoundingSphere();scene.group.add(led);
+ if(plan.bridge){const bridge=plan.bridge,g=group({...bridge,id:'footbridge-deck',y:bridge.deckY});scene.box(bridge.length+4,.5,bridge.width,'#a4aaa3',0,0,0,g);for(const z of [-bridge.width/2,bridge.width/2])scene.box(bridge.length+4,1.3,.09,'#7d8d8d',0,.8,z,g);for(const pier of bridge.supports){const x=(pier.x-bridge.x)*Math.cos(bridge.heading)-(pier.z-bridge.z)*Math.sin(bridge.heading),height=bridge.deckY-pier.y;scene.box(2.2,height,3.5,'#8a9693',x,-height/2,0,g);}sign(g,'PARK WALKWAY',Math.min(30,bridge.length-2),1.1,0,1,-bridge.width/2-.1,Math.PI);}
+ const smoke=new THREE.ShaderMaterial({uniforms:{time:clock,opacity:{value:1}},transparent:true,depthWrite:false,side:THREE.DoubleSide,vertexShader:'uniform float time;varying vec2 vUv;void main(){vUv=uv;vec3 p=position;p.x+=sin(time*.7+p.y)*.4;gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}',fragmentShader:'uniform float time;uniform float opacity;varying vec2 vUv;void main(){float a=sin(vUv.x*3.14159)*sin(vUv.y*3.14159);gl_FragColor=vec4(1.0,.38,.08,a*.17*opacity*(.5+.5*sin(time*.2)));}'});
+ instances(new THREE.PlaneGeometry(5,7,5,5),smoke,smokeSites,(p,i,o)=>{});
+ const skullCanvas=document.createElement('canvas');skullCanvas.width=skullCanvas.height=128;const skullInk=skullCanvas.getContext('2d');skullInk.fillStyle='#b54a7b';skullInk.fillRect(0,0,128,128);skullInk.fillStyle='#eee3ca';skullInk.beginPath();skullInk.ellipse(64,52,37,39,0,0,Math.PI*2);skullInk.fill();skullInk.fillRect(40,65,48,35);skullInk.fillStyle='#34394a';for(const x of [49,79]){skullInk.beginPath();skullInk.arc(x,48,10,0,Math.PI*2);skullInk.fill();}for(let x=46;x<85;x+=10)skullInk.fillRect(x,81,4,12);skullInk.fillRect(61,63,6,9);const skullMap=new THREE.CanvasTexture(skullCanvas);skullMap.colorSpace=THREE.SRGBColorSpace;instances(new THREE.PlaneGeometry(2,2),mat('#ffffff',{map:skullMap,side:THREE.DoubleSide}),confettiSites,(p,i,o)=>{o.position.y=2.3;});
+ const confettiMaterial=new THREE.ShaderMaterial({uniforms:{time:clock},transparent:true,side:THREE.DoubleSide,vertexShader:'uniform float time;void main(){vec3 p=position;p.y+=mod(time*.7+instanceMatrix[3].x,4.0);p.x+=sin(time+instanceMatrix[3].z)*.5;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(p,1.0);}',fragmentShader:'void main(){gl_FragColor=vec4(.9,.5,.25,.65);}'});instances(new THREE.PlaneGeometry(.08,.14),confettiMaterial,confettiSites.flatMap(p=>Array.from({length:35},(_,i)=>({...p,x:p.x+Math.sin(i*2.4)*4,z:p.z+Math.cos(i*2.4)*4}))),(p,i,o)=>{});
+ signMap.needsUpdate=true;
+ let last=0;scene.environmentFx={frame(time,cars){if(time-last<80)return;last=time;clock.value=time*.001;if(scene.scene)scene.scene.backgroundRotation.y=time*.000002;for(const [i,p]of panels.entries()){const caution=cars.some(c=>!c.finished&&!c.retired&&(c.offtrack||c.sliding)&&Math.min(Math.abs(c.s-p.s),track.length-Math.abs(c.s-p.s))<160);led.setColorAt(i,tint.set(caution?(Math.floor(time/350)%2?'#edca42':'#655a2d'):'#39d28c'));}led.instanceColor.needsUpdate=true;},setConditions(w){for(const m of wetUmbrellas)m.visible=w>.1;smoke.uniforms.opacity.value=1-w;},dispose(){if(scene.scene)scene.scene.backgroundRotation.y=0;}};
+ scene.group.userData.mexicoPlan=plan;scene.group.userData.mexicoBudget={spectators:crowds.length,trees:plan.trees.length,grassTufts:grassSites.length,flags:flags.length,festivalPanels:festival.length,flowers:flowers.length,sombreros:sombreros.length};return scene.profile;
 }
-function stand(scene,track,s,side,length=155,rows=26,roof=false){
- const p=safeBoxSite(track,s,23,length/2,side,16),g=placed(scene,p);
- // Two opposing rectilinear stadium banks leave the genuine entry and exit openings clear.
- for(let row=0;row<rows;row++){
-  scene.box(1.35,.65,length,concrete,side*(-19+row*1.3),1.8+row*.63,0,g);
-  scene.box(1.25,.12,length,'#a85a49',side*(-19+row*1.3),2.16+row*.63,0,g);
- }
- for(let z=-length/2;z<=length/2;z+=18){scene.box(.45,rows*.63+2,.45,concrete,side*15,(rows*.63+2)/2,z,g);scene.box(35,.14,1.5,'#d3d0c5',side*-2,2.2,z,g);}
- if(roof){const roofHeight=rows*.63+6;scene.box(49,.38,length+6,'#d3d5ce',0,roofHeight,0,g);for(let z=-length/2;z<=length/2;z+=24)scene.box(.25,roofHeight,.25,steel,side*21,roofHeight/2,z,g);}
- crowd(g,rows,Math.floor(length/1.15),length,side);
- const banner=sign(g,'MÉXICO · ESTADIO GNP SEGUROS',length,2,side*-21,2.4,0,'#8b2134');banner.rotation.y=Math.PI/2;
- return g;
-}
-function stadium(scene,track){
- stand(scene,track,track.length*.851,-1,140,30,true);stand(scene,track,track.length*.854,1,145,32,false);
- // End screens and the low podium sit clear of the switchbacks, not over the racing ribbon.
- for(const [at,side]of [[.83,-1],[.897,1]]){
-  const p=safeBoxSite(track,at*track.length,10,7,side,18),g=placed(scene,p);scene.box(19,9,.6,'#252e32',0,13,0,g);sign(g,'MEXICO CITY GRAND PRIX',18,7,0,13,.34,'#243d40');for(const x of [-7,7])scene.box(.4,12,.4,steel,x,6,0,g);
- }
- const p=safeBoxSite(track,.886*track.length,10,7,-1,13),g=placed(scene,p);scene.box(20,1.6,9,'#9f253b',0,.8,0,g);scene.box(20,6,.6,'#164b40',0,4,-4,g);sign(g,'MEXICO · PODIUM',18,3.6,0,4,-3.66);
-}
-function pits(scene,track){
- const plan=pitLayout(track),p=safeBoxSite(track,65,17,158,plan.side,20),g=placed(scene,p),facade=buildingFacade('urban');
- scene.box(31,11,310,'#d4d0c1',0,5.5,0,g);scene.box(34,.45,314,'#f0eee3',0,11.2,0,g);addFacadePanels(g,31,11,310,facade);
- for(let bay=0;bay<33;bay++){
-  const z=-149+bay*9.3,front=-plan.side*15.6;
-  scene.box(.25,4.8,8.4,'#303c40',front,2.5,z,g);scene.box(.35,.4,8.7,['#ba3437','#d9b740','#356855','#397eb2'][Math.floor(bay/3)%4],front,5.15,z,g);
-  const panel=sign(g,String(bay+1).padStart(2,'0'),1.7,.9,front-plan.side*.2,5.9,z,'#f3eee2','#24373b');panel.rotation.y=Math.PI/2;
- }
- const tower=placed(scene,safeBoxSite(track,240,11,12,plan.side,28));scene.box(19,26,20,'#d1ccba',0,13,0,tower);scene.box(23,6,24,'#436473',0,25,0,tower);addFacadePanels(tower,19,26,20,facade);
- const roof=sign(g,'AUTÓDROMO HERMANOS RODRÍGUEZ',180,3,0,13,0,'#13523f');roof.rotation.y=Math.PI/2;
- stand(scene,track,120,-plan.side,260,21,true);
-}
-function sportsPark(scene,track){
- for(const [at,side]of [[.40,1],[.60,-1],[.18,-1]]){
-  const p=safeBoxSite(track,track.length*at,36,54,side,35),g=placed(scene,p);
-  scene.box(68,.06,104,'#567f4b',0,-.12,0,g);
-  const line='#d3d6bc';for(const x of [-32,32])scene.box(.12,.025,100,line,x,-.075,0,g);for(const z of [-50,0,50])scene.box(64,.025,.12,line,0,-.075,z,g);
-  const ring=new THREE.Mesh(new THREE.RingGeometry(8.9,9.05,48),material(line));ring.rotation.x=-Math.PI/2;ring.position.y=-.055;g.add(ring);
-  for(const z of [-50,50]){for(const x of [-3.7,3.7])scene.box(.1,2.5,.1,line,x,1.15,z,g);scene.box(7.5,.1,.1,line,0,2.4,z,g);}
-  scene.box(77,.03,3,'#a29983',0,-.18,59,g);
- }
- // The copper geodesic sports palace is a local landmark, separated from the stadium.
- const p=safeBoxSite(track,.91*track.length,83,83,1,130),g=placed(scene,p);
- const dome=new THREE.Mesh(new THREE.SphereGeometry(76,32,12,0,Math.PI*2,0,Math.PI/2),material('#ab7956',{metalness:.35,roughness:.56}));dome.scale.y=.55;dome.position.y=7;dome.userData.mappedStatic=true;g.add(dome);
- const ribs=new THREE.LineSegments(new THREE.WireframeGeometry(dome.geometry),new THREE.LineBasicMaterial({color:'#cfac7d'}));ribs.scale.copy(dome.scale);ribs.position.copy(dome.position);g.add(ribs);scene.box(137,7,137,'#afa48d',0,3.5,0,g);
- const vegetation=[];for(let s=0;s<track.length;s+=34)for(const side of [-1,1]){if(s/track.length>.815||s/track.length<.09)continue;const p2=sample(track,s,side*(28+Math.abs(Math.sin(s)) *35));if(roadClearance(track,p2.x,p2.z)>13)vegetation.push({...p2,y:terrainHeight(track,p2.x,p2.z),scale:.9+Math.abs(Math.sin(s))*.5,angle:s});}
- addVegetation(scene,track,{tropical:false,desert:false},{palms:false,sites:vegetation});
- // Low-rise sprawl and a few distant silhouettes; haze softens them naturally.
- for(let i=0;i<60;i++){const a=i*Math.PI*2/60,p2={x:Math.sin(a)*2000,z:Math.cos(a)*1800},h=10+(i%8)*3+(i%17===0?65:0);scene.box(30+i%5*7,h,27+i%7*5,['#a7a59d','#c1b7a6','#959e9e'][i%3],p2.x,h/2,p2.z);}
-}
-function officials(scene,track){
- for(let s=110;s<track.length;s+=270){const p=safeBoxSite(track,s,3,4,1,11),g=placed(scene,p);scene.box(5,.2,6,'#e3dfd0',0,3,0,g);for(const x of [-2,2])scene.box(.12,3,.12,steel,x,1.5,2.5,g);scene.box(.65,1.2,.5,'#f47c22',0,1,0,g);const head=new THREE.Mesh(new THREE.SphereGeometry(.24,8,6),material('#eee8dd'));head.position.set(0,1.9,0);g.add(head);scene.box(1.4,1,.15,'#192b29',2,2,0,g);sign(g,'▶',1.2,.8,2,2,.1,'#123c2b','#74ee83');}
- addBrakingBoards(scene,track);
-}
-export function addMexicoCity(scene,track){stadium(scene,track);pits(scene,track);sportsPark(scene,track);officials(scene,track);}

@@ -162,7 +162,7 @@
       "url": "https://www.openstreetmap.org/relation/9542146"
     },
     {
-      "feature": "Madrid named corners, La Monumental 550m/24% bank, C\u00e1rcavas climb and Norte tunnel context",
+      "feature": "Madrid named corners, La Monumental 550m/24% bank, Cárcavas climb and Norte tunnel context",
       "url": "https://www.madring.com/en/circuit"
     },
     {
@@ -186,7 +186,7 @@
       "url": "https://f1saopaulo.com.br/wp-content/uploads/2026/10/Mapa-completo-v2.webp"
     },
     {
-      "feature": "Interlagos pit complex, green runoff, grass banks, urban surroundings and lake aerial, Beto Issa / GP S\u00e3o Paulo, 2022",
+      "feature": "Interlagos pit complex, green runoff, grass banks, urban surroundings and lake aerial, Beto Issa / GP São Paulo, 2022",
       "url": "https://www.flickr.com/photos/governosp/52497080967/"
     },
     {
@@ -230,11 +230,11 @@
       "url": "https://www.openstreetmap.org/way/52473180"
     },
     {
-      "feature": "Miami marina inside T6\u20138; yachts on fake vinyl water; official organiser glossary",
+      "feature": "Miami marina inside T6–8; yachts on fake vinyl water; official organiser glossary",
       "url": "https://f1miamigp.com/miami-grand-prix-glossary/"
     },
     {
-      "feature": "Miami Marina grandstand region around T6\u20138",
+      "feature": "Miami Marina grandstand region around T6–8",
       "url": "https://f1miamigp.com/tickets/grandstand/marina/"
     },
     {
@@ -242,7 +242,7 @@
       "url": "https://www.fia.com/system/files/decision-document/2025_miami_grand_prix_-_event_notes_-_circuit_map_pit_lane_quarantine_zone_emergency_exits_and_red_zones_.pdf"
     },
     {
-      "feature": "Miami T13\u201316 ramp and chicane character; existing elevation retained",
+      "feature": "Miami T13–16 ramp and chicane character; existing elevation retained",
       "url": "https://www.formula1.com/en/latest/article/circuit-guide-everything-you-need-to-know-about-the-miami-international-autodrome.zMEQ1nU4xZKuvc9EsGXDr"
     },
     {
@@ -312,6 +312,42 @@
     {
       "feature": "EU-DEM v1.1 25m data, accuracy, datum and attribution",
       "url": "https://www.opentopodata.org/datasets/eudem/"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — FIA 2025 circuit, sector and pit drawings",
+      "url": "https://www.fia.com/system/files/decision-document/2025_mexico_city_grand_prix_-_event_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_and_quarantine_zone_area.pdf"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — Official Mexican GP spectator access and stand locations",
+      "url": "https://www.mexicogp.mx/informacion/accesos/?IDM=LANG_EN"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — Official Mexican GP corner names",
+      "url": "https://www.mexicogp.mx/noticia/mexico-gp-como-se-llaman-las-curvas-del-autodromo-hermanos-rodriguez/"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — Official T4–8 viewing stand context",
+      "url": "https://www.mexicogp.mx/boleto/generales-grada-11/?IDM=LANG_EN"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — Formula 1 4.304km circuit, park setting and retained final Peraltada section",
+      "url": "https://www.formula1.com/en/racing/2025/mexico"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — Copper-domed sports arena architectural context",
+      "url": "https://www.palaciodelosdeportes.mx/nosotros"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — OSM architecture, stadium and road snapshot 2026-11-05",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-99.107,19.390,-99.078,19.414"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — Public aerial reference, stadium canopy and surrounding park; image not redistributed",
+      "url": "https://commons.wikimedia.org/wiki/File:Vista_a%C3%A9rea_del_Aut%C3%B3dromo_Hermanos_Rodr%C3%ADguez_01.jpg"
+    },
+    {
+      "feature": "Mexico City 2.39.0 — SRTM 90m elevation cross-check dataset",
+      "url": "https://www.opentopodata.org/datasets/srtm/"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

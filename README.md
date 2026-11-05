@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.38.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.39.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1517,3 +1517,52 @@ References and data terms: `TRACK-SOURCES.md`, `TRACK-DATA-LICENSE.md`,
 `public/data/redbullring-dem.js` and the corresponding shared caches. EU-DEM is
 © European Union, with funding by the European Union; adaptations are not endorsed
 by the Union. OSM data is © OpenStreetMap contributors, ODbL 1.0.
+
+
+## Mexico City stadium, sports park and surface correction — 2.39.0
+
+Mexico City (`mx-1962`) now follows two mapped L-shaped stadium stand arms instead
+of two misplaced straight banks. Tiered decks, neutral canopies, 23,576 instanced
+fans, screens, a podium and original festive dressing frame the stadium corners.
+The pit building is recentered on its OSM reference and fitted parallel to the
+unchanged external pit corridor. The copper arena moves to its mapped location;
+main-straight stands, Turn 1/technical-section seating, park fields, broadleaf trees
+and dense urban blocks replace percentage-based landmark placement.
+
+The entire lap has an explicit corner-by-corner paved/paint/grass/kerb/safety plan,
+including pit entry/exit. Original runoff lettering, grid/sector/pit signs,
+150/100/50 boards, corner signs, marshal LEDs, cranes, spare tyres, drainage and
+festival props add track dressing. No gravel trap was verified in the reviewed
+sources, so none is invented. The same plan feeds surfaces, wet grip, track limits,
+barriers and guide-speed sampling. Walls/fences share their collision geometry.
+Dry and storm colours layer over the existing damp/wet/dynamic whole-lap weather.
+
+**Preserved:** exact centreline, existing 2.56m elevation relief/anchors, pit route,
+car, physics core and multiplayer packet structure. Practice adds **Mexico Turn 1
+approach** and **Mexico stadium interior**, retaining the original stadium approach.
+This is procedural, data-informed scenery, not a scanned/photorealistic recreation.
+
+**Accuracy limits:** mapped stadium inner edges and landmark centres are retained;
+roof/deck detail, temporary seating and runoff/barrier dimensions are approximate.
+Three stadium patches narrow and two small end patches are omitted for roads.
+The pit model fits at 92% of the requested size; the arena includes only the central
+dome. Five old-banking remnants are decorative, with an unverified artistic slope.
+Cached footbridge paths are not rendered because a safe two-pier fit/height was not
+verified. Named mountains, flyovers and the separate nearby baseball-stadium roof
+are not reproduced. Sector markings follow FIA reference offsets; existing game
+sector timing remains unchanged. No real sponsor, team or venue artwork is added.
+
+**Checks:** 18 syntax checks, strict new-module undefined/shadow checks, existing-file
+lint, imports, both production builds and static clearance checks passed. Across
+1,009 scenery reservations the minimum conservative clearance is **1.536m**, with
+zero blocked/overflowing model footprints. 2,213 runoff quads have zero other-road,
+pit/access or building overlaps. 326 static pit-route car probes have no wall
+contacts or route deviation. All 4,600 collision wall solids match renderer sources;
+17/17 corners are classified. Other 41 circuits retain their static wall geometry.
+Scenery construction: 113 mesh submissions, ~2.00M triangles including repeated
+crowd geometry, excluding road/cars/runoff/shadows. Parked dry/wet previews were
+inspected; the test suite, driving and multiplayer playtests were not run.
+
+See [the complete baseline audit, per-corner width table, references and remaining
+uncertainties](docs/MEXICO-AUDIT-2.39.0.md), [sources](TRACK-SOURCES.md) and
+[data attribution](TRACK-DATA-LICENSE.md).
