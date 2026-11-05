@@ -143,3 +143,23 @@ The enclosing stadium rectangle is also derived from the source outline.
 Surrounding anchors, procedural models, lettering and surface profiles are
 original game code/data and explicitly approximate. No reference photos, official
 stadium signage, sponsor logos or external 3D assets are redistributed.
+
+
+## Silverstone architecture, access roads and landscape outlines
+
+`public/data/silverstone-architecture.js` and `shared/silverstone-access.mjs`
+contain derived OpenStreetMap geometry, © OpenStreetMap contributors, licensed
+under ODbL 1.0: https://www.openstreetmap.org/copyright . Retrieved 2026-11-05 from
+https://api.openstreetmap.org/api/0.6/map?bbox=-1.039,52.061,-1.005,52.087 .
+Way identifiers, complete longitude/latitude outlines and derived oriented
+rectangles remain in the cached modules. Examples: Wing 227332429, Becketts
+227342446, museum 437429280, national garages 4859937/4859939, Whittlebury camping
+606181044 and pedestrian bridge 1412628538. The public architecture module
+re-exports the shared clearance-road subset, which is served locally with the
+rest of the game. These derived data remain available under ODbL.
+
+Procedural models, text/colour artwork, national-flag drawing, surface profiles,
+placement adjustments and cosmetic animation are original game code/data. No
+reference photographs, real sponsor/team artwork, licensed logos or external 3D
+assets are redistributed. Plain geographic/venue names identify locations; the
+neutral models and lettering do not reproduce official branded signage.

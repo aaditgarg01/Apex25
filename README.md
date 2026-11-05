@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.36.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.37.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1271,3 +1271,136 @@ full-lap visual fidelity and frame rate remain for the user's manual testing.
 
 Sources and data licensing: `TRACK-SOURCES.md`, `TRACK-DATA-LICENSE.md`,
 `public/data/track-visual-references.json` and `public/data/miami-architecture.js`.
+
+
+## Silverstone Wing, airfield surroundings and mixed runoff — 2.37.0
+
+Silverstone (`gb-1948`) now has a dedicated former-airfield environment instead
+of generic venue scenery. The existing clockwise geographic centreline, Hamilton
+Straight start alignment, 18-corner order, 17m game road width and cached SRTM
+anchors remain. The sampled road is ~5.884km versus the published 5.891km; its
+retained coarse elevation range is 12.97m. No new driving camber, banking, ramps
+or elevation measurements are invented. Car models, engine/steering/contact
+algorithms, multiplayer packet formats, weather scheduling and session rules
+are retained; the existing per-venue off-track surface hook gains Silverstone.
+
+- **The Wing:** OSM way 227332429 supplies its anchor and orientation reference.
+  A neutral original pavilion has a gently curved plan, three sweeping roof
+  crests, glass hospitality frontage, ground-floor garages, podium and readable
+  pit/venue signs. It is aligned with the generated external pit service axis.
+  The source footprint envelope is ~32.9 × 375.9m; the model envelope is 28 × 390m,
+  shifted ~17m and rotated ~2° to clear both the generated lane and mapped roads.
+  The 390m reference length comes from the roof supplier's project case study.
+  This is a simplified architectural interpretation, not a scan or exact replica.
+- **Mapped grandstands and heritage:** Copse, Becketts, Chapel, Stowe, Club, Vale,
+  Abbey, Farm, Village, Wellington, Luffield, Woodcote and both pit-straight areas
+  use cached named OSM outlines. Museum, experience and national-garage footprints
+  inform neutral buildings. A low control tower and additional hangar are artistic
+  airfield-heritage props, not verified surviving RAF structures. A cached
+  pedestrian bridge route (way 1412628538) informs a high walkway with a connection
+  within the already-cleared Wing envelope; dimensions/height are approximate.
+- **Open countryside:** OSM woodland regions inform tree blocks, with scattered
+  mature broadleaf trees, hedgerows, grass viewing banks and distant village/farm
+  silhouettes with tiled roofs and church spires. A safe portion of a documented
+  former runway/taxiway is dressed as a flat, faded strip. It is not a new racing
+  route. Campsites, caravans, parked cars, masts and hospitality fill reserved
+  spaces. One camp begins from the mapped Whittlebury camping region; remaining
+  temporary camp/parking arrangements are original approximate fits.
+- **Crowds and event dressing:** ~19,800 instanced fans in jackets/caps, original
+  procedural Union Jack motifs, wet-weather umbrellas, restrained pooled smoke,
+  marshal huts/LED panels, camera/recovery cranes, distance boards and screens.
+  Signs use one original text atlas, including **SILVERSTONE · THE WING**, stand
+  names, airfield/camping labels and generic commercial placeholders. No sponsor
+  logos, real team artwork or reference photos are bundled as textures.
+- **Shared ground surfaces:** `shared/silverstone.mjs` owns per-corner paved,
+  painted, gravel and grass widths. The plan feeds surface meshes, scenery
+  reservations, shared safety-wall placement, off-track grip/drag/penalties and
+  guide-speed sampling. Tarmac runoff retains near-normal grip and a smaller
+  penalty; illegal timed laps still become invalid. Gravel adds heavy drag/low
+  grip; grass and paint lose more grip in rain. Existing recovery remains.
+  Branch conflicts suppress the affected runoff overlays and use the grass
+  fallback in surface sampling. No decorative surface is allowed over a cached
+  access-road branch. Walls/fences are omitted from both render and collision
+  where their solids would cross a road opening. Covered tyre-protection artwork
+  uses those same wall volumes; it does not create separate invisible colliders.
+- **Kerbs and wear:** retained red/white raised corner kerbs, dark guide rubber,
+  repaired tarmac seams and braking-zone marks. Large original **SILVERSTONE**
+  lettering is painted into selected wide asphalt escape areas.
+- **Atmosphere:** cool summer light, soft shadows, moving cumulus sky and distant
+  haze; darker grey sky, existing rain/spray/asphalt reflections and sodden ground
+  in wet conditions. Existing damp and dynamic whole-lap weather paths are kept.
+  Cosmetic flags/smoke/LEDs/sky movement update at most every 80ms; umbrellas show
+  when wet and smoke fades out. Normal circuit cleanup releases materials/maps.
+- **Free Practice:** Copse approach, Maggotts–Becketts and Stowe approach starts.
+- **Related correction:** removed a duplicate Miami scenery dispatch so its
+  dedicated environment is constructed once.
+
+**Corner-by-corner surface plan** (original fitted widths, not surveyed extents):
+
+| Turns | Treatment |
+| --- | --- |
+| T1 Abbey | Broad tarmac escape and grass beyond; reflects modern replacement of old gravel |
+| T2 Farm | Paved shoulder, broad grass verge |
+| T3 Village | Paved braking escape, selected gravel and grass |
+| T4 The Loop | Grass island with paved outside escape |
+| T5 Aintree | Paved exit and grass |
+| T6 Brooklands | Paved apron transitioning to gravel and grass |
+| T7 Luffield | Narrow paved apron, gravel outside and grass |
+| T8 Woodcote | Paved exit, grass strips |
+| T9 Copse | Wide asphalt escape and grass; no invented new Copse gravel trap |
+| T10–13 Maggotts–Becketts | Alternating paved escapes, selected gravel beds and grass |
+| T14 Chapel | Paved exit plus documented left-side gravel |
+| T15 Stowe | Paved apron and broad left-side gravel |
+| T16 Vale | Nominal 1.7m right-side asphalt strip followed by gravel, capped where needed |
+| T17–18 Club | Paved escape, grass and pit-side protection |
+
+**Placement and approximations:** complete envelopes include roofs, people,
+flags, umbrellas, tree crowns and crane travel. They are reserved against every
+racing/safety, external-pit and cached local access/crossing branch. Map-derived
+anchors are not all rendered exactly at their original coordinates: oversized
+road/safety corridors and retained generated pits require relocations or reduced
+stand envelopes. Most named stands keep their source scale; Abbey is reduced to
+74%, Luffield Corner to 62%, and the curved Luffield stand uses a smaller 48m
+replacement. Some stands/clubhouse move up to ~190m to find safe space. These
+positions are explicitly approximations and should be compared manually against
+season-specific photos. Individual runoff widths, gravel extents, banks, species,
+control-tower/hangar styling, bridge height and villages are also approximate.
+The modern Abbey tarmac and Chapel/Stowe/Vale gravel changes have primary-source
+support; not every bed's numeric extent was verified. No additional Silverstone
+photos were attached to this brief; official maps/pages and internet reference
+images were consulted, without redistributing them.
+
+**Requested static verification:** syntax checks for all changed JS/MJS modules,
+undefined-name/shadow checks (strict on new modules; existing-file allowances
+retained), renderer/shared module graph imports, `npm run build`,
+`npm run build:vercel` and whitespace checks passed. The Three.js construction
+audit found **795 reservations**, no rejected placements, no blocked envelopes and
+no model footprint overflow. It includes **3,387 cached access-road segments**.
+Minimum conservative scenery clearance: **1.07m** beyond the reserved safety/pit/
+access corridors. Minimum sampled wall-edge clearance from the driving road:
+**1.00m**. These are static results, not a driving guarantee.
+
+The independent polygon audit checked **3,627 runoff quads** against non-local
+racing branches (65m local neighbourhood excluded), plus generated pit bands and
+cached access-road polygons: **zero intersections**. 146 access-conflict quads
+and 151 additional pit-corridor quads are masked out. The walkway underside is
+at least **9.76m** above covered racing-road samples. Its Wing connection shares
+that building's already-reserved footprint.
+
+**Measured construction budget:** 19,784 spectators, 540 trees, 126 flags, 360 tents
+and 60 caravans. Dedicated scenery produces **145 mesh submissions** after spatial
+batching, ~1.79M triangles including repeated crowd geometry. This excludes the
+racing road, HUD, cars, weather, shadow passes and visibility/frustum reductions;
+it is not an FPS measurement. Static boxes and shared-atlas signs batch in 480m
+cells; crowds, vegetation, flags, umbrellas, camps and cars use instancing. Cached
+assets require no external map/service requests during play.
+
+**Render inspection and limits:** parked local dry Wing and wet Stowe views loaded
+with no captured browser errors. No game test suite, driving laps, collision
+playtest, multiplayer playtest or full dynamic-weather race was run. Handling
+balance, exact visuals around an entire lap and frame rate remain for manual
+user testing. Verification reports accompany the local release archive.
+
+References/attribution: `TRACK-SOURCES.md`, `TRACK-DATA-LICENSE.md`,
+`public/data/track-visual-references.json`, `public/data/silverstone-architecture.js`
+and `shared/silverstone-access.mjs`.

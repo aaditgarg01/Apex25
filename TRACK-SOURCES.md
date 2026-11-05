@@ -187,3 +187,32 @@ beds at T1/T17 are artistic safety additions: their real-world presence/location
 were not verified. Paved/teal escapes, grass verges and close walls are the dominant
 Miami treatment. Generic text and colour artwork are original; no licensed logos
 or exact photographic leaf/sponsor graphics are included.
+
+
+## Silverstone Wing, airfield and surface references — 2.37.0
+
+Primary references:
+
+- [FIA 2025 circuit map](https://www.fia.com/system/files/decision-document/2025_british_grand_prix_-_event_notes_-_circuit_map_v2.pdf): 5.891km centreline, 18-corner order and Hamilton Straight start.
+- [Formula 1 corner-name guide](https://www.formula1.com/en/latest/article/explained-how-every-silverstone-corner-got-its-name.idMlxFC2gfN2ApcPmifxN): Abbey through Club, airfield/Wellington/Hangar context.
+- [Silverstone maintenance guide](https://www.silverstone.co.uk/maintaining-race-track): 2023 tarmac replacement at the former Abbey gravel area and Becketts/Chapel viewing changes.
+- [FIA 2024 event notes, section 12](https://www.fia.com/sites/default/files/decision-document/2024%20Silverstone%20Event%20-%20F2%20Event%20Notes.pdf): new left-side T14 gravel, T15 gravel extension, 1.7m right-side T16 paved strip/gravel, T18–T1 grass and tyre-barrier changes. These inform type, not surveyed widths elsewhere.
+- [Official 2025 spectator map](https://www.silverstone.co.uk/sites/default/files/pdf/British%20Grand%20Prix%202025%20Map.pdf) and [grandstand guide](https://www.silverstone.co.uk/news/silverstone-grandstands-faqs): named stand, camping and viewing relationships.
+- [Wing roof supplier case study](https://www.ashandlacy.com/wp-content/uploads/2017/04/silverstone_wing_cs-1.pdf): 390m length, changing curved roofline, neutral metallic cladding and red accent context. Original game geometry, not copied construction drawings.
+
+OSM snapshot retrieved 2026-11-05:
+https://api.openstreetmap.org/api/0.6/map?bbox=-1.039,52.061,-1.005,52.087 .
+`public/data/silverstone-architecture.js` caches complete source outlines,
+oriented envelopes, woodland, pedestrian bridge and camping references. Important
+ways include Wing 227332429, Becketts 227342446, museum 437429280, national garages
+4859937/4859939 and pedestrian bridge 1412628538. The shared cached road subset in
+`shared/silverstone-access.mjs` is re-exported by the public data module and serves
+all-branch placement/surface clearance. No live OSM downloads occur during play.
+
+All 3D shapes, generic signs, flags, paint and foliage textures are original
+procedural assets. Some stands are moved/reduced to clear the retained geographic
+road, safety widths and generated external pit lane. The Wing is narrowed/shifted
+and aligned to that lane. Control tower, extra hangar, temporary camp arrangements,
+field/village silhouettes, roof detail, exact runoff extents and bridge dimensions
+are explicitly approximate. Existing elevation anchors remain; no verified new
+camber dataset was found or added. Reference photos/maps are not bundled as assets.

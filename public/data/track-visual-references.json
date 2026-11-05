@@ -252,6 +252,42 @@
     {
       "feature": "Miami adjacent tennis stadium outline retained as unrendered reference, OSM way 1368495807, ODbL",
       "url": "https://www.openstreetmap.org/way/1368495807"
+    },
+    {
+      "feature": "Silverstone 18-corner FIA map and 5.891km centreline",
+      "url": "https://www.fia.com/system/files/decision-document/2025_british_grand_prix_-_event_notes_-_circuit_map_v2.pdf"
+    },
+    {
+      "feature": "Silverstone named corners and airfield heritage",
+      "url": "https://www.formula1.com/en/latest/article/explained-how-every-silverstone-corner-got-its-name.idMlxFC2gfN2ApcPmifxN"
+    },
+    {
+      "feature": "Modern Abbey tarmac replacement and Becketts/Chapel viewing",
+      "url": "https://www.silverstone.co.uk/maintaining-race-track"
+    },
+    {
+      "feature": "Silverstone 2024 Chapel/Stowe/Vale gravel, grass and tyre-barrier changes",
+      "url": "https://www.fia.com/sites/default/files/decision-document/2024%20Silverstone%20Event%20-%20F2%20Event%20Notes.pdf"
+    },
+    {
+      "feature": "Official Silverstone spectator, stand, campsite and hospitality relationships",
+      "url": "https://www.silverstone.co.uk/sites/default/files/pdf/British%20Grand%20Prix%202025%20Map.pdf"
+    },
+    {
+      "feature": "Wing roof supplier primary case study: 390m changing roofline/cladding",
+      "url": "https://www.ashandlacy.com/wp-content/uploads/2017/04/silverstone_wing_cs-1.pdf"
+    },
+    {
+      "feature": "Silverstone Wing complete footprint and derived orientation, OSM ODbL",
+      "url": "https://www.openstreetmap.org/way/227332429"
+    },
+    {
+      "feature": "Silverstone Becketts stand footprint, OSM ODbL",
+      "url": "https://www.openstreetmap.org/way/227342446"
+    },
+    {
+      "feature": "Silverstone Museum footprint, OSM ODbL",
+      "url": "https://www.openstreetmap.org/way/437429280"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

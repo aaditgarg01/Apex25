@@ -1,3 +1,4 @@
+import {silverstoneSurfaceAt} from './silverstone.mjs';
 import {miamiSurfaceAt} from './miami.mjs';
 import {bankingAt,bankSupport} from './banked-road.mjs';
 import {ribbonOffset} from './surface.mjs';
@@ -30,7 +31,7 @@ export function sampleGuide(track,s){const line=prepareRacingLine(track),f=wrap(
 function speedProfile(track,value,wetness){
  const line=prepareRacingLine(track),condition=conditionProfile(value,Number.isFinite(wetness)?Math.round(wetness*20)/20:undefined),key=String(condition.wetness);if(line.speeds.has(key))return line.speeds.get(key);
  const wet=condition.wetness,base=20-10.5*wet,aero=(.0042-.00255*wet)*(track.id==='mx-1962'?.78:1),max=110*(1-.10*wet),n=line.points.length;
- const speeds=line.curvature.map((k,i)=>{let corner=k>aero?Math.sqrt(base/(k-aero)):max,steering=k>.025?3.8*condition.steering/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;if(track.id==='nl-1948'){const bank=bankingAt(track,i*line.step,line.points[i].offset);for(let pass=0;pass<3;pass++){const support=bankSupport(bank.bank,Math.min(corner,max),1/Math.max(.0001,k),wet),gain=1+support.gain;corner=k>aero*gain?Math.sqrt((base*gain+support.extraLateral)/(k-aero*gain)):max;steering=k>.025?3.8*condition.steering*(1+support.extraLateral/Math.max(base,1))/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;}}const surface=track.id==='us-2022'?miamiSurfaceAt(track,i*line.step,line.points[i].offset,wet):null;return clamp(Math.min(corner,steering)*(surface?Math.sqrt(surface.grip):1),8,max);});
+ const speeds=line.curvature.map((k,i)=>{let corner=k>aero?Math.sqrt(base/(k-aero)):max,steering=k>.025?3.8*condition.steering/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;if(track.id==='nl-1948'){const bank=bankingAt(track,i*line.step,line.points[i].offset);for(let pass=0;pass<3;pass++){const support=bankSupport(bank.bank,Math.min(corner,max),1/Math.max(.0001,k),wet),gain=1+support.gain;corner=k>aero*gain?Math.sqrt((base*gain+support.extraLateral)/(k-aero*gain)):max;steering=k>.025?3.8*condition.steering*(1+support.extraLateral/Math.max(base,1))/(k+Math.sqrt(k*k+.19*k*condition.steering)):max;}}const surface=track.id==='us-2022'?miamiSurfaceAt(track,i*line.step,line.points[i].offset,wet):track.id==='gb-1948'?silverstoneSurfaceAt(track,i*line.step,line.points[i].offset,wet):null;return clamp(Math.min(corner,steering)*(surface?Math.sqrt(surface.grip):1),8,max);});
  // Backward braking and forward acceleration passes link corners to straights,
  // including the seam of the closed lap and uphill/downhill braking distances.
  for(let pass=0;pass<4;pass++){

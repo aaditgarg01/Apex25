@@ -19,9 +19,9 @@ export function batchBoxes(root,cell=220){
 
 // Mapped buildings have unique footprints, so merge only compatible geometry
 // within spatial cells. Shared materials preserve their appearance.
-export function batchMapped(root){
+export function batchMapped(root,cell=220){
  root.updateMatrixWorld(true);const inverse=root.matrixWorld.clone().invert(),buckets=new Map();
- root.traverse(o=>{if(!o.userData.mappedStatic)return;const p=new THREE.Vector3().setFromMatrixPosition(o.matrixWorld),center=o.geometry.boundingSphere||(o.geometry.computeBoundingSphere(),o.geometry.boundingSphere);p.copy(center.center).applyMatrix4(o.matrixWorld);const key=[o.material.uuid,Math.floor(p.x/220),Math.floor(p.z/220),o.castShadow].join(':');if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(o);});
+ root.traverse(o=>{if(!o.userData.mappedStatic)return;const p=new THREE.Vector3().setFromMatrixPosition(o.matrixWorld),center=o.geometry.boundingSphere||(o.geometry.computeBoundingSphere(),o.geometry.boundingSphere);p.copy(center.center).applyMatrix4(o.matrixWorld);const key=[o.material.uuid,Math.floor(p.x/cell),Math.floor(p.z/cell),o.castShadow].join(':');if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(o);});
  for(const objects of buckets.values()){
   const geometries=objects.map(o=>{const geo=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();return geo.applyMatrix4(inverse.clone().multiply(o.matrixWorld));});
   const merged=mergeGeometries(geometries);for(const geo of geometries)geo.dispose();if(!merged)continue;

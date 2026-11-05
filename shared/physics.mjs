@@ -1,3 +1,4 @@
+import {silverstoneSurfaceAt} from './silverstone.mjs';
 import {miamiSurfaceAt} from './miami.mjs';
 import {zandvoortSurfaceAt} from './zandvoort.mjs';
 import {bankSupport,surfaceAttitude} from './banked-road.mjs';
@@ -38,7 +39,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.ai&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)&&(laps===Infinity||laps*track.length-c.progress>track.length*.45)){c.pitCompound=defaultTyre(c);c.pitRequested=true;}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
- const roadOffset=conditions.wetness||['nl-1948','us-2022'].includes(track.id)?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2022'?miamiSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
+ const roadOffset=conditions.wetness||['nl-1948','us-2022','gb-1948'].includes(track.id)?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2022'?miamiSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='gb-1948'?silverstoneSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
  if(duneSurface&&track.id==='nl-1948'){const bank=duneSurface.bank;c.bankedRoad=true;c.bankRoll=bank.roll;c.bankTurnSign=-bank.outerSide;c.roadCurvature=angleDiff(sample(track,c.s+5).heading,sample(track,c.s-5).heading)/10;c.bankNormalLoad=bankSupport(bank.bank,Math.abs(c.v),1/Math.max(.0001,Math.abs(c.roadCurvature)),conditions.wetness).normalLoad;}
  c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>roadHalfWidth(track,c.s)-.8?conditions.curbGrip:1):1;
  if(duneSurface)c.surfaceGrip*=duneSurface.grip;

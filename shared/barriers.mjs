@@ -1,3 +1,4 @@
+import {silverstoneBoundaryOffset,silverstoneWallClear} from './silverstone.mjs';
 import {miamiBoundaryOffset,miamiWallClear} from './miami.mjs';
 import {zandvoortBoundaryOffset} from './zandvoort.mjs';
 import {bankedHeight} from './banked-road.mjs';
@@ -20,9 +21,10 @@ function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,off
 function pitEdge(track,i,offset){const p=track.points[i];return {x:p.x+Math.cos(p.heading)*offset,z:p.z-Math.sin(p.heading)*offset,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
- const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',interlagos=track.id==='br-1940',zandvoort=track.id==='nl-1948',miami=track.id==='us-2022',jeddah=track.id==='sa-2021',wideRunoff=miami||shanghai||bahrain||spa||jeddah||interlagos||zandvoort,concreteWalls=miami||melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=miami?miamiBoundaryOffset:zandvoort?zandvoortBoundaryOffset:interlagos?interlagosBoundaryOffset:jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
+ const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',interlagos=track.id==='br-1940',zandvoort=track.id==='nl-1948',miami=track.id==='us-2022',silverstone=track.id==='gb-1948',jeddah=track.id==='sa-2021',wideRunoff=silverstone||miami||shanghai||bahrain||spa||jeddah||interlagos||zandvoort,concreteWalls=miami||melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=silverstone?silverstoneBoundaryOffset:miami?miamiBoundaryOffset:zandvoort?zandvoortBoundaryOffset:interlagos?interlagosBoundaryOffset:jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
  function add(a,b,width,height,kind,inward=null){
-  if(miami&&['track','fence'].includes(kind)&&!miamiWallClear(track,a,b,width))return;
+  if((miami||silverstone)&&['track','fence'].includes(kind)&&!miamiWallClear(track,a,b,width))return;
+  if(silverstone&&['track','fence'].includes(kind)&&!silverstoneWallClear(track,a,b,width))return;
   const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);if(length<.01)return;
   const wall={a,b,width,height,kind,x:(a.x+b.x)/2,z:(a.z+b.z)/2,tx:dx/length,tz:dz/length,length,inward,bottom:Math.min(a.y,b.y),top:Math.max(a.y,b.y)+height};
   const id=walls.length;walls.push(wall);const pad=width/2+.1;
@@ -43,10 +45,10 @@ export function trackBarriers(track){
   const cx=(track.points[i].x+track.points[next].x)/2,cz=(track.points[i].z+track.points[next].z)/2,nx=cx-(a.x+b.x)/2,nz=cz-(a.z+b.z)/2,n=Math.hypot(nx,nz);
   const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2);
   add(a,b,width,concreteWalls?1.05:.76,'track',n?{x:nx/n,z:nz/n}:null);
-  const fa=concreteWalls||spa||zandvoort?{...a,y:a.y+((spa||zandvoort)? .76:1.05)}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=concreteWalls||spa||zandvoort?{...b,y:b.y+((spa||zandvoort)? .76:1.05)}:edge(track,next,side*(half+(track.urban?3.2:8)));
+  const fa=concreteWalls||spa||zandvoort||silverstone?{...a,y:a.y+((spa||zandvoort||silverstone)? .76:1.05)}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=concreteWalls||spa||zandvoort||silverstone?{...b,y:b.y+((spa||zandvoort||silverstone)? .76:1.05)}:edge(track,next,side*(half+(track.urban?3.2:8)));
   // Historic stone wall provides the castle-side enclosure; retain the low
   // collision barrier without putting a second debris fence in front of it.
-  if(!(track.id==='az-2016'&&side===1&&i*track.step>=2470&&i*track.step<=2760))add(fa,fb,.12,concreteWalls||spa||zandvoort?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
+  if(!(track.id==='az-2016'&&side===1&&i*track.step>=2470&&i*track.step<=2760))add(fa,fb,.12,concreteWalls||spa||zandvoort||silverstone?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
  }
  if(track.campus)for(let i=0;i<track.points.length;i++){
   const next=(i+1)%track.points.length,a=pitBoundary(track,i*track.step),b=pitBoundary(track,next*track.step);if(!a||!b)continue;
