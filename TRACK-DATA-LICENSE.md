@@ -228,3 +228,21 @@ anchors retain their separate recorded provenance. No new elevation is substitut
 Original models, procedural textures/lettering, surface profiles, flags, placement
 rules and animations are game code. Reference photos/official map artwork, real
 team/sponsor/venue graphics and external 3D assets are not redistributed.
+
+
+## COTA source geometry and USGS terrain (2.42.0)
+
+COTA architecture/access outlines, identifiers and source geometry are derived
+from © OpenStreetMap contributors, ODbL 1.0, retrieved 2026-11-05. These adapted
+geographic databases in public/data/cota-architecture.js and shared/cota-access.mjs
+remain available under ODbL 1.0 with source identifiers; attribution is displayed
+in game. https://www.openstreetmap.org/copyright . The remaining original fitted
+models, surface profiles, textures, lettering, flags and code are separate game
+work. No commercial venue/sponsor/team artwork is included.
+
+Cached USGS National Elevation Dataset heights are US federal public-domain data,
+processed/distributed via Open Topo Data: https://www.opentopodata.org/datasets/ned/ .
+The provider documents a 2020-04-23 dataset snapshot. Shipped surrounding samples
+are spaced 140m; road samples ~43m. This is not a current engineering/road survey.
+Original SRTM anchors retain their provenance alongside the refined COTA profile.
+Reference photos, FIA/official map artwork and external 3D assets are not shipped.

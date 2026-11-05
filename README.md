@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.41.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.42.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1672,3 +1672,36 @@ viewing terrace and a second camp are omitted for clearance. No extra user photo
 were attached. See [the complete corner table, provenance, checks and accuracy
 limits](docs/MONZA-ENVIRONMENT-2.41.0.md), [sources](TRACK-SOURCES.md) and
 [data attribution](TRACK-DATA-LICENSE.md).
+
+
+## Austin Hill Country, Turn 1 hill and tower — 2.42.0
+
+COTA now has a dedicated environment: a mapped 76.5m observation tower with deck
+and helical stairs, mapped concert stage, generic fan plaza, mapped/fitted pits
+and seven grandstands, stadium crowds, hillside viewing, scattered Texas-style
+scrub, dry grass, limestone/soil cuts, camps, parking and original readable signs.
+No real sponsor, venue, team or tower signage is copied.
+
+All 20 corners have a shared paved/gravel/grass/kerb/barrier plan, following the
+hill profile and capped at other roads and the external pit lane. It drives
+rendering, safety walls, scenery clearance, surface grip/drag, existing track
+limits and guide speeds. LONE STAR lettering, rubber and braking marks are included.
+The exact retained XY centreline/road width, pit XY route, car, physics engine,
+tyre balance and multiplayer packet format remain unchanged. Original elevation
+anchors are retained; a separate 129-sample USGS profile refines the hill with
+30.990m relief. This agrees with F1's 30.9m description rather than forcing the
+older conflicting 41m claim. A 441-point cached terrain grid shapes the surroundings.
+The tower and concert venue are beside Turns 16–18; the back straight runs T11–T12.
+
+Warm dry light, sparse clouds/haze/heat shimmer and storm mood layer on existing
+weather, including dynamic whole-lap conditions. Practice adds Turn 1 climb,
+Esses approach and Stadium section starts. Complete placements and actual model
+bounds are checked against all road branches; the documented footbridge uses
+shared solids with 8.966m minimum racing-road underside clearance. Data-driven anchors and
+fitted dimensions/temporary seating are distinguished in the detailed notes.
+
+Static/build verification and parked previews are recorded in the release
+snapshot. The game test suite, driving and multiplayer playtests were not run.
+No FPS claim is made. See [corner-by-corner surfaces, numeric checks, references
+and uncertainty list](docs/COTA-ENVIRONMENT-2.42.0.md), [sources](TRACK-SOURCES.md)
+and [attribution](TRACK-DATA-LICENSE.md).

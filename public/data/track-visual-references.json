@@ -384,6 +384,38 @@
     {
       "feature": "Monza 2.41.0 — SRTM 90m source and resolution for unchanged-profile cross-check",
       "url": "https://www.opentopodata.org/datasets/srtm/"
+    },
+    {
+      "feature": "COTA 2.42.0 — Official F1 circuit flow, stadium and 5.513km context",
+      "url": "https://www.formula1.com/en/racing/2025/united-states"
+    },
+    {
+      "feature": "COTA 2.42.0 — FIA 2025 numbered circuit, pit and emergency maps",
+      "url": "https://www.fia.com/system/files/decision-document/2025_united_states_grand_prix_-_event_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_quarantine_zone_map_red_zones_map.pdf"
+    },
+    {
+      "feature": "COTA 2.42.0 — Official tower location, 251ft height, double helix and amphitheatre relationship",
+      "url": "https://circuitoftheamericas.com/blog/2024/2/20/all-about-the-cota-tower/"
+    },
+    {
+      "feature": "COTA 2.42.0 — Official campus, plaza, camping and paddock context",
+      "url": "https://circuitoftheamericas.com/campus-map/"
+    },
+    {
+      "feature": "COTA 2.42.0 — F1 elevation comparison: 30.9m, conflicting with older 41m descriptions",
+      "url": "https://www.formula1.com/en/latest/article/highs-and-lows-which-f1-track-has-the-most-elevation-changes-.7I9JEcBw3R2AqXbnJ6hyvc"
+    },
+    {
+      "feature": "COTA 2.42.0 — Older FIA description with 41m claim, retained as conflicting reference",
+      "url": "https://api.fia.com/news/f1-usa-gp-race-preview"
+    },
+    {
+      "feature": "COTA 2.42.0 — USGS NED 10m data provenance, public API dataset vintage 2020-04-23",
+      "url": "https://www.opentopodata.org/datasets/ned/"
+    },
+    {
+      "feature": "COTA 2.42.0 — OSM buildings, tower, service roads and crossings snapshot 2026-11-05",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-97.650,30.120,-97.620,30.145"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

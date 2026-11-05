@@ -344,3 +344,30 @@ barrier offsets in `public/data/monza-runoff.js` are fitted original data. The
 exact 2025 temporary seating arrangement. No attached photos were supplied.
 Raw reference images/PDFs, official logos and licensed sponsor artwork are not
 redistributed. Complete limitations/table: `docs/MONZA-ENVIRONMENT-2.41.0.md`.
+
+
+## COTA environment and cached terrain — 2.42.0
+
+- [Official F1 circuit flow, stadium and 5.513km context](https://www.formula1.com/en/racing/2025/united-states).
+- [FIA 2025 numbered circuit, pit and emergency maps](https://www.fia.com/system/files/decision-document/2025_united_states_grand_prix_-_event_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_quarantine_zone_map_red_zones_map.pdf).
+- [Official tower location, 251ft height, double helix and amphitheatre relationship](https://circuitoftheamericas.com/blog/2024/2/20/all-about-the-cota-tower/).
+- [Official campus, plaza, camping and paddock context](https://circuitoftheamericas.com/campus-map/).
+- [F1 elevation comparison: 30.9m, conflicting with older 41m descriptions](https://www.formula1.com/en/latest/article/highs-and-lows-which-f1-track-has-the-most-elevation-changes-.7I9JEcBw3R2AqXbnJ6hyvc).
+- [Older FIA description with 41m claim, retained as conflicting reference](https://api.fia.com/news/f1-usa-gp-race-preview).
+- [USGS NED 10m data provenance, public API dataset vintage 2020-04-23](https://www.opentopodata.org/datasets/ned/).
+- [OSM buildings, tower, service roads and crossings snapshot 2026-11-05](https://api.openstreetmap.org/api/0.6/map?bbox=-97.650,30.120,-97.620,30.145).
+
+`public/data/cota-architecture.js` stores sanitized OSM building/stand outlines,
+observation node, parking/woodland/crossing references and clearly approximate
+plaza/event anchors. `shared/cota-access.mjs` retains source road-way coordinates,
+IDs and conservative widths. `shared/cota-terrain-data.mjs` / public re-export
+cache 441 surrounding and 129 road samples from USGS NED via Open Topo Data.
+Original SRTM anchors remain in elevations.json; only COTA adds a refined profile.
+NED relief ~30.99m supports F1's 30.9m reference, not older conflicting 41m claims.
+No driving camber or current resurfacing bumps are inferred from old terrain.
+Mapped tower node 7911006730, pit 376713391, stage 847781223, stand ways
+460658889/890/891/892, 460683347, 998801547 and 1183793500 inform original fits.
+Footbridge 191582102 location is mapped; 80m span/height are safe artistic fits.
+Runoff widths/gravel boundaries and temporary event dressing are interpretive.
+All sampled data are local; no raw official map/photo artwork is redistributed.
+Complete limits: docs/COTA-ENVIRONMENT-2.42.0.md.

@@ -1,3 +1,4 @@
+import {cotaBoundaries,cotaAccessCorridors} from './cota.mjs';
 import {monzaBoundaries,monzaAccessCorridors} from './monza.mjs';
 import {mexicoBoundaries,mexicoAccessCorridors} from './mexico.mjs';
 import {redbullringBoundaries,redbullringAccessCorridors} from './redbullring.mjs';
@@ -19,9 +20,10 @@ function segmentBox(a,b,hx,hz){
 }
 export function interlagosCorridors(track){
  if(cache.has(track))return cache.get(track);
- const pit=pitLayout(track),segments=[],boundary=track.id==='it-1922'?monzaBoundaries(track):track.id==='mx-1962'?mexicoBoundaries(track):track.id==='at-1969'?redbullringBoundaries(track):track.id==='gb-1948'?silverstoneBoundaries(track):track.id==='us-2022'?miamiBoundaries(track):track.id==='nl-1948'?zandvoortBoundaries(track):interlagosBoundaries(track);
+ const pit=pitLayout(track),segments=[],boundary=track.id==='us-2012'?cotaBoundaries(track):track.id==='it-1922'?monzaBoundaries(track):track.id==='mx-1962'?mexicoBoundaries(track):track.id==='at-1969'?redbullringBoundaries(track):track.id==='gb-1948'?silverstoneBoundaries(track):track.id==='us-2022'?miamiBoundaries(track):track.id==='nl-1948'?zandvoortBoundaries(track):interlagosBoundaries(track);
  for(let i=0;i<track.points.length;i++){const next=(i+1)%track.points.length,left=Math.max(boundary[1][i].offset,boundary[1][next].offset),right=Math.max(boundary[-1][i].offset,boundary[-1][next].offset),shift=(left-right)/2,move=p=>({...p,x:p.x+Math.cos(p.heading)*shift,z:p.z-Math.sin(p.heading)*shift});segments.push({a:move(track.points[i]),b:move(track.points[next]),half:(left+right)/2,kind:'race'});}
  for(let d=0;d<pit.length;d+=3)segments.push({a:pitRoadPose(track,d),b:pitRoadPose(track,Math.min(d+3,pit.length)),half:pit.width/2,kind:'pit'});
+ if(track.id==='us-2012')segments.push(...cotaAccessCorridors(track));
  if(track.id==='it-1922')segments.push(...monzaAccessCorridors(track));
  if(track.id==='mx-1962')segments.push(...mexicoAccessCorridors(track));
  if(track.id==='at-1969')segments.push(...redbullringAccessCorridors(track));
@@ -65,7 +67,7 @@ export function interlagosTerrainHeight(track,x,z,cell=12){
  for(let i=0;i<track.points.length;i+=4){const p=track.points[i],squaredDistance=(x-p.x)**2+(z-p.z)**2;if(squaredDistance<best){closest=p;best=squaredDistance;}}
  const distance=Math.sqrt(best)-track.width/2,blend=clamp((distance-12)/65,0,1),bank=4+4*Math.sin(x*.008+z*.005)**2;
  let y=terrainHeight(track,x,z)-.9+bank*blend;
- const reach=track.width/2+Math.SQRT2*cell+track.step,boundary=track.id==='it-1922'?monzaBoundaries(track):track.id==='mx-1962'?mexicoBoundaries(track):track.id==='at-1969'?redbullringBoundaries(track):track.id==='gb-1948'?silverstoneBoundaries(track):track.id==='us-2022'?miamiBoundaries(track):track.id==='nl-1948'?zandvoortBoundaries(track):interlagosBoundaries(track);
+ const reach=track.width/2+Math.SQRT2*cell+track.step,boundary=track.id==='us-2012'?cotaBoundaries(track):track.id==='it-1922'?monzaBoundaries(track):track.id==='mx-1962'?mexicoBoundaries(track):track.id==='at-1969'?redbullringBoundaries(track):track.id==='gb-1948'?silverstoneBoundaries(track):track.id==='us-2022'?miamiBoundaries(track):track.id==='nl-1948'?zandvoortBoundaries(track):interlagosBoundaries(track);
  for(let i=0;i<track.points.length;i++){const p=track.points[i],dx=x-p.x,dz=z-p.z,along=dx*Math.sin(p.heading)+dz*Math.cos(p.heading),across=dx*Math.cos(p.heading)-dz*Math.sin(p.heading),pad=Math.SQRT2*cell+track.step;if(Math.abs(along)<reach&&across>-boundary[-1][i].offset-pad&&across<boundary[1][i].offset+pad)y=Math.min(y,p.y-.9);}
  // Suppress discontinuities close to the asphalt; outside banks stay rolling.
  if(distance<12)y=Math.min(y,closest.y-.9);
