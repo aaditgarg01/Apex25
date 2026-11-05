@@ -159,3 +159,31 @@ Dune banks, temporary stands, town/hotel silhouettes, vegetation and distant
 wind turbines are original approximations. Turbines do not assert a mapped
 wind-farm location. The North Sea is an artistic distant western horizon.
 No reference photos, licensed sponsor graphics or official game assets are included.
+
+
+## Miami stadium, marina and surface reference — 2.36.0
+
+The [organiser glossary](https://f1miamigp.com/miami-grand-prix-glossary/)
+places the fake marina inside Turns 6–8 and describes yachts on a 25,000 sq ft
+vinyl water treatment. The [Marina grandstand guide](https://f1miamigp.com/tickets/grandstand/marina/)
+and the user-supplied aerial photo inform the aqua runoff / beach / boat-club
+character. No source photo is shipped as a texture.
+The [FIA 2025 circuit and pit map](https://www.fia.com/system/files/decision-document/2025_miami_grand_prix_-_event_notes_-_circuit_map_pit_lane_quarantine_zone_emergency_exits_and_red_zones_.pdf)
+and [Formula 1 circuit guide](https://www.formula1.com/en/latest/article/circuit-guide-everything-you-need-to-know-about-the-miami-international-autodrome.zMEQ1nU4xZKuvc9EsGXDr)
+provide corner-order and T13–16 ramp context. The existing driving elevation is
+retained; the highway deck is an artistic overhead structure, not a new ramp.
+
+`public/data/miami-architecture.js` caches OSM stadium way 171419981 and adjacent
+stadium way 1368495807 from the [map API subset](https://api.openstreetmap.org/api/0.6/map?bbox=-80.252,25.948,-80.227,25.966),
+retrieved 2026-11-05. The principal stadium envelope uses the complete footprint's
+oriented bounding box. The actual rendered bowl/canopy/masts are original,
+simplified geometry without branded signage. The adjacent tennis footprint is
+retained as reference data, not currently rendered.
+
+Other stands, marina boats, hospitality, overpass piers and parking anchors are
+original approximations fitted to whole-footprint clearance reservations. The
+surface plan is original per-corner width data, not surveyed runoff. Small gravel
+beds at T1/T17 are artistic safety additions: their real-world presence/locations
+were not verified. Paved/teal escapes, grass verges and close walls are the dominant
+Miami treatment. Generic text and colour artwork are original; no licensed logos
+or exact photographic leaf/sponsor graphics are included.

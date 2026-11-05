@@ -162,7 +162,7 @@
       "url": "https://www.openstreetmap.org/relation/9542146"
     },
     {
-      "feature": "Madrid named corners, La Monumental 550m/24% bank, Cárcavas climb and Norte tunnel context",
+      "feature": "Madrid named corners, La Monumental 550m/24% bank, C\u00e1rcavas climb and Norte tunnel context",
       "url": "https://www.madring.com/en/circuit"
     },
     {
@@ -186,7 +186,7 @@
       "url": "https://f1saopaulo.com.br/wp-content/uploads/2026/10/Mapa-completo-v2.webp"
     },
     {
-      "feature": "Interlagos pit complex, green runoff, grass banks, urban surroundings and lake aerial, Beto Issa / GP São Paulo, 2022",
+      "feature": "Interlagos pit complex, green runoff, grass banks, urban surroundings and lake aerial, Beto Issa / GP S\u00e3o Paulo, 2022",
       "url": "https://www.flickr.com/photos/governosp/52497080967/"
     },
     {
@@ -228,6 +228,30 @@
     {
       "feature": "Zandvoort main-grandstand outline, OSM ODbL",
       "url": "https://www.openstreetmap.org/way/52473180"
+    },
+    {
+      "feature": "Miami marina inside T6\u20138; yachts on fake vinyl water; official organiser glossary",
+      "url": "https://f1miamigp.com/miami-grand-prix-glossary/"
+    },
+    {
+      "feature": "Miami Marina grandstand region around T6\u20138",
+      "url": "https://f1miamigp.com/tickets/grandstand/marina/"
+    },
+    {
+      "feature": "Miami official FIA 2025 circuit, corner order and pit layout reference",
+      "url": "https://www.fia.com/system/files/decision-document/2025_miami_grand_prix_-_event_notes_-_circuit_map_pit_lane_quarantine_zone_emergency_exits_and_red_zones_.pdf"
+    },
+    {
+      "feature": "Miami T13\u201316 ramp and chicane character; existing elevation retained",
+      "url": "https://www.formula1.com/en/latest/article/circuit-guide-everything-you-need-to-know-about-the-miami-international-autodrome.zMEQ1nU4xZKuvc9EsGXDr"
+    },
+    {
+      "feature": "Miami main stadium complete footprint, OSM way 171419981, ODbL",
+      "url": "https://www.openstreetmap.org/way/171419981"
+    },
+    {
+      "feature": "Miami adjacent tennis stadium outline retained as unrendered reference, OSM way 1368495807, ODbL",
+      "url": "https://www.openstreetmap.org/way/1368495807"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

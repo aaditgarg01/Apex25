@@ -130,3 +130,16 @@ https://api.openstreetmap.org/api/0.6/map?bbox=4.535,52.381,4.553,52.394 .
 The adjacent anchor definitions, bank/elevation/surface profiles and 3D assets are
 original approximate game data/code. Reference images and sponsor artwork are not
 redistributed. Prior cached scenery data retains its original ODbL attribution.
+
+
+## Miami stadium outlines
+
+The `features` array of `public/data/miami-architecture.js` contains complete
+longitude/latitude outlines derived from © OpenStreetMap contributors, ODbL 1.0:
+https://www.openstreetmap.org/copyright . Retrieved 2026-11-05 through
+https://api.openstreetmap.org/api/0.6/map?bbox=-80.252,25.948,-80.227,25.966 .
+Source ways: 171419981 (stadium) and 1368495807 (adjacent tennis stadium).
+The enclosing stadium rectangle is also derived from the source outline.
+Surrounding anchors, procedural models, lettering and surface profiles are
+original game code/data and explicitly approximate. No reference photos, official
+stadium signage, sponsor logos or external 3D assets are redistributed.

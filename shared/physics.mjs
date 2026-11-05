@@ -1,3 +1,4 @@
+import {miamiSurfaceAt} from './miami.mjs';
 import {zandvoortSurfaceAt} from './zandvoort.mjs';
 import {bankSupport,surfaceAttitude} from './banked-road.mjs';
 import {prepareTyres,wearTyres,tyreGrip,tyreSpeedFactor,defaultTyre} from './tyres.mjs';
@@ -37,8 +38,8 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.ai&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)&&(laps===Infinity||laps*track.length-c.progress>track.length*.45)){c.pitCompound=defaultTyre(c);c.pitRequested=true;}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
- const roadOffset=conditions.wetness||track.id==='nl-1948'?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
- if(duneSurface){const bank=duneSurface.bank;c.bankedRoad=true;c.bankRoll=bank.roll;c.bankTurnSign=-bank.outerSide;c.roadCurvature=angleDiff(sample(track,c.s+5).heading,sample(track,c.s-5).heading)/10;c.bankNormalLoad=bankSupport(bank.bank,Math.abs(c.v),1/Math.max(.0001,Math.abs(c.roadCurvature)),conditions.wetness).normalLoad;}
+ const roadOffset=conditions.wetness||['nl-1948','us-2022'].includes(track.id)?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2022'?miamiSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
+ if(duneSurface&&track.id==='nl-1948'){const bank=duneSurface.bank;c.bankedRoad=true;c.bankRoll=bank.roll;c.bankTurnSign=-bank.outerSide;c.roadCurvature=angleDiff(sample(track,c.s+5).heading,sample(track,c.s-5).heading)/10;c.bankNormalLoad=bankSupport(bank.bank,Math.abs(c.v),1/Math.max(.0001,Math.abs(c.roadCurvature)),conditions.wetness).normalLoad;}
  c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>roadHalfWidth(track,c.s)-.8?conditions.curbGrip:1):1;
  if(duneSurface)c.surfaceGrip*=duneSurface.grip;
  c.cornerGrip=(1-conditions.wetness*(brake*.24+throttle*.10))*(track.id==='mx-1962'?.92:1);
@@ -46,7 +47,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  const traction=conditions.traction*c.surfaceGrip*rubber,braking=33*conditions.braking*c.surfaceGrip*rubber;
  const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032*density)*(1-slip*0.3)+(duneSurface?Math.abs(c.v)*duneSurface.drag:c.offtrack?c.v*.5:0)+Math.max(0,c.v-speedLimit)*1.25;
  c.slipstream=0;
- const travelPitch=duneSurface?surfaceAttitude(road,c.motionHeading??c.heading).pitch:road.pitch,gravity=-9.81*Math.sin(travelPitch);
+ const travelPitch=track.id==='nl-1948'?surfaceAttitude(road,c.motionHeading??c.heading).pitch:road.pitch,gravity=-9.81*Math.sin(travelPitch);
  if(input.park){if(c.v>0)c.v=Math.max(0,c.v-(braking+drag)*dt);else if(c.v<0)c.v=Math.min(0,c.v+(braking+drag)*dt);}
  else if(c.v>=0){
   if(c.v<=.2&&brake&&!throttle&&!c.ai){c.v=Math.max(-12,c.v-(7.5*traction-gravity)*dt);}

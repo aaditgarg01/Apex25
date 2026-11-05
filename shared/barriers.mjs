@@ -1,3 +1,4 @@
+import {miamiBoundaryOffset,miamiWallClear} from './miami.mjs';
 import {zandvoortBoundaryOffset} from './zandvoort.mjs';
 import {bankedHeight} from './banked-road.mjs';
 import {interlagosBoundaryOffset} from './interlagos-boundary.mjs';
@@ -19,8 +20,9 @@ function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,off
 function pitEdge(track,i,offset){const p=track.points[i];return {x:p.x+Math.cos(p.heading)*offset,z:p.z-Math.sin(p.heading)*offset,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
- const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',interlagos=track.id==='br-1940',zandvoort=track.id==='nl-1948',jeddah=track.id==='sa-2021',wideRunoff=shanghai||bahrain||spa||jeddah||interlagos||zandvoort,concreteWalls=melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=zandvoort?zandvoortBoundaryOffset:interlagos?interlagosBoundaryOffset:jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
+ const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',interlagos=track.id==='br-1940',zandvoort=track.id==='nl-1948',miami=track.id==='us-2022',jeddah=track.id==='sa-2021',wideRunoff=miami||shanghai||bahrain||spa||jeddah||interlagos||zandvoort,concreteWalls=miami||melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=miami?miamiBoundaryOffset:zandvoort?zandvoortBoundaryOffset:interlagos?interlagosBoundaryOffset:jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
  function add(a,b,width,height,kind,inward=null){
+  if(miami&&['track','fence'].includes(kind)&&!miamiWallClear(track,a,b,width))return;
   const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);if(length<.01)return;
   const wall={a,b,width,height,kind,x:(a.x+b.x)/2,z:(a.z+b.z)/2,tx:dx/length,tz:dz/length,length,inward,bottom:Math.min(a.y,b.y),top:Math.max(a.y,b.y)+height};
   const id=walls.length;walls.push(wall);const pad=width/2+.1;

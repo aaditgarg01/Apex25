@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.35.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.36.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1176,3 +1176,98 @@ runoff overlap, surface balance and frame rate remain for manual testing.
 
 References and ODbL attribution: `TRACK-SOURCES.md`, `TRACK-DATA-LICENSE.md`,
 `public/data/track-visual-references.json` and `public/data/zandvoort-architecture.js`.
+
+
+## Miami stadium, marina, runoff and track dressing — 2.36.0
+
+Miami (`us-2022`) now has a dedicated tropical campus environment, replacing its
+previous generic scenery. The existing geographic centreline, 19-corner order,
+17m game road width, cached elevation anchors, car models, multiplayer packet
+formats and session rules are retained. No unverified driving ramps were added.
+The 5.412km published length corresponds to ~5.422km in the retained sampled road.
+
+- **Stadium:** the OSM stadium footprint supplies position, orientation and a
+  conservative 274 × 261m envelope. An original neutral bowl, seating rings,
+  canopy and four plain masts reproduce its general silhouette. No stadium logo,
+  sponsor artwork or reference photograph is bundled.
+- **Marina:** placed in the T6–8 infield, as the organiser confirms, rather than
+  beside the pit straight. The complete ~97 × 50m envelope contains original
+  flat aqua vinyl-style fake water, nine instanced yachts, a dock, sandy beach,
+  loungers, umbrellas and cabanas. The theme and region are reference-informed;
+  boat arrangement, scale and exact anchor are approximate clearance-safe fits.
+- **Pits and event grounds:** garages face the existing external pit lane from
+  a pavilion parallel to its service corridor. Hospitality, podium, ten temporary
+  stands, parking lots, palms/shrubs, low commercial buildings, marshals, camera
+  cranes, recovery vehicles, flag panels, distance markers and original generic
+  signs populate reserved space. A high expressway deck has separately checked
+  supports near T14–15; it does not alter the driving elevation.
+- **Surface dressing and text:** broad original teal painted areas, pink accents,
+  red/white kerbs, asphalt escapes, textured grass verges and small gravel beds.
+  Large original **MIAMI** lettering is painted into selected runoff surfaces;
+  boards, hospitality, marina and venue signs carry readable generic text.
+- **Shared surfaces:** `shared/miami.mjs` defines smoothly tapered widths, capped
+  near other branches and tight inner curves. Renderer, wall/collision placement,
+  scenery reservations, off-track grip/drag, track-limit penalty and guide speed
+  consume this plan. The main asphalt remains unchanged. Tarmac escapes retain
+  near-normal grip and a smaller time penalty; illegal timed laps still become
+  invalid. Gravel strongly slows the car; grass and paint lose more grip in rain.
+  Visible covered impact sections reuse the shared wall solids, rather than
+  adding independent invisible colliders. Unsafe corner wall segments are omitted
+  from both rendering and collision. Existing recovery remains in place.
+- **Atmosphere:** high humid sunshine, blue sky/cumulus and subtle parking-lot heat
+  shimmer in dry conditions; darker tropical storm light in wet conditions.
+  Existing rain, spray, reflective asphalt and whole-lap dynamic weather remain.
+  Flags, restrained pooled confetti and flag LEDs update on the existing loop,
+  with cosmetic updates throttled to 80ms. Confetti is hidden in heavy rain.
+- **Free Practice:** Turn 1 approach, back straight and marina approach starts.
+
+**Corner-by-corner surface treatment** (original fitted widths, not a surveyed map):
+
+| Turns | Treatment outside the road |
+| --- | --- |
+| T1 | Broad paved/teal escape, small approximate gravel bed, grass, covered protection |
+| T2–4 | Narrow paved/painted shoulders, grass and close concrete protection |
+| T5 | Medium paved/painted escape and grass |
+| T6–8 | Broad teal/pink painted tarmac, grass islands and marina dressing |
+| T9–10 | Tight paved shoulders, grass and concrete walls |
+| T11 | Broad braking escape, paint and covered impact protection |
+| T12 | Medium paved escape and grass |
+| T13–16 | Tight chicane shoulders, narrow grass, close concrete walls and high overpass |
+| T17 | Broad paved/painted escape, small approximate gravel bed and covered protection |
+| T18–19 | Modest paved/painted shoulders and grass |
+
+**Approximate / compare manually:** the organiser verifies the marina's T6–8
+region and fake vinyl water, but not these exact boat/club dimensions. The stadium
+position/orientation is map-derived; its architecture is simplified original
+geometry. Temporary stands, individual palms, hospitality, parking, overpass shape
+and support stations are reference-fitted artistic assets. Corner stations and
+runoff widths are fitted to the existing road. No reliable source established
+small Miami gravel trap positions: the T1/T17 beds are explicitly artistic safety
+additions behind paved escapes, not claims of real gravel traps. Exact building
+facades, stand seasons and sponsor placement are not reproduced.
+
+**Static verification:** syntax and module imports, undefined-name/shadow checks,
+`npm run build`, `npm run build:vercel` and whitespace checks passed. A dedicated
+Three.js construction audit found **355 reservations**, no rejected required
+placements, no road/pit/runoff-envelope intrusions and no model envelope overflow.
+Minimum conservative scenery clearance: **3.24m** beyond the reserved safety/pit
+corridors. Minimum sampled wall-edge clearance from the racing road: **0.78m**.
+An independent polygon check examined **3,476 runoff quads** against non-local
+road branches (local 65m neighbourhood excluded), with **zero intersections**;
+140 quads at the pit corridor are masked out. Overpass underside clearance over
+covered road samples: **10.20m**. These are static checks, not driving guarantees.
+
+**Measured construction budget:** 12,443 spectators, 257 palms, 88 flags and nine
+boats; dedicated scenery becomes **128 mesh submissions** after spatial batching,
+~1.07M triangles including repeated spectator geometry. This excludes the road,
+HUD, cars, weather and shadow passes, and is not a measured FPS claim. Large
+geometry is batched; spectators, palms, boats and poles are instanced. Assets are
+local; normal circuit cleanup disposes geometry/materials/textures.
+
+**Render inspection:** parked local dry and wet views loaded with no captured
+browser errors; the dry overhead preview visibly shows the MIAMI runoff text.
+No driving, multiplayer playtest or game test suite was run. Surface balance,
+full-lap visual fidelity and frame rate remain for the user's manual testing.
+
+Sources and data licensing: `TRACK-SOURCES.md`, `TRACK-DATA-LICENSE.md`,
+`public/data/track-visual-references.json` and `public/data/miami-architecture.js`.
