@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.40.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.40.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1610,3 +1610,13 @@ unlimited qualifying/practice/weather tyres, adjacent-driver and finished
 intervals, pit-status states, and isolation of predicted inventory from server
 state. A parked UI inspection checked the driver/setup/standings/pit displays.
 The game test suite was not run or edited; no driving or online playtest is claimed.
+
+
+## Minimum race distance — 2.40.1
+
+Solo and multiplayer races now require at least **3 whole laps**. The lap counter
+clamps its minus button at 3, typed values below 3 fail validation, room-setting
+updates reject them, and session/room creation normalizes invalid counts to 3.
+The strategy preview uses the same minimum. Free Practice remains unlimited.
+Syntax, both builds and focused shared-validation checks passed; no game test
+suite or driving playtest was run for this adjustment.

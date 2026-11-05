@@ -7,7 +7,7 @@ import {createCar,stepRace,stepCar,standings} from './physics.mjs';
 import {sample,wrap} from './tracks.mjs';
 export const SESSION_MODES=['weekend','practice','race'];
 export {QUALIFYING_LIMIT};
-export const validLapCount=n=>Number.isSafeInteger(n)&&n>=1;
+export const validLapCount=n=>Number.isSafeInteger(n)&&n>=3;
 export const normalizeLapCount=n=>validLapCount(n)?n:3;
 export function qualifyingOrder(cars){return [...cars].sort((a,b)=>(a.bestLap||Infinity)-(b.bestLap||Infinity)||a.index-b.index);}
 export function createSession(track,drivers,{mode='weekend',laps=3,practiceStart='start',conditions='normal'}={}){

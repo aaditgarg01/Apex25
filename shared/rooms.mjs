@@ -8,7 +8,7 @@ export function parseRoomCode(value,base='https://apex.invalid'){
 export function updatedRoomSettings(room,message,tracks){
  const track=tracks.find(t=>t.id===message.trackId);if(!track)throw Error('Choose a valid circuit.');
  if(!SESSION_MODES.includes(message.mode))throw Error('Choose a valid session type.');
- if(!validLapCount(message.laps))throw Error('Enter a whole number of laps, at least 1.');
+ if(!validLapCount(message.laps))throw Error('Enter a whole number of laps, at least 3.');
  if(!Object.hasOwn(CONDITIONS,message.conditions))throw Error('Choose valid track conditions.');
  if(!Number.isInteger(message.aiCount)||message.aiCount<0||message.aiCount>7)throw Error('Choose between 0 and 7 AI opponents.');
  if(!['start','sector2','sector3','eau-rouge','mexico-stadium','senna-s','tarzan','luyendyk','miami-t1','miami-back','miami-marina','silverstone-copse','silverstone-becketts','silverstone-stowe','austria-climb','austria-downhill','austria-final','mexico-t1','mexico-stadium-inner'].includes(message.practiceStart))throw Error('Choose a valid practice start.');

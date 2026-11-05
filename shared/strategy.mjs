@@ -42,7 +42,7 @@ function planStints(track,distance,raceLaps,wetness,{first='best',counts=[0,0,0]
 // Estimate from the observable surface, without reading future weather fronts.
 // 27 stock states enforce two fitted sets per slick; stops lie on whole laps.
 export function raceStrategy(track,laps,weather='normal',starting='auto'){
- laps=Math.max(1,Math.floor(Number(laps)||3));const wetness=typeof weather==='object'?surfaceWetness({trackWetness:weather.wetness}):surfaceWetness({conditions:weather}),first=starting==='auto'?defaultTyre(wetness):starting,key=[track.id,laps,wetness,first].join(':');if(planCache.has(key))return planCache.get(key);
+ laps=Math.max(3,Math.floor(Number(laps)||3));const wetness=typeof weather==='object'?surfaceWetness({trackWetness:weather.wetness}):surfaceWetness({conditions:weather}),first=starting==='auto'?defaultTyre(wetness):starting,key=[track.id,laps,wetness,first].join(':');if(planCache.has(key))return planCache.get(key);
  const plan=planStints(track,laps,laps,wetness,{first});if(planCache.size>100)planCache.clear();planCache.set(key,plan);return plan;
 }
 export function strategyLabel(plan){return plan.stints.map((stint,i)=>(i?'lap '+stint.from+' → ':'')+tyreProfile(stint.compound).name+' ('+stint.life+' laps est.)').join(' · ');}
