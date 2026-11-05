@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.39.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.40.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1566,3 +1566,47 @@ inspected; the test suite, driving and multiplayer playtests were not run.
 See [the complete baseline audit, per-corner width table, references and remaining
 uncertainties](docs/MEXICO-AUDIT-2.39.0.md), [sources](TRACK-SOURCES.md) and
 [data attribution](TRACK-DATA-LICENSE.md).
+
+## Circuit tyre strategy, race allocation and interval standings — 2.40.0
+
+Tyre selectors show estimated fresh-set life in brackets, rounded up to whole
+laps. Estimates update with the selected race length, circuit and surface; the
+pit menu uses the active session. Boost, sliding and impacts can shorten that
+life. Starting tyres are selected in session setup, the friends lobby or after
+qualifying, rather than on the driver-name/livery screen. Existing keyboard
+shortcuts remain available where tyre selection is shown.
+
+Each driver has **two sets each of Soft, Medium and Hard per race**, including the
+starting set. Selecting a compound or requesting/cancelling a pit stop does not
+consume a set; fitting it does. Missed boxes do not consume a set. Exhausted
+compounds are disabled and rejected by the authoritative server, including keyboard
+selection. Wet and Intermediate are unlimited. Qualifying and Free Practice have
+unlimited supplies; their use does not spend race stock. A new race resets stock.
+
+All 42 circuits have explicit original arcade tyre-balance profiles in
+`shared/tyre-circuits.mjs`: degradation, straight-line pace/drag, corner-versus-power
+weight and compound grip gains. Soft, Medium and Hard have distinct speed trims;
+weather mismatch, degradation and the existing wet-grip behaviour still apply.
+These are game-balance parameters, not real Pirelli data or measured F1 top speeds.
+The pre-race planner tracks all 27 slick-stock states, includes circuit pit loss,
+and selects whole-lap stop points. Automatic starting tyres are included accurately;
+Y can choose a recommended start. The live recommendation compares keeping the
+current used set against stopping and future permitted stints, without reading
+future dynamic-weather changes. The search samples at most 60 pre-race / 30 live
+stop points; advice is an estimate rather than a guaranteed optimum.
+
+Race standings now show a coloured current-compound badge for every driver.
+**IN PIT** appears for pit-lane travel, service and exit; a requested stop alone
+does not trigger it. The leader shows **Interval** and other drivers show the gap
+to the driver immediately ahead, including when only part of the standings is
+shown. Finished intervals use finish-time differences; running gaps retain the
+existing distance/pace estimate. Results retain each finisher's total time.
+Qualifying and practice continue to show best valid lap times.
+
+Validation: syntax, undefined-name/shadow checks, module imports, both builds and
+focused allocation/planner/display checks passed. Coverage includes all 42 circuit
+profiles; 1/3/60/1000-lap planning in dry/wet conditions, stock enforcement and reset,
+unlimited qualifying/practice/weather tyres, adjacent-driver and finished
+intervals, pit-status states, and isolation of predicted inventory from server
+state. A parked UI inspection checked the driver/setup/standings/pit displays.
+The game test suite was not run or edited; no driving or online playtest is claimed.

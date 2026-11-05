@@ -1,18 +1,20 @@
 import {wrap,angleDiff} from './tracks.mjs';
 import {clearImpact} from './motion.mjs';
-import {TYRES,fitTyres} from './tyres.mjs';
+import {fitTyres,tyreAvailable,availableTyreChoice} from './tyres.mjs';
 import {pitLayout,pitRoadPose,locatePitLane} from './pit-layout.mjs';
 export {pitLayout,pitRoadPose} from './pit-layout.mjs';
 export const PIT_SPEED=80/3.6,PIT_SERVICE_SECONDS=3;
 export const pitAhead=(car,track)=>wrap(pitLayout(track).entry-car.s,track.length);
 export function requestPit(car,compound){
  if(!car||car.finished||car.retired||!Number.isFinite(car.tyreLife)||car.pitState!=='none')return false;
- if(compound!==undefined&&!Object.hasOwn(TYRES,compound))return false;
+ if(car.pitRequested){car.pitRequested=false;return true;}
+ if(!tyreAvailable(car,compound||car.pitCompound))return false;
  if(compound)car.pitCompound=compound;
  car.pitRequested=!car.pitRequested;return true;
 }
 export function tryPitEntry(car,track,previousS){
  if(!car.pitRequested||car.pitState!=='none'||car.v<0||car.finished||car.retired)return false;
+ if(!tyreAvailable(car,car.pitCompound))car.pitCompound=availableTyreChoice(car);
  const layout=pitLayout(track),travel=wrap(car.s-previousS,track.length),ahead=wrap(layout.entry-previousS,track.length),lane=locatePitLane(track,car);
  if(!lane||Math.cos(angleDiff(car.heading,lane.heading))<=0)return false;
  const branch=wrap(layout.entry+lane.d-car.s,track.length);if(Math.min(branch,track.length-branch)>30)return false;
@@ -34,7 +36,7 @@ export function tryPitEntry(car,track,previousS){
 export function pitPose(car,track,distance=car.pitTravel){
  const p=pitRoadPose(track,distance,0,car.pitEntryOffset),merge=car.pitMerge;if(!merge)return p;
  const weight=d=>{const t=Math.max(0,Math.min(1,(d-merge.start)/Math.max(.1,merge.length)));return 1-t*t*(3-2*t);};
- const shifted=d=>{const base=pitRoadPose(track,d,0,car.pitEntryOffset),w=weight(d);return {...base,x:base.x+merge.x*w,y:base.y+merge.y*w,z:base.z+merge.z*w};};
+ const shifted=d=>{const base=pitRoadPose(track,d,0,car.pitEntryOffset),blend=weight(d);return {...base,x:base.x+merge.x*blend,y:base.y+merge.y*blend,z:base.z+merge.z*blend};};
  const w=weight(distance),a=shifted(distance-.2),b=shifted(distance+.2),current={...p,x:p.x+merge.x*w,y:p.y+merge.y*w,z:p.z+merge.z*w},dx=b.x-a.x,dz=b.z-a.z;
  return {...current,heading:Math.atan2(dx,dz),pitch:Math.atan2(b.y-a.y,Math.hypot(dx,dz))};
 }

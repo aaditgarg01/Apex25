@@ -6,7 +6,7 @@ import {pitPose,pitLayout} from './pits.mjs';
 
 const active=s=>['race','qualifying','practice'].includes(s.phase)&&s.elapsed>=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const copy=c=>({...c,sectors:[...(c.sectors||[])],lastSectors:[...(c.lastSectors||[])],bestSectors:[...(c.bestSectors||[])],lapHistory:[...(c.lapHistory||[])],lapValidHistory:[...(c.lapValidHistory||[])]});
+const copy=c=>({...c,tyreSetsUsed:{...c.tyreSetsUsed},sectors:[...(c.sectors||[])],lastSectors:[...(c.lastSectors||[])],bestSectors:[...(c.bestSectors||[])],lapHistory:[...(c.lapHistory||[])],lapValidHistory:[...(c.lapValidHistory||[])]});
 const zero=()=>({x:0,y:0,z:0,heading:0});
 const poseFields=['x','y','z','heading','motionHeading','v','steer','pitch','impactVX','impactVZ','impactYaw'];
 const pose=(source,motion)=>Object.assign({...source,smoothMotion:true},Object.fromEntries(poseFields.map(k=>[k,motion[k]??source[k]])));

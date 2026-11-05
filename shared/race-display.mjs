@@ -20,3 +20,13 @@ export function raceGapLabel(car,leader,trackLength,elapsed){
  if(laps>0)return `+${laps}L`;
  return '+'+(distance/Math.max(20,Math.abs(car.v))).toFixed(1);
 }
+
+// The reference is the immediately preceding classified driver, even when the
+// compact standings only show a slice of the field. Finished gaps use elapsed
+// finish times; on-track gaps retain the existing distance/pace estimate.
+export function raceIntervalLabel(car,ahead,trackLength,elapsed){
+ if(car.retired)return 'DNF';
+ if(!ahead)return 'Interval';
+ return raceGapLabel(car,ahead,trackLength,elapsed);
+}
+export const isInPit=car=>isOnTrack(car)&&['lane','service','exit'].includes(car.pitState);

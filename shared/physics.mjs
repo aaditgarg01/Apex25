@@ -4,7 +4,7 @@ import {silverstoneSurfaceAt} from './silverstone.mjs';
 import {miamiSurfaceAt} from './miami.mjs';
 import {zandvoortSurfaceAt} from './zandvoort.mjs';
 import {bankSupport,surfaceAttitude} from './banked-road.mjs';
-import {prepareTyres,wearTyres,tyreGrip,tyreSpeedFactor,defaultTyre} from './tyres.mjs';
+import {prepareTyres,wearTyres,tyreGrip,tyreSpeedFactor,tyreDragFactor,availableTyreChoice} from './tyres.mjs';
 import {stepPit,tryPitEntry,pitAhead,preparePitTraffic,pitLayout} from './pits.mjs';
 import {clearImpact,dampImpact,velocityOf,setVelocity} from './motion.mjs';
 import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
@@ -19,7 +19,7 @@ export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
 export const GRID_ROW_SPACING=16,GRID_STAGGER=8,GRID_LATERAL_OFFSET=3.6;
 export function gridSlot(index){return {s:-12-Math.floor(index/2)*GRID_ROW_SPACING-(index%2)*GRID_STAGGER,offset:(index%2?1:-1)*GRID_LATERAL_OFFSET};}
-export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);const car={id,name,index,ai,airDensity:track.id==='mx-1962'?.78:1,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,roll:p.roll||0,bankedRoad:track.id==='nl-1948',s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};prepareTyres(car);return car;}
+export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);const car={id,name,index,ai,tyreTrackId:track.id,airDensity:track.id==='mx-1962'?.78:1,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,roll:p.roll||0,bankedRoad:track.id==='nl-1948',s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};prepareTyres(car);return car;}
 export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;clearImpact(c);c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
  if(c.finished||isQualifying||c.qualifying||c.pitState!=='none')return false;
@@ -38,7 +38,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  let throttle=input.throttle?1:0,brake=input.brake?1:0,steer=clamp(Number(input.steer)||0,-1,1);
  if(c.ai){const look=sampleGuide(track,c.s+Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)));if(c.pitRequested&&pitAhead(c,track)<170){const entry=pitLayout(track),p=sample(track,c.s+Math.max(8,c.v*.4),entry.entryOffset);Object.assign(look,p);}const lane=Math.sin(c.index*2+c.s*.003)*.35;look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;const aim=Math.atan2(look.x-c.x,look.z-c.z);steer=clamp(angleDiff(aim,c.heading)*3,-1,1);const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;const desired=Math.min(targetSpeed(track,c.s,c.conditions,c.trackWetness),targetSpeed(track,c.s+brakingLook,c.conditions,c.trackWetness))*(track.width<15?.65+c.index*.01:.78+c.index*.018)*Math.min(1,Math.sqrt(tyreGrip(c)))*tyreSpeedFactor(c);throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;}
  // Booking a stop never brakes on the racing surface. The limiter starts at the gate.
- if(c.ai&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)&&(laps===Infinity||laps*track.length-c.progress>track.length*.45)){c.pitCompound=defaultTyre(c);c.pitRequested=true;}
+ if(c.ai&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)&&(laps===Infinity||laps*track.length-c.progress>track.length*.45)){c.pitCompound=availableTyreChoice(c);c.pitRequested=true;}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
  const roadOffset=conditions.wetness||['nl-1948','us-2022','gb-1948','at-1969','mx-1962'].includes(track.id)?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2022'?miamiSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='gb-1948'?silverstoneSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='at-1969'?redbullringSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='mx-1962'?mexicoSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
@@ -48,7 +48,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  c.cornerGrip=(1-conditions.wetness*(brake*.24+throttle*.10))*(track.id==='mx-1962'?.92:1);
  const rubber=tyreGrip(c),speedLimit=(boost?BOOST_TOP_SPEED:TOP_SPEED)*tyreSpeedFactor(c),density=track.id==='mx-1962'?.78:1;
  const traction=conditions.traction*c.surfaceGrip*rubber,braking=33*conditions.braking*c.surfaceGrip*rubber;
- const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032*density)*(1-slip*0.3)+(duneSurface?Math.abs(c.v)*duneSurface.drag:c.offtrack?c.v*.5:0)+Math.max(0,c.v-speedLimit)*1.25;
+ const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032*density*tyreDragFactor(c))*(1-slip*0.3)+(duneSurface?Math.abs(c.v)*duneSurface.drag:c.offtrack?c.v*.5:0)+Math.max(0,c.v-speedLimit)*1.25;
  c.slipstream=0;
  const travelPitch=track.id==='nl-1948'?surfaceAttitude(road,c.motionHeading??c.heading).pitch:road.pitch,gravity=-9.81*Math.sin(travelPitch);
  if(input.park){if(c.v>0)c.v=Math.max(0,c.v-(braking+drag)*dt);else if(c.v<0)c.v=Math.min(0,c.v+(braking+drag)*dt);}
