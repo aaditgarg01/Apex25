@@ -288,6 +288,30 @@
     {
       "feature": "Silverstone Museum footprint, OSM ODbL",
       "url": "https://www.openstreetmap.org/way/437429280"
+    },
+    {
+      "feature": "Red Bull Ring official gradients, hillside setting and main straights",
+      "url": "https://www.redbullring.com/en/track/red-bull-ring-f1-motogp-track/"
+    },
+    {
+      "feature": "Official Austrian GP corner order and 65m elevation relief",
+      "url": "https://www.redbullring.com/de/events-tickets/formel-1/formel-1-circuit/"
+    },
+    {
+      "feature": "FIA Austrian GP 2025 circuit, pit lane and emergency access map",
+      "url": "https://www.fia.com/system/files/decision-document/2025_austrian_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exit_map_quarantine_zone_red_zones.pdf"
+    },
+    {
+      "feature": "Formula 1 2024 T9/T10 2.5m gravel strips and T4 gravel proximity",
+      "url": "https://www.formula1.com/en/latest/article/explained-how-key-changes-to-the-red-bull-ring-look-to-avoid-last-years.2ubjMYkbT3HHpwuEJ7PoHw.2ubjMYkbT3HHpwuEJ7PoHw"
+    },
+    {
+      "feature": "Red Bull Ring OSM pit/stand/woodland/access geometry, snapshot 2026-11-05",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=14.742,47.205,14.785,47.24"
+    },
+    {
+      "feature": "EU-DEM v1.1 25m data, accuracy, datum and attribution",
+      "url": "https://www.opentopodata.org/datasets/eudem/"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

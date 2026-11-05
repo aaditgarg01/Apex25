@@ -216,3 +216,50 @@ and aligned to that lane. Control tower, extra hangar, temporary camp arrangemen
 field/village silhouettes, roof detail, exact runoff extents and bridge dimensions
 are explicitly approximate. Existing elevation anchors remain; no verified new
 camber dataset was found or added. Reference photos/maps are not bundled as assets.
+
+
+## Red Bull Ring hillside, architecture and surface references — 2.38.0
+
+- [Red Bull Ring official gradients, hillside setting and main straights](https://www.redbullring.com/en/track/red-bull-ring-f1-motogp-track/).
+- [Official Austrian GP corner order and 65m elevation relief](https://www.redbullring.com/de/events-tickets/formel-1/formel-1-circuit/).
+- [FIA Austrian GP 2025 circuit, pit lane and emergency access map](https://www.fia.com/system/files/decision-document/2025_austrian_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exit_map_quarantine_zone_red_zones.pdf).
+- [Formula 1 2024 T9/T10 2.5m gravel strips and T4 gravel proximity](https://www.formula1.com/en/latest/article/explained-how-key-changes-to-the-red-bull-ring-look-to-avoid-last-years.2ubjMYkbT3HHpwuEJ7PoHw.2ubjMYkbT3HHpwuEJ7PoHw).
+- [Red Bull Ring OSM pit/stand/woodland/access geometry, snapshot 2026-11-05](https://api.openstreetmap.org/api/0.6/map?bbox=14.742,47.205,14.785,47.24).
+- [EU-DEM v1.1 25m data, accuracy, datum and attribution](https://www.opentopodata.org/datasets/eudem/).
+
+The original clockwise XY centreline (~4.307km sampled versus the official
+4.326km reference) and original 97 SRTM 90m anchors are retained. A separate
+`refinedAnchors` profile blends those original heights with 25% datum-aligned
+EU-DEM road samples, smooths coarse terrain noise, fits 65m relief, and limits
+local gradients below the published maximum 12% uphill / 9.3% downhill. The
+sampled game road reaches approximately +10.97% / -8.53%; these are constrained
+approximations, not surveyed racing-surface gradients or new camber data.
+
+`shared/redbullring-terrain-data.mjs` caches 441 terrain points on a 180m query
+grid and 97 road samples from EU-DEM v1.1 via Open Topo Data `eudem25m`, retrieved
+2026-11-05. The upstream dataset is nominally 25m resolution, ±7m vertical RMSE,
+in EVRS2000. The coarser cached query grid supports landscape shape, not bumps,
+kerbs or precise road heights. `public/data/redbullring-dem.js` re-exports this
+locally served cache. Bilinear landscape interpolation blends into the road;
+near-road ground vertices are conservatively constrained below every nearby
+racing/runoff branch and clear scenery foundations.
+
+`public/data/redbullring-architecture.js` caches complete outlines and oriented
+rectangles for pit Box way 118364939, nine mapped grandstands and hospitality
+building 155581853, plus woodland/farmhouse and bridge reference data. The pit
+model is 28×305m, aligned to the existing generated external pit axis and shifted
+about 17m from its mapped envelope to clear the lane and emergency access. Mapped
+stand footprints can be shifted/shrunk to fit the retained road and service
+corridors; the runtime plan records each adjustment. `shared/redbullring-access.mjs`
+caches linear service/raceway branches; OSM `area=yes` service-apron outlines are
+not misinterpreted as road centreline branches. Temporary camps, parking, control
+tower, viewing terraces and all model detail remain original artistic fits.
+No new bridge/tunnel, named castle or church is added without verified fit/height.
+
+Per-corner runoff types use the official/FIA/F1 context above. T9/T10 include a
+visible 2.5m gravel edge band within broader fitted gravel beds; exact longitudinal
+extent and all broader trap widths are approximate. T4 has a short paved gap
+before gravel. Access conflicts mask both runoff overlays and their grip sampling.
+Walls and fences are created from the same shared solid list used by collisions.
+No new driving banking or bumps are invented. No downloaded reference photos,
+official artwork, sponsor graphics, logos or bull sculptures are distributed.

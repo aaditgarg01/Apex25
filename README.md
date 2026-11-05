@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.37.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.38.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1404,3 +1404,116 @@ user testing. Verification reports accompany the local release archive.
 References/attribution: `TRACK-SOURCES.md`, `TRACK-DATA-LICENSE.md`,
 `public/data/track-visual-references.json`, `public/data/silverstone-architecture.js`
 and `shared/silverstone-access.mjs`.
+
+## Red Bull Ring alpine hillsides, gravel and circuit dressing — 2.38.0
+
+Spielberg (`at-1969`) now uses a dedicated Austrian environment. The unchanged
+clockwise XY centreline is ~4.307km sampled; source display metadata is retained.
+The original 97 SRTM anchors remain in the data. A separate refined road profile
+blends in cached EU-DEM heights, smooths noise and fits the published 65m relief
+within official gradient limits. The 3.6km landscape cache shapes the surrounding
+valley, rolling grass meadows and forested slopes. Near-road terrain is constrained
+below every nearby racing/runoff branch, with reserved foundations under buildings
+and stands. Existing pitch/gravity/camera handling reads the refined profile.
+This is DEM-informed procedural scenery, not laser-scanned or photorealistic terrain.
+
+- **Complete surface dressing:** one shared per-corner plan defines asphalt
+  escapes, coloured paint, gravel beds, grass verges/banks and outer safety lines.
+  T1/T3 have paved braking escapes and gravel; T4 has a short paved gap into close
+  gravel; T6/T7 have paved aprons and gravel with sloping grass; T9/T10 have a
+  distinct 2.5m gravel edge band within wider fitted traps. T2/T5/T8 retain narrower
+  paved shoulders and grass. Surface meshes follow road/terrain height; adjacent
+  roads and pits cap or mask the areas. Red/white corner kerbs, raised exit detail,
+  racing-line rubber, repair seams and darker braking marks remain. Large original
+  **SPIELBERG** lettering appears on selected wide escape areas. No sponsor logos,
+  bull emblems or official brand artwork are included.
+- **Shared gameplay surface data:** paved runoff has near-normal grip and a
+  smaller time penalty; gravel adds heavy drag and low grip; grass and paint lose
+  grip in rain, with additional grass-slope sensitivity. Track-limit invalidation
+  and recovery remain. The same shared plan feeds guide-speed sampling, scenery
+  reservations and barriers. Renderer and collisions consume one wall/fence solid
+  list, with tyre-cover artwork at selected impact zones and Armco elsewhere.
+  Openings crossing cached service roads are omitted from both representations.
+- **Pit and paddock:** a neutral angular 28×305m multi-level pavilion uses the
+  mapped Box envelope, fitted parallel to the existing external pit lane. It has
+  glass hospitality frontage, garage bays, podium and readable pit signs. Its
+  anchor shifts ~17m to clear the generated lane and emergency route. A generic
+  control tower, hospitality blocks, normal start gantry and pit furniture remain
+  within complete reserved footprints.
+- **Stands and landscape:** nine mapped stand envelopes, six grass viewing
+  terraces, a mapped hillside hospitality reference, farm silhouettes, conifer
+  woods, scattered broadleaf trees, meadow grass/wildflowers, three safely fitted
+  campsites and three parking areas. Mapped stands can be relocated or reduced;
+  all adjustments are recorded in the clearance report. One optional extra camp
+  is omitted because no clear fit was available.
+- **Event atmosphere:** predominantly orange crowds, Austrian red-white-red flags,
+  generic orange banners, wet umbrellas, restrained orange smoke, camera/recovery
+  cranes, marshal huts, live caution LEDs, 150/100/50 boards and shared-atlas venue
+  signs. Dry conditions use cool alpine haze, brighter summer light and drifting
+  cumulus; wet conditions use darker mountain-storm colours, existing rain/spray/
+  reflections and low cosmetic mist. Existing damp and dynamic whole-lap weather
+  scheduling is unchanged. Cosmetic animation updates at most every 80ms and normal
+  circuit cleanup releases assets.
+- **Free Practice:** Turn 1 climb, Downhill run and Final corners starts.
+
+**Corner treatment** (original fitted widths, not surveyed runoff boundaries):
+
+| Turn | Outside surface sequence |
+| --- | --- |
+| T1 uphill right | Paved escape → gravel → grass bank |
+| T2 gentle climb left | Narrow paved shoulder → grass |
+| T3 crest right | Paved braking escape → gravel → grass |
+| T4 downhill right | Short paved gap → close gravel → grass |
+| T5 gentle right | Modest paving → grass |
+| T6 left | Paved apron → gravel → sloping grass |
+| T7 left | Paved apron → gravel → sloping grass |
+| T8 right | Paved exit → grass |
+| T9 Jochen Rindt right | Kerb/paved edge → 2.5m gravel edge band within broader gravel → grass |
+| T10 right | Kerb/paved edge → 2.5m gravel edge band within broader gravel → grass/pit-side protection |
+
+**Accuracy limits:** official circuit information/FIA map support corner order,
+valley setting, relief and maximum gradients. EU-DEM's upstream 25m data has stated
+±7m vertical RMSE; the cached landscape grid is sampled every 180m. Road heights
+are constrained approximations, not survey measurements. Refined game gradients
+reach about +10.97% / -8.53%, below the published 12% / 9.3% maxima. No driving
+camber is invented. The main pit axis follows the generated service lane, rather
+than exactly retaining the mapped footprint angle. Start/finish stand scale is
+86%, middle stand 62%; some mapped stands/hospitality move up to ~104m for road
+clearance. Exact roof details, trap widths/lengths, temporary seating, campsite
+arrangements, species and event dressing remain artistic. No extra photos were
+attached to this brief. No named castle/church or new road bridge/tunnel is added
+without a verified location, clearance and height. Cached bridge reference data
+is retained without inventing a traversable structure.
+
+**Requested checks:** syntax, undefined-name/shadow checks (strict new modules;
+existing-file allowances retained), browser/server module imports, `npm run build`,
+`npm run build:vercel` and whitespace checks passed. Complete-envelope audit:
+**903 reservations**, **1,929 cached linear access segments**, no rejected required
+placements, blocked envelopes or model footprint overflows. Minimum conservative
+scenery clearance beyond racing/safety/pit/access corridors: **3.01m**. Minimum
+sampled wall-edge clearance to the driving road: **0.80m**. The independent runoff
+polygon audit checked **2,348 quads** against non-local racing branches (65m local
+neighbourhood excluded), pit bands and access roads: **zero overlaps**. 464 access
+conflicts and 60 additional pit conflicts are masked. Elevation samples are finite;
+maximum 0.5m-station height change is 5.48cm. Start/finish seam differences are
+0.013mm height and 0.00000026rad pitch. Sampled constrained ground stays at least
+0.84m below the associated road/runoff surface. These are static measurements.
+
+**Measured scenery construction budget:** 18,686 instanced spectators, 752 trees,
+5,600 meadow tufts, 88 flags, 216 tents and 36 caravans. After spatial batching:
+**111 mesh submissions**, ~1.56M triangles including repeated crowd geometry;
+static box batches reduce 1,229 boxes to 16. This excludes cars, racing road,
+weather, HUD and extra shadow passes; it is not an FPS result. Shared textures,
+spatial batches, instancing and local caches avoid external data requests in play.
+
+**Render inspection:** parked local dry and wet views were inspected with the
+browser console checked. No game test suite, driving laps, collision playtest,
+multiplayer playtest or full dynamic-weather session was run. Handling, full-lap
+visuals and frame rate remain for the user's manual checks. Reports and preview
+images accompany the local release archive.
+
+References and data terms: `TRACK-SOURCES.md`, `TRACK-DATA-LICENSE.md`,
+`public/data/track-visual-references.json`, `public/data/redbullring-architecture.js`,
+`public/data/redbullring-dem.js` and the corresponding shared caches. EU-DEM is
+© European Union, with funding by the European Union; adaptations are not endorsed
+by the Union. OSM data is © OpenStreetMap contributors, ODbL 1.0.

@@ -163,3 +163,27 @@ placement adjustments and cosmetic animation are original game code/data. No
 reference photographs, real sponsor/team artwork, licensed logos or external 3D
 assets are redistributed. Plain geographic/venue names identify locations; the
 neutral models and lettering do not reproduce official branded signage.
+
+
+## Red Bull Ring mapped architecture, access roads and terrain
+
+`public/data/redbullring-architecture.js` and `shared/redbullring-access.mjs`
+contain derived geometry © OpenStreetMap contributors under ODbL 1.0:
+https://www.openstreetmap.org/copyright . Snapshot 2026-11-05:
+https://api.openstreetmap.org/api/0.6/map?bbox=14.742,47.205,14.785,47.24 .
+Complete source outlines, way IDs and derived oriented envelopes are retained.
+Examples: pit Box 118364939, stands 118364945/312030917/312030921/565072384/
+604402038/1077423719/1077423720/1077517159/1228485529 and hillside building
+155581853. These data remain available under ODbL; the original procedural
+models, signage, surface widths and adjusted placement are separate game code.
+
+EU-DEM v1.1 elevation values in `shared/redbullring-terrain-data.mjs` (re-exported
+by `public/data/redbullring-dem.js`) are © European Union, Copernicus Land
+Monitoring Service, with funding by the European Union. Retrieved 2026-11-05 via
+Open Topo Data: https://www.opentopodata.org/datasets/eudem/ . EU-DEM is supplied
+under the European Union's full, open and free access/reuse terms described by
+that provider and its linked attribution notice. Query spacing, local projection,
+rounding, bilinear interpolation and road-profile blending are adaptations by
+APEX 25; they do not imply endorsement by the European Union. The retained SRTM
+anchor provenance remains recorded separately in `public/data/elevations.json`.
+No source photographs, official branding or licensed external 3D assets are bundled.
