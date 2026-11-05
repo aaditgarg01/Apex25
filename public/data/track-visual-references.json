@@ -348,6 +348,42 @@
     {
       "feature": "Mexico City 2.39.0 — SRTM 90m elevation cross-check dataset",
       "url": "https://www.opentopodata.org/datasets/srtm/"
+    },
+    {
+      "feature": "Monza 2.41.0 — Official corner order and straight/circuit character",
+      "url": "https://www.monzanet.it/tracciato-pista-monza/"
+    },
+    {
+      "feature": "Monza 2.41.0 — FIA 2025 circuit, pit lane and emergency map",
+      "url": "https://www.fia.com/system/files/decision-document/2025_italian_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exit_map_quarantine_zone_and_red_zones.pdf"
+    },
+    {
+      "feature": "Monza 2.41.0 — FIA 2024 revised kerbs, resurfacing and 2.5m gravel strips",
+      "url": "https://www.fia.com/sites/default/files/decision-document/2024%20Italian%20Grand%20Prix%20-%20Race%20Director%27s%20Event%20Notes%20V2.pdf"
+    },
+    {
+      "feature": "Monza 2.41.0 — Official historic oval geometry and banking context",
+      "url": "https://www.monzanet.it/en/the-flyover-of-monza/"
+    },
+    {
+      "feature": "Monza 2.41.0 — Official brochure: 6.2m raised banking and 82% maximum gradient",
+      "url": "https://www.monzanet.it/wp-content/uploads/2023/05/2023_Brochure_Experience_Monza_compressed.pdf"
+    },
+    {
+      "feature": "Monza 2.41.0 — Official stand-area map; 2026 reference, temporary event arrangements vary",
+      "url": "https://www.monzanet.it/wp-content/uploads/2026/06/GP_F1_2026_LISTINO_PREZZI_6_17.pdf"
+    },
+    {
+      "feature": "Monza 2.41.0 — Primary team discussion of 2024 kerb and gravel changes",
+      "url": "https://www.mclaren.com/racing/formula-1/2024/italian-grand-prix/the-italian-gp-briefing-powered-by-google-cloud/"
+    },
+    {
+      "feature": "Monza 2.41.0 — OSM pits, stands, woodland, access and historic oval snapshot 2026-11-05",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=9.265,45.605,9.302,45.640"
+    },
+    {
+      "feature": "Monza 2.41.0 — SRTM 90m source and resolution for unchanged-profile cross-check",
+      "url": "https://www.opentopodata.org/datasets/srtm/"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

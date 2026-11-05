@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.40.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.41.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1620,3 +1620,55 @@ updates reject them, and session/room creation normalizes invalid counts to 3.
 The strategy preview uses the same minimum. Free Practice remains unlimited.
 Syntax, both builds and focused shared-validation checks passed; no game test
 suite or driving playtest was run for this adjustment.
+
+
+## Monza Royal Park, historic banking and mixed runoff — 2.41.0
+
+Monza (`it-1922`) now replaces generic scenery with a dedicated park environment:
+2,706 checked trees with near/far forest detail, shrubs and leaf litter; 28 mapped
+stand envelopes and 24,219 predominantly red fans; a mapped/fitted pit building,
+frontage podium, park hospitality, medical/control structures, original Italian
+flags/boards, camping/parking, marshals, cranes and readable braking/corner signs.
+No real sponsor logos, team artwork or official venue signage is copied.
+
+All 11 turns have explicit paved/gravel/grass/kerb/barrier treatment. The FIA's
+2.5m gravel strips at Rettifilo and Roggia are included, while broader trap widths
+remain fitted approximations. Shared data feeds surface meshes, wet grip, existing
+track-limit penalties, racing-line guide speed, scenery clearance and safety walls.
+Original VELOCITA lettering and existing grid/pit/rubber dressing remain readable.
+
+The mapped historic north/south banking has 240 non-driveable concrete patches,
+weathered procedural artwork and rust-coloured rails. A fitted 16-step progressive
+profile uses the official 6.2m rise reference; exact cross-section/supports are not
+surveyed. 57 conflicting patches are omitted. The banking's own mapped curve is
+its asset reference; every other road branch is reserved. All visible wall/bank/
+bridge solids use the same geometry source as contact detection. One documented
+footbridge has fitted clear piers and 8.60m minimum road clearance; its extended
+64m span and height are approximate. Other underpass references are cached only.
+
+**Unchanged:** exact 5.793km centreline, 17m game road width, original elevations,
+pit route, car, tyre balance and multiplayer packet structure. The existing 17.86m
+game relief agrees broadly with a fresh coarse SRTM 16m range; no new driving
+banking/camber or engineered hills are introduced. Warm parkland dry light and
+storm colours layer on existing damp/wet/dynamic whole-lap weather. Practice adds
+Rettifilo, Lesmos and Parabolica approach starts.
+
+**Checks:** syntax, undefined/shadow checks, imports and both builds passed.
+2,913 complete reservations have zero blocked/overflowing model bounds; minimum
+scenery clearance 2.49m, complete tree clearance 4.00m, bank-to-other-road clearance
+2.14m. 3,490 runoff quads have zero other-road/pit/access/building overlaps. All
+11,389 wall solids match renderer sources; 326 static pit-route car probes remain
+clear with zero route deviation. Other 41 circuits retain static wall geometry.
+Parked previews were inspected; the game test suite, driving and online playtests
+were not run. Construction budget is 205 maximum active-LOD scenery mesh
+submissions before culling/shadows, excluding road/cars/walls/runoff; no FPS
+benchmark is claimed. A checked placement cache avoids the forest search
+on normal startup.
+
+Mapped stand shapes can shift up to 68m; the pit fits at ~27.53×220.40m, shifted
+~41m along/across the generated corridor. Roofs, temporary seating, broad runoff
+widths, species and event camps remain artistic. One hospitality reference, a
+viewing terrace and a second camp are omitted for clearance. No extra user photos
+were attached. See [the complete corner table, provenance, checks and accuracy
+limits](docs/MONZA-ENVIRONMENT-2.41.0.md), [sources](TRACK-SOURCES.md) and
+[data attribution](TRACK-DATA-LICENSE.md).

@@ -305,3 +305,42 @@ approximations. No gravel trap location was verified, so gravel widths are zero.
 FIA map offsets inform cosmetic sector paint, not a change to existing timing.
 See `docs/MEXICO-AUDIT-2.39.0.md` for the full baseline audit and fitted widths.
 No raw photos/PDF, licensed logos or real sponsor/team/venue artwork are bundled.
+
+
+## Monza dedicated park, surface and historic oval references — 2.41.0
+
+- [Official corner order and straight/circuit character](https://www.monzanet.it/tracciato-pista-monza/).
+- [FIA 2025 circuit, pit lane and emergency map](https://www.fia.com/system/files/decision-document/2025_italian_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exit_map_quarantine_zone_and_red_zones.pdf).
+- [FIA 2024 revised kerbs, resurfacing and 2.5m gravel strips](https://www.fia.com/sites/default/files/decision-document/2024%20Italian%20Grand%20Prix%20-%20Race%20Director%27s%20Event%20Notes%20V2.pdf).
+- [Official historic oval geometry and banking context](https://www.monzanet.it/en/the-flyover-of-monza/).
+- [Official brochure: 6.2m raised banking and 82% maximum gradient](https://www.monzanet.it/wp-content/uploads/2023/05/2023_Brochure_Experience_Monza_compressed.pdf).
+- [Official stand-area map; 2026 reference, temporary event arrangements vary](https://www.monzanet.it/wp-content/uploads/2026/06/GP_F1_2026_LISTINO_PREZZI_6_17.pdf).
+- [Primary team discussion of 2024 kerb and gravel changes](https://www.mclaren.com/racing/formula-1/2024/italian-grand-prix/the-italian-gp-briefing-powered-by-google-cloud/).
+- [OSM pits, stands, woodland, access and historic oval snapshot 2026-11-05](https://api.openstreetmap.org/api/0.6/map?bbox=9.265,45.605,9.302,45.640).
+- [SRTM 90m source and resolution for unchanged-profile cross-check](https://www.opentopodata.org/datasets/srtm/).
+
+`public/data/monza-architecture.js` retains mapped building/stand outlines,
+woodland ways and complete joined multipolygon rings/holes, parking/crossing
+references and the coarse nine-point DEM check. `shared/monza-access.mjs` retains
+linear access/alternate/historic roads with IDs and raw coordinate paths; corridor
+widths are conservative game fits where surveyed widths are absent. Public modules
+re-export shared road/placement data as locally served game assets. Own
+historical curve segments are the reference for bank geometry; other road branches
+are reserved. No duplicated driveable oval or slip road is added. Placement cache
+`shared/monza-placement-data.mjs` is original fitted geometry derived from these
+OSM references, guarded by a road/source/config signature and planner revision.
+
+Current 5.793km XY/elevation/pit data are unchanged. Nine fresh SRTM90m samples
+span 16m versus 17.86m retained game relief; no survey-level accuracy is implied.
+The old oval's official 6.2m rise / maximum 82% gradient informs an approximate
+stepped static wall cross-section; official history also describes ~80% grade.
+The exact local cross-section and hollow structural details are not verified.
+Mapped footbridge 194458112 is fitted to a 64m span and >=8.60m road clearance;
+height and support extensions are artistic, not OSM survey measurements.
+
+FIA 2024 notes support the two 2.5m gravel strips. Other trap dimensions and
+barrier offsets in `public/data/monza-runoff.js` are fitted original data. The
+2026 stand map supports area names/placement context; it does not establish the
+exact 2025 temporary seating arrangement. No attached photos were supplied.
+Raw reference images/PDFs, official logos and licensed sponsor artwork are not
+redistributed. Complete limitations/table: `docs/MONZA-ENVIRONMENT-2.41.0.md`.

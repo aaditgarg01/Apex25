@@ -2,6 +2,7 @@ import * as THREE from '/vendor/three.module.js';
 import {sample,terrainHeight} from '/shared/tracks.mjs';
 import {roadClearance} from '/shared/venues.mjs';
 
+const textureCache=new WeakMap();
 // Original leaf artwork and reusable meshes: no per-tree objects or animation.
 function leafTexture(){
  const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const ctx=canvas.getContext('2d');let seed=927;
@@ -47,8 +48,9 @@ export function addVegetation(scene,track,profile,options={}){
  }
  const trunkGeometry=new THREE.CylinderGeometry(palms?.19:.22,palms?.3:.52,palms?8.4:5.4,7),trunkMaterial=new THREE.MeshStandardMaterial({color:palms?'#89765e':'#6f6252',roughness:1});
  trunkGeometry.translate(0,palms?4.2:2.7,0);
- const foliageMaterial=new THREE.MeshStandardMaterial(palms?{vertexColors:true,side:THREE.DoubleSide,roughness:.94}:{map:leafTexture(),alphaTest:.45,side:THREE.DoubleSide,roughness:1});
+ let sharedLeaves=textureCache.get(scene.group);if(!palms&&!sharedLeaves){sharedLeaves=leafTexture();textureCache.set(scene.group,sharedLeaves);}
+ const foliageMaterial=new THREE.MeshStandardMaterial(palms?{vertexColors:true,side:THREE.DoubleSide,roughness:.94}:{map:sharedLeaves,alphaTest:.45,side:THREE.DoubleSide,roughness:1});
  const trunks=new THREE.InstancedMesh(trunkGeometry,trunkMaterial,sites.length),foliage=new THREE.InstancedMesh(palms?palmGeometry():canopyGeometry(),foliageMaterial,sites.length),dummy=new THREE.Object3D();
- sites.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.angle,palms?.025*Math.sin(p.angle):0);dummy.scale.set(p.scale,p.scale,p.scale);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);foliage.setMatrixAt(i,dummy.matrix);foliage.setColorAt(i,new THREE.Color().setHSL(.13,.09,.75+(i%5)*.035));});
- for(const mesh of [trunks,foliage]){mesh.castShadow=true;mesh.receiveShadow=true;mesh.computeBoundingSphere();scene.group.add(mesh);}
+ sites.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.angle,palms?.025*Math.sin(p.angle):0);dummy.scale.set(p.scale,p.scale*(p.heightScale||1),p.scale);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);foliage.setMatrixAt(i,dummy.matrix);foliage.setColorAt(i,new THREE.Color().setHSL(.13,.09,.75+(i%5)*.035));});
+ for(const mesh of [trunks,foliage]){if(options.traceOwners)mesh.userData.monzaOwners=sites.map(p=>p.id);mesh.castShadow=true;mesh.receiveShadow=true;mesh.computeBoundingSphere();scene.group.add(mesh);}
 }

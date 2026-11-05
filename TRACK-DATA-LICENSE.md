@@ -207,3 +207,24 @@ Original road elevation provenance remains separately recorded in elevations.jso
 Models, procedural textures/lettering, surface width tables, flags, placement fits
 and festival artwork are original game code/data. Reference photographs, official
 maps, real branded signage and external 3D assets are not redistributed.
+
+
+## Monza mapped park, architecture, historical oval and placements — 2.41.0
+
+`public/data/monza-architecture.js`, `shared/monza-access.mjs` and OSM-derived
+anchors in `shared/monza-placement-data.mjs` contain geometry derived from
+© OpenStreetMap contributors, licensed under ODbL 1.0:
+https://www.openstreetmap.org/copyright . Retrieved 2026-11-05 from
+https://api.openstreetmap.org/api/0.6/map?bbox=9.265,45.605,9.302,45.640 .
+Full source coordinate outlines, way/relation identifiers and derived envelopes
+remain available in the shipped modules. Examples: pit 34404652, main stands
+34404645/193647795/193647796, historic banks 19982933/19983025/725687994,
+footbridge 194458112 and joined woodland multipolygon references. Placement cache
+adjustments and conservative corridor widths are adaptations by APEX 25.
+
+Nine SRTM90m sample heights are a public-data consistency check retrieved via
+Open Topo Data, https://www.opentopodata.org/datasets/srtm/ . Existing elevation
+anchors retain their separate recorded provenance. No new elevation is substituted.
+Original models, procedural textures/lettering, surface profiles, flags, placement
+rules and animations are game code. Reference photos/official map artwork, real
+team/sponsor/venue graphics and external 3D assets are not redistributed.
