@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.45.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.45.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1727,6 +1727,25 @@ Current F1 bypasses the old Variante Bassa. Source-driven vs fitted details,
 memorial set-back, limitations and references are in
 [the Imola release note](docs/IMOLA-ENVIRONMENT-2.43.0.md).
 
+
+## 2.45.2 — Variable pit service and shared stop times
+
+Tyre changes use integer millisecond durations: 98% of stops take 2.000–3.000s,
+1% take 1.800–1.999s and 1% take 3.001–5.000s. Each range is uniform. A per-car
+server seed and stop count keep motion replay consistent with the selected time;
+authoritative snapshots distribute the service result. Fractional-step release
+preserves millisecond timing within the simulation tick. Strategy estimates use
+the weighted mean service time (2.509s).
+
+Every completed stop produces a queued announcement to everyone in the session.
+The latest service time remains beside the driver in standings and results, with
+a brief gold highlight. Penalty waiting time is excluded from this figure and
+served before crew work. Mid-session joins show the latest receipt without
+replaying earlier notifications. Drive-throughs produce no service receipt.
+
+Verification: focused service/penalty/wire-format checks, syntax/name/import
+checks and both production builds. The game test suite is neither run nor edited;
+driving and multiplayer playtesting remain with the user.
 
 ## 2.45.1 — Lap deficits, penalty service and valid pit visits
 

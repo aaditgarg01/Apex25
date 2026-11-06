@@ -1,4 +1,5 @@
 import * as THREE from '/vendor/three.module.js';
+import {PIT_SERVICE_SECONDS} from '/shared/pits.mjs';
 import {pitLayout,pitRoadPose} from '/shared/pit-layout.mjs';
 
 
@@ -30,14 +31,14 @@ export function addPitLane(scene,track){
   const head=new THREE.Mesh(new THREE.SphereGeometry(.18,8,6),helmet);head.position.y=.88;member.add(head);member.position.set(x,0,z);box.add(member);crew.push(member);
  }
  group.traverse(o=>o.userData.pitKeep=true);
- return {update(cars,now){const servicing=cars.some(c=>!c.finished&&c.pitState==='service');for(const [i,member]of crew.entries()){member.visible=servicing;member.rotation.z=servicing?Math.sin(now*.018+i)*.12:0;member.position.y=servicing?Math.sin(now*.022+i)*.025:0;}}};
+ return {update(cars,now){const servicing=cars.some(c=>!c.finished&&c.pitState==='service'&&c.pitTimer<=(c.pitServiceDuration||PIT_SERVICE_SECONDS)+1e-9);for(const [i,member]of crew.entries()){member.visible=servicing;member.rotation.z=servicing?Math.sin(now*.018+i)*.12:0;member.position.y=servicing?Math.sin(now*.022+i)*.025:0;}}};
 }
 
 // Reserve the lane before scenery batching; retain terrain, the racing ribbon,
 // safety walls, cars and the pit's own props. Also run before mapped scenery merges.
 export function clearPitScenery(root,track){
  const plan=pitLayout(track),points=plan.samples.filter((_,i)=>i%2===0),removed=[];root.updateMatrixWorld(true);
- const overlaps=box=>points.some(p=>p.x>box.min.x-3&&p.x<box.max.x+3&&p.z>box.min.z-3&&p.z<box.max.z+3&&box.min.y<p.y+3&&box.max.y>p.y+.35);
+ const overlaps=bounds=>points.some(p=>p.x>bounds.min.x-3&&p.x<bounds.max.x+3&&p.z>bounds.min.z-3&&p.z<bounds.max.z+3&&bounds.min.y<p.y+3&&bounds.max.y>p.y+.35);
  const matrix=new THREE.Matrix4(),local=new THREE.Matrix4(),box=new THREE.Box3();
  root.traverse(o=>{
   if(!o.isMesh)return;for(let parent=o;parent;parent=parent.parent)if(parent.userData.pitKeep||parent.userData.wheels)return;

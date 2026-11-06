@@ -36,3 +36,5 @@ export function raceIntervalLabel(car,ahead,trackLength,elapsed,leader=ahead){
  return raceGapLabel(car,ahead,trackLength,elapsed);
 }
 export const isInPit=car=>isOnTrack(car)&&['lane','service','exit'].includes(car.pitState);
+
+export const pitServiceLabel=car=>Number.isFinite(car.lastPitService)&&car.lastPitService>0?`PIT ${car.lastPitService.toFixed(3)}s`:'';
