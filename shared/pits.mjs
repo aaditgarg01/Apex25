@@ -5,6 +5,13 @@ import {pitLayout,pitRoadPose,locatePitLane} from './pit-layout.mjs';
 export {pitLayout,pitRoadPose} from './pit-layout.mjs';
 export const PIT_SPEED=80/3.6,PIT_SERVICE_SECONDS=3;
 export const pitAhead=(car,track)=>wrap(pitLayout(track).entry-car.s,track.length);
+// A legal pit ribbon is not a track-limit violation, including manual entries.
+// Station and direction checks exclude nearby roads and neighboring branches.
+export function isOnPitRoad(car,track){
+ const lane=locatePitLane(track,car);if(!lane||lane.distance>pitLayout(track).width/2||Math.cos(angleDiff(car.heading,lane.heading))<=0)return false;
+ const delta=wrap(pitLayout(track).entry+lane.d-car.s,track.length);
+ return Math.min(delta,track.length-delta)<=30;
+}
 export function requestPit(car,compound){
  if(!car||car.finished||car.retired||!Number.isFinite(car.tyreLife)||car.pitState!=='none')return false;
  if(car.pitRequested){car.pitRequested=false;return true;}
@@ -28,8 +35,7 @@ export function tryPitEntry(car,track,previousS){
  car.pitEntryOffset=gate?(car.lateral||0):layout.entryOffset;
  car.pitMerge=null;
  if(!gate){const p=pitRoadPose(track,car.pitTravel);car.pitMerge={start:car.pitTravel,length:Math.min(24,(car.pitState==='lane'?layout.box:layout.length)-car.pitTravel),x:car.x-p.x,y:car.y-p.y,z:car.z-p.z};}
- if(!Number.isFinite(car.tyreRaceLaps))car.invalidLap=true;
- car.pitEntryProgress=car.progress-car.pitTravel;car.pitTimer=0;car.pitFitted=false;car.v=Math.min(PIT_SPEED,Math.max(0,car.v));clearImpact(car);
+ car.pitEntryProgress=car.progress-car.pitTravel;car.pitTimer=0;car.pitPenalty=0;car.pitFitted=false;car.v=Math.min(PIT_SPEED,Math.max(0,car.v));clearImpact(car);
  car.offtrack=false;car.offtrackTime=0;car.offtrackPenalty=false;car.boostActive=false;
  return true;
 }
@@ -47,11 +53,13 @@ export function preparePitTraffic(cars,track){
 export function stepPit(car,track,dt){
  if(!car.pitState||car.pitState==='none')return false;
  const plan=pitLayout(track);clearImpact(car);car.boostActive=false;car.steer=0;car.sliding=false;
- if(!Number.isFinite(car.tyreRaceLaps))car.invalidLap=true;
  car.offtrack=false;car.offtrackTime=0;car.offtrackPenalty=false;
  car.boost=Math.min(100,car.boost+dt*4);car.tyreImpactCooldown=Math.max(0,(car.tyreImpactCooldown||0)-dt);
  if(car.pitState==='service'){
   car.v=0;car.pitTimer=Math.max(0,car.pitTimer-dt);
+  // Serve the captured penalty before tyre work. Elapsed race time already
+  // includes this wait, so remove it from the outstanding finish-time penalty.
+  if(car.pitPenalty>0&&car.pitTimer<=PIT_SERVICE_SECONDS){car.penalty=Math.max(0,(car.penalty||0)-car.pitPenalty);car.penaltyServed=(car.penaltyServed||0)+car.pitPenalty;car.pitPenalty=0;}
   if(car.pitTimer===0){if(!car.pitFitted){fitTyres(car);car.pitFitted=true;}car.pitState='exit';}
  }else{
   const remaining=car.pitState==='lane'?plan.box-car.pitTravel:plan.length-car.pitTravel;
@@ -60,7 +68,7 @@ export function stepPit(car,track,dt){
   if(move<car.v*dt/rate-.001)car.v=move*rate/dt;
   car.pitTravel+=move;
   if(remaining-move<.03){
-   if(stopAtBox){car.pitTravel=plan.box;car.pitState='service';car.pitTimer=PIT_SERVICE_SECONDS;car.v=0;}
+   if(stopAtBox){car.pitTravel=plan.box;car.pitState='service';car.pitPenalty=Number.isFinite(car.tyreRaceLaps)?Math.max(0,car.penalty||0):0;car.pitTimer=PIT_SERVICE_SECONDS+car.pitPenalty;car.v=0;}
    else{car.pitTravel=plan.length;car.pitState='none';car.pitEntryOffset=0;}
   }
  }

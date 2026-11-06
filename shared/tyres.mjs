@@ -22,7 +22,7 @@ export function prepareTyres(car,laps=Infinity,starting=car.startTyre||'auto'){
  car.startTyre=normalizeTyreChoice(starting);car.tyreCompound=car.startTyre==='auto'?defaultTyre(car):car.startTyre;car.tyreLife=100;car.tyreRaceLaps=laps;
  car.tyreSetLimit=Number.isFinite(laps);car.tyreSetsUsed={soft:0,medium:0,hard:0};if(car.tyreSetLimit&&isDryTyre(car.tyreCompound))car.tyreSetsUsed[car.tyreCompound]=1;
  car.tyreBoostHeat=0;car.tyreDistance=0;car.pitStops=0;car.pitState='none';car.pitRequested=false;
- car.pitCompound=car.tyreCompound;car.pitTimer=0;car.pitTravel=0;car.pitMerge=null;car.tyreImpactCooldown=0;
+ car.pitCompound=car.tyreCompound;car.pitTimer=0;car.pitPenalty=0;car.penaltyServed=0;car.pitTravel=0;car.pitMerge=null;car.tyreImpactCooldown=0;
 }
 export function chooseStartingTyres(session,car,choice){
  if(!car||!validTyreChoice(choice)||session.elapsed>=0&&!session.phase.endsWith('results'))return false;

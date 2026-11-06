@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.45.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.45.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1727,6 +1727,26 @@ Current F1 bypasses the old Variante Bassa. Source-driven vs fitted details,
 memorial set-back, limitations and references are in
 [the Imola release note](docs/IMOLA-ENVIRONMENT-2.43.0.md).
 
+
+## 2.45.1 — Lap deficits, penalty service and valid pit visits
+
+Lapped drivers show +1L, +2L, etc. against the race leader in both the live standings
+and results, even when the car directly ahead is only a few seconds away. Other
+cars retain intervals to the driver ahead; the leader shows Interval.
+
+Outstanding race time penalties are served stationary at the pit box before the
+three-second tyre change. Served seconds are removed from the outstanding penalty
+so the race finish does not add them twice. A drive-through or a missed box does
+not serve the penalty. The HUD shows the penalty countdown before changing tyres.
+
+Legal pit-road entry and pit stops no longer invalidate laps in race, qualifying
+or practice. Existing invalidity from an earlier cut/recovery is retained, and
+shortcuts outside the actual pit ribbon remain subject to track limits. The
+qualifying clock, outlap and best-valid-lap rules remain in place.
+
+Verification: focused standings/pit/penalty scenarios, syntax/import checks and both
+production builds; the game test suite was neither run nor edited. Driving and
+multiplayer playtesting remain with the user.
 
 ## 2.45.0 — Barcelona-Catalunya Mediterranean scenery and runoff
 

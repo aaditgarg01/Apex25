@@ -1,8 +1,13 @@
 export const isOnTrack=car=>!!car&&!car.finished&&!car.retired;
 export const isRaceFinisher=car=>!!car&&car.finished&&!car.retired;
+export function raceLapDeficit(car,leader,trackLength){
+ if(!leader||leader.retired||car.id===leader.id||!Number.isFinite(trackLength)||trackLength<=0||!Number.isFinite(car.progress)||!Number.isFinite(leader.progress))return 0;
+ return Math.max(0,Math.floor((leader.progress-car.progress)/trackLength));
+}
 export function finishTimeLabel(seconds){const ms=Math.max(0,Math.round(seconds*1000)),minutes=Math.floor(ms/60000),remainder=(ms%60000/1000).toFixed(3).padStart(6,'0');return `${minutes}:${remainder}`;}
 export function raceGapLabel(car,leader,trackLength,elapsed){
  if(car.retired)return 'DNF';
+ const deficit=raceLapDeficit(car,leader,trackLength);if(deficit)return `+${deficit}L`;
  if(isRaceFinisher(car)){
   if(!leader||car.id===leader.id||!isRaceFinisher(leader))return finishTimeLabel(car.finishTime);
   return '+'+Math.max(0,car.finishTime-leader.finishTime).toFixed(3);
@@ -21,11 +26,12 @@ export function raceGapLabel(car,leader,trackLength,elapsed){
  return '+'+(distance/Math.max(20,Math.abs(car.v))).toFixed(1);
 }
 
-// The reference is the immediately preceding classified driver, even when the
-// compact standings only show a slice of the field. Finished gaps use elapsed
-// finish times; on-track gaps retain the existing distance/pace estimate.
-export function raceIntervalLabel(car,ahead,trackLength,elapsed){
+// Lap deficits always use the race leader. Otherwise the reference is the
+// preceding classified driver, including in a compact slice of the field.
+// Finished gaps use elapsed times; on-track intervals retain distance/pace.
+export function raceIntervalLabel(car,ahead,trackLength,elapsed,leader=ahead){
  if(car.retired)return 'DNF';
+ const deficit=raceLapDeficit(car,leader,trackLength);if(deficit)return `+${deficit}L`;
  if(!ahead)return 'Interval';
  return raceGapLabel(car,ahead,trackLength,elapsed);
 }
