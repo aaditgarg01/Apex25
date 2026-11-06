@@ -266,3 +266,23 @@ or commercial high-resolution elevation asset is claimed. Original SRTM data
 retain their existing attribution. Procedural models, textures, flags and neutral
 lettering are original game work. Reference photos, official maps, sculpture
 artwork/inscriptions, trademarks and external 3D assets are not redistributed.
+
+
+## Hungaroring geography and terrain (2.44.0)
+
+Hungaroring pit/stand/building/woodland/camp/parking/access/crossing geometry derives
+from © OpenStreetMap contributors, ODbL 1.0, retrieved 2026-11-06. Adapted geographic
+databases in public/data/hungaroring-architecture.js and shared/hungaroring-access.mjs
+retain source coordinates/IDs and remain under ODbL 1.0:
+https://www.openstreetmap.org/copyright . In-game attribution is displayed.
+Private contact/address/operator metadata from the raw response is not shipped.
+
+EU-DEM © European Union, Copernicus Land Monitoring Service, processed/distributed
+via Open Topo Data: https://www.opentopodata.org/datasets/eudem/ . Cached raster
+samples, source and attribution are retained. Underlying raster is nominally 25m;
+shipped terrain/road spacing is 150m/~34m. Original SRTM provenance remains. The
+new road profile is smoothed and fitted to team-published 204.2–238.9m endpoints;
+this is an original adaptation, not a current engineering survey.
+Original procedural models/textures/flags/lettering/surface profiles are separate
+game work. Reference photographs, official map artwork, licensed sponsor/team
+artwork and external 3D assets are not redistributed.

@@ -406,3 +406,30 @@ contains older turn-label conventions; the FIA 19-turn map controls numbering.
 No user reference photos accompanied the attachment. Official maps and the
 respectful tourism memorial photo were inspected; their artwork is not shipped.
 Complete uncertainties and checks: docs/IMOLA-ENVIRONMENT-2.43.0.md.
+
+
+## Hungaroring bowl, surfaces and dressing — 2.44.0
+
+- [FIA 2025 circuit, pit, sector, DRS and emergency maps](https://www.fia.com/system/files/decision-document/2025_hungarian_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exits_map_quarantine_zone_and_red_zones.pdf).
+- [FIA 2025 notes: T5 gravel, T7 blue line, T14 left-side concrete/fence, resurfacing](https://www.fia.com/system/files/decision-document/2025_hungarian_grand_prix_-_race_directors_event_notes_v2.pdf).
+- [Official 2025 media kit: temporary control/media site and campus context](https://hungaroring.hu/site/files/ops/f1mediakit2025.pdf).
+- [Official rebuilt pit complex and covered stand, operative levels and tunnels](https://hungaroring.hu/site/en/media/news/hungaroring-the-future-has-begun).
+- [Project architect photographs and rebuilding scale](https://dvmgroup.com/en/references/projects/hungaroring).
+- [Official main-straight resurfacing context](https://hungaroring.hu/site/en/media/news/new-asphalt-surface).
+- [Official F1 circuit/bowl/heat context](https://www.formula1.com/en/information/hungary-hungaroring-budapest.3Sz0BTKiIf7ov9bnezZ5dU).
+- [Team-published highest/lowest elevations: 238.9m / 204.2m, 34.7m relief](https://www.mercedesamgf1.com/news/why-hungary-is-the-best-grand-prix-on-the-f1-calendar).
+- [EU-DEM25m cached terrain source via Open Topo Data](https://www.opentopodata.org/datasets/eudem/).
+- [OSM pit/stand/building/woodland/camp/access/crossing snapshot 2026-11-06](https://api.openstreetmap.org/api/0.6/map?bbox=19.231,47.570,19.268,47.596).
+
+Architecture/road caches retain sanitized OSM coordinates and IDs with conservative
+widths. Pit 123905481, main stand 230979479, other stand references 230979485/500
+and service bridge 54843543 guide original fitted models. OSM may predate the 2025
+rebuild; current official/architect photos guide exterior styling. Source active
+main-ribbon ways 231328650/1333262244 are deduplicated because the preserved racing
+ribbon already reserves them; alternative, pit and service roads remain checked.
+Raw 129 EU-DEM25m road samples span 39.029m. Original SRTM anchors remain; a separate
+smoothed profile is fitted to published 204.2–238.9m endpoints (34.7m relief).
+The 441-point terrain grid has 150m spacing. These are not current pavement/camber
+survey measurements. Target/fitted runoff tables and explicit verified-vs-fitted
+notes are in public/data/hungaroring-runoff.js and the release document. No user
+reference photos were attached, and no official photo/map artwork is shipped.

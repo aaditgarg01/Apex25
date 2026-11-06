@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.43.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.44.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1726,3 +1726,23 @@ reported; the game test suite and driving/multiplayer playtests were not run.
 Current F1 bypasses the old Variante Bassa. Source-driven vs fitted details,
 memorial set-back, limitations and references are in
 [the Imola release note](docs/IMOLA-ENVIRONMENT-2.43.0.md).
+
+
+## 2.44.0 — Hungaroring bowl, gravel, grass and dressing
+
+Dedicated Hungaroring scenery replaces generic decoration: rebuilt-complex-inspired
+pits/main stand, bowl viewing banks, dry fields, trees, camps, service bridge and
+village silhouettes. Every one of the 14 corners has a shared kerb/edge/paving/
+gravel/grass/barrier/beyond stack, with raked gravel, 4,000 stones, mowing bands,
+marbles/skids/spillage, original readable markings, 22 grid positions, flags,
+marshals, recovery/medical and utility dressing. Rain adds dark gravel/grass,
+muddy service patches and shallow puddles. Three Free Practice approaches are added.
+
+Original XY centreline, pit route and SRTM anchors remain. A smoothed DEM profile
+fits published 34.7m relief. 18,394 spectators, 950 trees and 10,680 grass tufts
+are instanced; 269 maximum active scenery mesh submissions before culling/shadows.
+Both builds and requested static clearance/elevation/coverage checks pass; idle
+browser views are inspected. The game test suite and driving/multiplayer playtests
+were not run. Broad gravel extents, rebuilt building/stand setbacks, bridge scale
+and local gradients remain approximate. Full target/fitted table, verification
+limits and references: [Hungaroring release note](docs/HUNGARORING-ENVIRONMENT-2.44.0.md).

@@ -1,0 +1,14 @@
+import {HUNGARORING_ACCESS} from './hungaroring-access.mjs';
+import {hungaroringTerrainHeight,hungaroringBoundaryOffset} from './hungaroring.mjs';
+import {interlagosFootprintClear,interlagosEnvelopeOverlap,localInterlagos} from './interlagos-scenery.mjs';
+import {sample} from './tracks.mjs';
+const cache=new WeakMap();
+export function hungaroringStructures(track){
+ if(cache.has(track))return cache.get(track);const sites=[],solids=[],skipped=[],source=HUNGARORING_ACCESS.find(p=>p.way==='54843543');let bridge=null;
+ const add=(a,b,width,height,kind)=>solids.push({a,b,width,height,kind});
+ if(source){const a=localInterlagos(track,source.points[0]),b=localInterlagos(track,source.points.at(-1)),x=(a.x+b.x)/2,z=(a.z+b.z)/2,h=Math.atan2(-(b.z-a.z),b.x-a.x),nx=Math.cos(h),nz=-Math.sin(h);let piers=null;for(let span=56;span<=152;span+=8){const candidates=[-1,1].map(sign=>({id:'bridge-pier-'+sign,kind:'bridge-pier',x:x+nx*sign*span/2,z:z+nz*sign*span/2,w:4,d:10,heading:h,margin:3}));if(candidates.every(p=>interlagosFootprintClear(track,p,3))){piers=candidates;break;}}
+  if(piers){const length=Math.hypot(piers[0].x-piers[1].x,piers[0].z-piers[1].z),heights=track.points.filter(p=>Math.hypot(p.x-x,p.z-z)<length/2+20).map(p=>p.y),deckY=Math.max(...heights,hungaroringTerrainHeight(track,x,z))+8.5;for(const p of piers){p.y=hungaroringTerrainHeight(track,p.x,p.z)-.6;add({x:p.x-nx*2,z:p.z-nz*2,y:p.y},{x:p.x+nx*2,z:p.z+nz*2,y:p.y},10,deckY-p.y,'service-bridge');sites.push(p);}add({...piers[0],y:deckY},{...piers[1],y:deckY},7.5,.65,'service-bridge');for(const sign of [-1,1])add({x:piers[0].x-nz*sign*3.8,z:piers[0].z+nx*sign*3.8,y:deckY+.65},{x:piers[1].x-nz*sign*3.8,z:piers[1].z+nx*sign*3.8,y:deckY+.65},.12,1.1,'service-bridge-rail');bridge={id:'mapped-service-bridge',x,z,w:length+4,d:10,heading:h,length,width:7.5,deckY,piers,sourceWay:source.way,approximate:true};}else skipped.push('mapped-service-bridge');
+ }
+ const beyond=[];for(let i=0;i<28;i++){const s=i*track.length/28,side=i%2?1:-1,index=Math.floor(s/track.step),offset=hungaroringBoundaryOffset(track,index,side);for(let extra=10;extra<=90;extra+=8){const p=sample(track,s,side*(offset+extra)),site={...p,id:'beyond-'+i,kind:'beyond',w:9,d:23,heading:p.heading,margin:3,s,side,gate:i%5===0,approximate:true};if(!interlagosFootprintClear(track,site,3)||sites.some(other=>interlagosEnvelopeOverlap(site,other,3)))continue;site.y=hungaroringTerrainHeight(track,site.x,site.z);sites.push(site);beyond.push(site);if(site.gate){const c=Math.cos(site.heading),h=Math.sin(site.heading),at=(dx,dz)=>({x:site.x+c*dx+h*dz,z:site.z-h*dx+c*dz,y:site.y});for(const direction of [-1,1]){add(at(-3.8,direction*8),at(-3.8,direction*3.5),.1,1.3,'spectator-fence');add(at(-4,direction*3.5),at(-3.6,direction*3.5),.4,1.7,'access-gate');}}break;}}
+ const result={sites,solids,bridge,beyond,skipped};cache.set(track,result);return result;
+}

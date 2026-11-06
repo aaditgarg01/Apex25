@@ -456,6 +456,46 @@
     {
       "feature": "Imola 2.43.0 — EU-DEM 25m terrain dataset provenance via Open Topo Data",
       "url": "https://www.opentopodata.org/datasets/eudem/"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — FIA 2025 circuit, pit, sector, DRS and emergency maps",
+      "url": "https://www.fia.com/system/files/decision-document/2025_hungarian_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exits_map_quarantine_zone_and_red_zones.pdf"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — FIA 2025 notes: T5 gravel, T7 blue line, T14 left-side concrete/fence, resurfacing",
+      "url": "https://www.fia.com/system/files/decision-document/2025_hungarian_grand_prix_-_race_directors_event_notes_v2.pdf"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — Official 2025 media kit: temporary control/media site and campus context",
+      "url": "https://hungaroring.hu/site/files/ops/f1mediakit2025.pdf"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — Official rebuilt pit complex and covered stand, operative levels and tunnels",
+      "url": "https://hungaroring.hu/site/en/media/news/hungaroring-the-future-has-begun"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — Project architect photographs and rebuilding scale",
+      "url": "https://dvmgroup.com/en/references/projects/hungaroring"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — Official main-straight resurfacing context",
+      "url": "https://hungaroring.hu/site/en/media/news/new-asphalt-surface"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — Official F1 circuit/bowl/heat context",
+      "url": "https://www.formula1.com/en/information/hungary-hungaroring-budapest.3Sz0BTKiIf7ov9bnezZ5dU"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — Team-published highest/lowest elevations: 238.9m / 204.2m, 34.7m relief",
+      "url": "https://www.mercedesamgf1.com/news/why-hungary-is-the-best-grand-prix-on-the-f1-calendar"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — EU-DEM25m cached terrain source via Open Topo Data",
+      "url": "https://www.opentopodata.org/datasets/eudem/"
+    },
+    {
+      "feature": "Hungaroring 2.44.0 — OSM pit/stand/building/woodland/camp/access/crossing snapshot 2026-11-06",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=19.231,47.570,19.268,47.596"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
@@ -468,5 +508,6 @@
   "monaco": "Mapped Mediterranean coastline, Port Hercule, 210 building outlines and hotel/Casino positions. Road-clear building render rings preserve the narrow streets; Fairmont retains overhead tunnel clearance. Procedural pastel facades, balconies, bougainvillea, Casino towers/clocks, superyachts with reflective rippling harbor water, water-supported stands, palms, cliffs, marshals and mapped quay cranes add detail. Clear midday sun; original track, elevations, hairpin, tunnel cover and car unchanged. Architectural detailing, terrain outside the road and event dressing remain artistic approximations.",
   "jeddah": "Mapped Red Sea Corniche shoreline, Al-Rahmah Floating Mosque (Island Mosque), Jeddah Yacht Club & Marina, and Jeddah Tower horizon anchor. Narrow street-circuit paved runoff without gravel traps shares concrete wall and black catch-fence boundaries between renderer and collision logic. Procedural banked Turn 13 coastal embankment with animated wave foam, neon-lit Corniche skyscrapers, beach resorts, superyachts, uplight palms, illuminated fountains, Tecpro corner blocks, Aramco/stc/Rolex branding, live LED gantry bridges, wave-roofed grandstands, Saudi flags, synchronized fireworks, white camera poles, recovery cranes, and white-suited marshals in LED vests. Track mesh and car model are unchanged.",
   "singapore": "Mapped Marina Reservoir and Singapore River water, 450 road-clear city footprints, Marina Bay Sands towers/skypark, Flyer, Fullerton, Old Supreme Court and Esplanade references. Original procedural architecture and textures, emissive windows, reflective bay water, permanent road illumination field and LED fixtures, tropical foliage, green uplights, four colourful grandstands with phone glints, flags, marshals, pit detailing and hospitality artwork. Existing 19-corner route, driving elevations and car retained; historic Bay Grandstand underpass is not restored.",
-  "imola": "Dedicated mapped park, pit/control/stand/river/memorial context, 19-corner shared surface plan and cached EU-DEM hills. Original geometry/textures/neutral Italian dressing; fitted widths, roofs, stand shifts and water levels. Current F1 bypasses the old Bassa chicane. Senna model set back 16m to clear a mapped service-road envelope; Ratzenberger marker mapped by Tosa. No inscriptions or copied sculpture designs. See docs/IMOLA-ENVIRONMENT-2.43.0.md."
+  "imola": "Dedicated mapped park, pit/control/stand/river/memorial context, 19-corner shared surface plan and cached EU-DEM hills. Original geometry/textures/neutral Italian dressing; fitted widths, roofs, stand shifts and water levels. Current F1 bypasses the old Bassa chicane. Senna model set back 16m to clear a mapped service-road envelope; Ratzenberger marker mapped by Tosa. No inscriptions or copied sculpture designs. See docs/IMOLA-ENVIRONMENT-2.43.0.md.",
+  "hungaroring": "Dedicated Mogyorod bowl, 14-corner classified runoff with gravel/grass/dressing, mapped pit/stand/camp/access context, local DEM smoothed/fitted to published 34.7m relief. Original angular architecture, textures and generic artwork. Broad trap widths, rebuilt footprints/setbacks, bridge and temporary dressing are approximate. See docs/HUNGARORING-ENVIRONMENT-2.44.0.md."
 }
