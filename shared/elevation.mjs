@@ -17,7 +17,7 @@ export function applyElevation(id,points,length,elevations){
  // approximating Raidillon's steep ramp without changing measured endpoints.
  profile=[...SPA_ALTITUDES,[990,396.5],[1080,409.7]].sort((a,b)=>a[0]-b[0]).map(([s,y])=>[s/7004*length,y]);source='Official Spa altitude markers · interpolated';}
  else if(id==='nl-1948'){profile=ZANDVOORT_ELEVATION_INFO.anchors.map(([s,y])=>[s/ZANDVOORT_ELEVATION_INFO.nominalLength*length,y]);source=ZANDVOORT_ELEVATION_INFO.source;}
- else if(['at-1969','us-2012','it-1953','hu-1986'].includes(id)&&elevations?.[id]?.refinedAnchors){profile=elevations[id].refinedAnchors.map(([t,y])=>[t*length,y]);source=elevations[id].refinement.source;}
+ else if(['at-1969','us-2012','it-1953','hu-1986','es-1991'].includes(id)&&elevations?.[id]?.refinedAnchors){profile=elevations[id].refinedAnchors.map(([t,y])=>[t*length,y]);source=elevations[id].refinement.source;}
  else if(profile){profile=profile.map(([t,y])=>[t*length,y]);}
  if(!profile||profile.length<4)return {source,min:0,max:0,range:0};
  // Coarse 90 m terrain includes buildings/trees. Reduce that relief for Mexico's near-flat racing surface.

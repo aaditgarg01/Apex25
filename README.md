@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.44.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.45.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1727,6 +1727,22 @@ Current F1 bypasses the old Variante Bassa. Source-driven vs fitted details,
 memorial set-back, limitations and references are in
 [the Imola release note](docs/IMOLA-ENVIRONMENT-2.43.0.md).
 
+
+## 2.45.0 — Barcelona-Catalunya Mediterranean scenery and runoff
+
+Dedicated modern no-final-chicane environment: mapped/fitted pits, sweeping main
+stand, Rooftop/footbridge, lettered stands, Mediterranean vegetation and industrial
+surroundings. All 14 corners have classified tarmac/gravel/grass/safety stacks;
+T1 gravel continues beyond the clear motorcycle long-lap branch through split-quad
+clipping. Original venue lettering, grid/pit/sector markings, officials, cameras,
+service/drainage strips and wet mud/puddles complete the dressing.
+
+Centreline, original anchors, pit XY route, car and multiplayer protocol are retained.
+Local DEM refines the coarse height shape within the original range. Trap widths,
+building/stand setbacks and bridges are fitted approximations. Syntax/import/static
+geometry checks, both builds and parked dry/wet console views are documented;
+the game test suite is neither run nor edited. See
+[the corner table, references and verification scope](docs/BARCELONA-ENVIRONMENT-2.45.0.md).
 
 ## 2.44.0 — Hungaroring bowl, gravel, grass and dressing
 

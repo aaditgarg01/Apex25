@@ -496,6 +496,42 @@
     {
       "feature": "Hungaroring 2.44.0 — OSM pit/stand/building/woodland/camp/access/crossing snapshot 2026-11-06",
       "url": "https://api.openstreetmap.org/api/0.6/map?bbox=19.231,47.570,19.268,47.596"
+    },
+    {
+      "feature": "Barcelona: Official modern no-final-chicane layout, enlarged T1 gravel and signalling tower",
+      "url": "https://www.circuitcat.com/en/news/formula-1/the-formula-1-aws-gran-premio-de-espana-2023-changes-its-track-configuration/"
+    },
+    {
+      "feature": "Barcelona: FIA 2025 circuit/pit/sector/DRS maps",
+      "url": "https://www.fia.com/system/files/decision-document/2025_spanish_grand_prix_-_race_director_event_notes_-_circuit_map_pit_lane_quarantine_zone_and_red_zones.pdf"
+    },
+    {
+      "feature": "Barcelona: FIA 2025 concrete approach wall and blue exit-line changes",
+      "url": "https://www.fia.com/system/files/decision-document/2025_spanish_grand_prix_-_race_directors_event_notes_.pdf"
+    },
+    {
+      "feature": "Barcelona: Official 2024 facilities plan and architecture photographs",
+      "url": "https://premsa.circuitcat.com/2024/MotoGP/Presentacio/La%20transformacio%20del%20Circuit_Novetats_2024_CAT.pdf"
+    },
+    {
+      "feature": "Barcelona: Official Rooftop opening and 30m south-tower reference",
+      "url": "https://www.circuitcat.com/ca/noticies/formula-1/el-rooftop-ya-se-alza-como-nuevo-emblema-del-circuit/"
+    },
+    {
+      "feature": "Barcelona: Official pit/control/terrace redevelopment context",
+      "url": "https://www.circuitcat.com/es/noticias/circuit/la-transformacion-del-circuit-de-barcelona-catalunya/"
+    },
+    {
+      "feature": "Barcelona: Official solar-panel/roof context",
+      "url": "https://www.circuitcat.com/en/news/sostenibilidad-en/the-circuit-saves-52-tons-of-co2-emissions-in-only-four-months/"
+    },
+    {
+      "feature": "Barcelona: OSM venue, alternate/access roads, buildings, woodland and crossings; cached 2026-11-06",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=2.241,41.558,2.275,41.580"
+    },
+    {
+      "feature": "Barcelona: EU-DEM25m via Open Topo Data",
+      "url": "https://www.opentopodata.org/datasets/eudem/"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
@@ -509,5 +545,6 @@
   "jeddah": "Mapped Red Sea Corniche shoreline, Al-Rahmah Floating Mosque (Island Mosque), Jeddah Yacht Club & Marina, and Jeddah Tower horizon anchor. Narrow street-circuit paved runoff without gravel traps shares concrete wall and black catch-fence boundaries between renderer and collision logic. Procedural banked Turn 13 coastal embankment with animated wave foam, neon-lit Corniche skyscrapers, beach resorts, superyachts, uplight palms, illuminated fountains, Tecpro corner blocks, Aramco/stc/Rolex branding, live LED gantry bridges, wave-roofed grandstands, Saudi flags, synchronized fireworks, white camera poles, recovery cranes, and white-suited marshals in LED vests. Track mesh and car model are unchanged.",
   "singapore": "Mapped Marina Reservoir and Singapore River water, 450 road-clear city footprints, Marina Bay Sands towers/skypark, Flyer, Fullerton, Old Supreme Court and Esplanade references. Original procedural architecture and textures, emissive windows, reflective bay water, permanent road illumination field and LED fixtures, tropical foliage, green uplights, four colourful grandstands with phone glints, flags, marshals, pit detailing and hospitality artwork. Existing 19-corner route, driving elevations and car retained; historic Bay Grandstand underpass is not restored.",
   "imola": "Dedicated mapped park, pit/control/stand/river/memorial context, 19-corner shared surface plan and cached EU-DEM hills. Original geometry/textures/neutral Italian dressing; fitted widths, roofs, stand shifts and water levels. Current F1 bypasses the old Bassa chicane. Senna model set back 16m to clear a mapped service-road envelope; Ratzenberger marker mapped by Tosa. No inscriptions or copied sculpture designs. See docs/IMOLA-ENVIRONMENT-2.43.0.md.",
-  "hungaroring": "Dedicated Mogyorod bowl, 14-corner classified runoff with gravel/grass/dressing, mapped pit/stand/camp/access context, local DEM smoothed/fitted to published 34.7m relief. Original angular architecture, textures and generic artwork. Broad trap widths, rebuilt footprints/setbacks, bridge and temporary dressing are approximate. See docs/HUNGARORING-ENVIRONMENT-2.44.0.md."
+  "hungaroring": "Dedicated Mogyorod bowl, 14-corner classified runoff with gravel/grass/dressing, mapped pit/stand/camp/access context, local DEM smoothed/fitted to published 34.7m relief. Original angular architecture, textures and generic artwork. Broad trap widths, rebuilt footprints/setbacks, bridge and temporary dressing are approximate. See docs/HUNGARORING-ENVIRONMENT-2.44.0.md.",
+  "barcelona": "Modern no-final-chicane centreline retained; dedicated mapped/fitted pit/main stands, Rooftop, Mediterranean terrain and 14-corner split runoff with gravel/grass/dressing. Original geometry/artwork, local DEM shape within original anchor range. Extents, setbacks, bridge spans and local grades approximate. See docs/BARCELONA-ENVIRONMENT-2.45.0.md."
 }

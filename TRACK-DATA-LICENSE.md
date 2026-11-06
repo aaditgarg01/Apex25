@@ -286,3 +286,22 @@ this is an original adaptation, not a current engineering survey.
 Original procedural models/textures/flags/lettering/surface profiles are separate
 game work. Reference photographs, official map artwork, licensed sponsor/team
 artwork and external 3D assets are not redistributed.
+
+## Barcelona-Catalunya additions (2.45.0)
+
+`public/data/barcelona-architecture.js` and `shared/barcelona-access.mjs` contain
+adapted OpenStreetMap geometry, retrieved 2026-11-06: © OpenStreetMap contributors,
+ODbL 1.0 (https://www.openstreetmap.org/copyright). Public building/road/land/crossing
+geometry only; contact, operator and address metadata is excluded. Mapped business
+names are data references, not copied signs or sponsor artwork.
+
+`shared/barcelona-terrain-data.mjs` (re-exported by public/data/barcelona-terrain.js)
+contains EU-DEM25m samples: © European Union, Copernicus Land Monitoring Service,
+processed/distributed via Open Topo Data (https://www.opentopodata.org/datasets/eudem/).
+Refined road anchors adapt those samples, retaining the original SRTM anchors/range;
+no current pavement survey or local-gradient accuracy is asserted.
+
+Runoff targets, architecture, textures, generic lettering, flags and props are
+original procedural game content. Official/FIA photographs and diagrams are linked
+for reference and not redistributed. No licensed sponsor/team artwork was added.
+Consult docs/BARCELONA-ENVIRONMENT-2.45.0.md for fitted/uncertain details.

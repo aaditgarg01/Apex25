@@ -1,0 +1,34 @@
+import {sample} from './tracks.mjs';
+import {pitLayout} from './pit-layout.mjs';
+import {barcelonaTerrainHeight,BARCELONA_CORNERS,barcelonaAccessCorridors} from './barcelona.mjs';
+import {barcelonaStructures} from './barcelona-structures.mjs';
+import {interlagosPlanner,interlagosContains,localInterlagos} from './interlagos-scenery.mjs';
+const cache=new WeakMap();
+function closest(track,x,z){let best=Infinity,index=0;track.points.forEach((point,i)=>{const d=(point.x-x)**2+(point.z-z)**2;if(d<best){best=d;index=i;}});const p=track.points[index];return {s:index*track.step,side:Math.sign((x-p.x)*Math.cos(p.heading)-(z-p.z)*Math.sin(p.heading))||1,road:p};}
+export function planBarcelona(track,data){
+ if(cache.has(track))return cache.get(track);const planner=interlagosPlanner(track),pit=pitLayout(track),mapped=[],optionalSkipped=[],structures=barcelonaStructures(track);for(const site of structures.sites)if(!planner.reserve({...site}))planner.rejected.push(site.id);
+ planner.roadside=spec=>{const p=sample(track,spec.s);for(let offset=spec.offset??track.width/2+spec.w/2+12;offset<(spec.kind==='camp'||spec.kind==='parking'?950:spec.kind==='horizon'?1600:550);offset+=7){const pose=sample(track,spec.s,spec.side*offset),site=planner.reserve({...spec,...pose,heading:spec.heading??p.heading});if(site)return site;}optionalSkipped.push(spec.id);return null;};
+ function mappedSite(f,kind){const env=f.envelope,near=closest(track,env.x,env.z),isPit=kind==='pits',heading=isPit?pit.frame.heading:Math.cos(env.heading-near.road.heading)<0?env.heading+Math.PI:env.heading,main=f.way==='33742643',base={...env,id:'osm-'+f.way,kind,w:isPit?Math.min(52,env.w)+6:Math.max(14,env.w+4),d:env.d+6,heading,side:isPit?pit.side:near.side,s:near.s,sourceWay:f.way,rows:main?30:14,roof:main||f.way==='151609927',label:main?'MONTMELO · MAIN STAND':(f.tags.name||'CATALUNYA · GRANDSTAND').replace('Tribuna','STAND'),margin:isPit?2.5:5};let site=null;
+  search:for(const scale of [1,.94,.85,.74,.62])for(const shift of [0,6,12,20,32,48,68,90])for(const along of [0,-10,10,-24,24,-45,45]){const h=isPit?heading:near.road.heading;site=planner.reserve({...base,w:base.w*scale,d:base.d*scale,x:env.x+Math.cos(h)*base.side*shift+Math.sin(h)*along,z:env.z-Math.sin(h)*base.side*shift+Math.cos(h)*along,approximateShift:Math.hypot(shift,along),approximateScale:scale});if(site)break search;}if(!site&&isPit){searchPit:for(const width of [36,28,22])for(const depth of [260,220,180])for(const offset of [40,35,45,50,60,70,90])for(const along of [-20,0,20,-40,40]){const pose=sample(track,along,pit.side*offset);site=planner.reserve({...base,...pose,heading:pit.frame.heading,w:width,d:depth,approximateShift:Math.hypot(pose.x-env.x,pose.z-env.z),approximateScale:depth/base.d,sourceEnvelope:env});if(site)break searchPit;}}
+  if(site)mapped.push(site);else optionalSkipped.push(base.id);return site;
+ }
+ const pitBuilding=mappedSite(data.features.find(f=>f.way==='33742578'),'pits');if(!pitBuilding)planner.rejected.push('pit-building');
+ for(const f of data.features.filter(feature=>feature.tags.building==='grandstand'||feature.tags.leisure==='grandstand'||feature.way==='151594584'))mappedSite(f,'stand');
+ for(const [i,s,side,w,d]of [[0,1140,1,28,120],[1,2350,-1,25,95],[2,3680,1,28,100]])planner.roadside({id:'viewing-bank-'+i,kind:'bank',s,side,w,d,rows:16,margin:10,label:['TURN 3 · PELOUSE','INFIELD · PELOUSE','FINAL SECTOR · VIEW'][i],approximate:true});
+ for(const [way,station,label]of [['152007381',3850,'STAND G · STADIUM'],['152015333',2820,'STAND N · TURN 9'],['725695175',4160,'STAND H · FINAL']])if(!mapped.some(p=>p.sourceWay===way)){const site=planner.roadside({id:'fitted-'+way,kind:'stand',s:station,side:1,w:25,d:85,rows:18,margin:6,label,sourceWay:way,approximate:true});if(site)mapped.push(site);}
+ for(const event of data.eventAnchors)planner.roadside(event);
+ planner.roadside({id:'hospitality-0',kind:'hospitality',s:track.length-160,side:pit.side,w:24,d:60,margin:9});
+ planner.roadside({id:'medical-0',kind:'medical',s:track.length-220,side:-1,w:22,d:28,margin:10,approximate:true});
+ planner.roadside({id:'timing-tower',kind:'tower',s:400,side:pit.side,w:12,d:13,margin:7,approximate:true});
+ for(let i=0;i<20;i++)planner.roadside({id:'official-'+i,kind:'official',s:90+i*track.length/20,side:i%2?1:-1,w:i%4===0?23:11,d:19,margin:8,crane:i%4===0});
+ for(let i=0;i<12;i++)planner.roadside({id:'utility-'+i,kind:'utility',s:140+i*track.length/12,side:i%2?1:-1,w:9,d:14,margin:5});
+ for(const c of BARCELONA_CORNERS){planner.roadside({id:'turn-'+c.turn,kind:'board',s:c.s-20,side:c.side,w:2,d:1.3,margin:2,label:'T'+c.turn});if([1,4,5,7,10,13].includes(c.turn))for(const distance of [200,150,100,50].filter(d=>c.turn===1||d!==200))planner.roadside({id:'braking-'+c.turn+'-'+distance,kind:'board',s:c.s-distance,side:c.side,w:2,d:1.3,margin:2,label:String(distance)});}
+ for(let i=0;i<20;i++)planner.roadside({id:'banner-'+i,kind:'banner',s:40+i*track.length/20,side:i%2?1:-1,w:1.3,d:18,margin:5,label:['APEX · CATALUNYA','MEDITERRANEAN RACING','MONTMELO · 25','OPEN WHEEL'][i%4]});
+ for(let i=0;i<90;i++)planner.roadside({id:'grass-'+i,kind:'grasspatch',s:i*track.length/90,side:i%2?1:-1,w:9,d:16,offset:48+i%5*18,margin:6});
+ for(let i=0;i<10;i++)planner.roadside({id:'horizon-'+i,kind:'horizon',s:i*track.length/14,side:i%2?1:-1,w:24,d:25,offset:700+i%3*100,margin:10,utilityType:i%2,approximate:true});
+ for(const [i,f]of data.houses.entries())planner.reserve({...f.envelope,id:'village-'+i,kind:'house',height:['industrial','warehouse','commercial'].includes(f.tags.building)?6+i%3*2:5+i%3*2,industrial:['industrial','warehouse','commercial'].includes(f.tags.building),w:f.envelope.w+3,d:f.envelope.d+3,margin:5,sourceWay:f.way});
+ const woods=data.woods.filter(f=>JSON.stringify(f.points[0])===JSON.stringify(f.points.at(-1))).map(f=>f.points.map(p=>localInterlagos(track,p))),trees=[];
+ for(let i=0;i<65000&&trees.length<900;i++){const x=(i*.61803398875%1-.5)*2900,z=(i*.41421356237%1-.5)*2900;if(!woods.some(p=>interlagosContains(p,x,z))&&i%5)continue;const scale=.85+i%6*.08,site=planner.reserve({id:'tree-'+i,kind:'tree',x,z,w:12*scale,d:12*scale,scale,heading:i*1.6,type:i%3===0?'pine':i%7===0?'cypress':'broadleaf',margin:6});if(site)trees.push(site);}
+ for(const site of planner.sites){if(site.kind==='bridge-pier')continue;site.y=barcelonaTerrainHeight(track,site.x,site.z)+(['pits','stand','bank','hospitality','medical','official','tower'].includes(site.kind)?.65:0);}
+ const foundations=planner.sites.filter(p=>['pits','stand','bank','hospitality','medical','official','camp','parking'].includes(p.kind));const result={...planner,pit,pitBuilding,mapped,trees,foundations,structures,bridge:structures.bridge,beyond:structures.beyond,optionalSkipped,access:barcelonaAccessCorridors(track)};cache.set(track,result);return result;
+}

@@ -433,3 +433,21 @@ The 441-point terrain grid has 150m spacing. These are not current pavement/camb
 survey measurements. Target/fitted runoff tables and explicit verified-vs-fitted
 notes are in public/data/hungaroring-runoff.js and the release document. No user
 reference photos were attached, and no official photo/map artwork is shipped.
+
+## Barcelona-Catalunya dedicated environment — 2.45.0
+
+- [Official modern no-final-chicane layout, enlarged T1 gravel and signalling tower](https://www.circuitcat.com/en/news/formula-1/the-formula-1-aws-gran-premio-de-espana-2023-changes-its-track-configuration/).
+- [FIA 2025 circuit/pit/sector/DRS maps](https://www.fia.com/system/files/decision-document/2025_spanish_grand_prix_-_race_director_event_notes_-_circuit_map_pit_lane_quarantine_zone_and_red_zones.pdf).
+- [FIA 2025 concrete approach wall and blue exit-line changes](https://www.fia.com/system/files/decision-document/2025_spanish_grand_prix_-_race_directors_event_notes_.pdf).
+- [Official 2024 facilities plan and architecture photographs](https://premsa.circuitcat.com/2024/MotoGP/Presentacio/La%20transformacio%20del%20Circuit_Novetats_2024_CAT.pdf).
+- [Official Rooftop opening and 30m south-tower reference](https://www.circuitcat.com/ca/noticies/formula-1/el-rooftop-ya-se-alza-como-nuevo-emblema-del-circuit/).
+- [Official pit/control/terrace redevelopment context](https://www.circuitcat.com/es/noticias/circuit/la-transformacion-del-circuit-de-barcelona-catalunya/).
+- [Official solar-panel/roof context](https://www.circuitcat.com/en/news/sostenibilidad-en/the-circuit-saves-52-tons-of-co2-emissions-in-only-four-months/).
+- [OSM venue, alternate/access roads, buildings, woodland and crossings; cached 2026-11-06](https://api.openstreetmap.org/api/0.6/map?bbox=2.241,41.558,2.275,41.580).
+- [EU-DEM25m via Open Topo Data](https://www.opentopodata.org/datasets/eudem/).
+
+Cached sanitized OSM geometry in barcelona-architecture/access and cached EU-DEM
+in barcelona-terrain-data. Original anchors/centreline retained; refined samples
+keep the original 30.69m range. T1 gravel/blue lines/modern layout are documented;
+other trap extents, roof details, setbacks and bridge fits are approximate. Full
+scope and per-corner target/fitted table: docs/BARCELONA-ENVIRONMENT-2.45.0.md.

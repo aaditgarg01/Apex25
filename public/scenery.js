@@ -1,3 +1,4 @@
+import {addBarcelona} from './barcelona.js';
 import {addHungaroring} from './hungaroring.js';
 import {addImola} from './imola.js';
 import {addCota} from './cota.js';
@@ -38,9 +39,10 @@ const nightIds=['sg-2008','us-2023','sa-2021','ae-2009','bh-2002','qa-2004'];
 const desertIds=['bh-2002','sa-2021','qa-2004','ae-2009','us-2023'];
 const forestIds=['it-1922','be-1925','de-1927','de-1932','it-1953','at-1969','us-1956'];
 const tropicalIds=['my-1999','sg-2008','br-1940','us-2022','au-1953','in-vit-vellore'];
-export function venueProfile(track){return {hungaroring:track.id==='hu-1986',imola:track.id==='it-1953',cota:track.id==='us-2012',monza:track.id==='it-1922',alpineAustria:track.id==='at-1969',silverstone:track.id==='gb-1948',miami:track.id==='us-2022',dunes:track.id==='nl-1948',interlagos:track.id==='br-1940',mexico:track.id==='mx-1962',night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),goldenHour:track.id==='au-1953',industrialHaze:track.id==='cn-2004',clearHills:track.id==='jp-1962',desertTwilight:track.id==='bh-2002',ardennes:track.id==='be-1925',riviera:track.id==='mc-1929',redSeaNight:track.id==='sa-2021',caspian:track.id==='az-2016',marinaNight:track.id==='sg-2008',castilian:track.id==='es-2026',vegasNight:track.id==='us-2023',ground:track.campus?'#7a8b62':track.id==='sa-2021'?'#cbb894':desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:track.id==='sa-2021'?'#040811':nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
+export function venueProfile(track){return {barcelona:track.id==='es-1991',hungaroring:track.id==='hu-1986',imola:track.id==='it-1953',cota:track.id==='us-2012',monza:track.id==='it-1922',alpineAustria:track.id==='at-1969',silverstone:track.id==='gb-1948',miami:track.id==='us-2022',dunes:track.id==='nl-1948',interlagos:track.id==='br-1940',mexico:track.id==='mx-1962',night:nightIds.includes(track.id),desert:desertIds.includes(track.id),forest:forestIds.includes(track.id),tropical:tropicalIds.includes(track.id),goldenHour:track.id==='au-1953',industrialHaze:track.id==='cn-2004',clearHills:track.id==='jp-1962',desertTwilight:track.id==='bh-2002',ardennes:track.id==='be-1925',riviera:track.id==='mc-1929',redSeaNight:track.id==='sa-2021',caspian:track.id==='az-2016',marinaNight:track.id==='sg-2008',castilian:track.id==='es-2026',vegasNight:track.id==='us-2023',ground:track.campus?'#7a8b62':track.id==='sa-2021'?'#cbb894':desertIds.includes(track.id)?'#a3987d':track.urban?'#697775':'#687c4c',sky:track.id==='sa-2021'?'#040811':nightIds.includes(track.id)?'#17263e':'#91b2cc'};}
 export function addVenue(scene,track){
  if(track.campus)return addCampus(scene,track);
+ if(track.id==='es-1991')return addBarcelona(scene,track);
  if(track.id==='hu-1986')return addHungaroring(scene,track);
  if(track.id==='it-1953')return addImola(scene,track);
  if(track.id==='us-2012')return addCota(scene,track);
@@ -97,7 +99,7 @@ export function addVenue(scene,track){
  return profile;
 }
 export async function addMappedScenery(scene,track){
- if(['hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948'].includes(track.id))return false; // Dedicated planner owns the cached OSM footprints.
+ if(['es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948'].includes(track.id))return false; // Dedicated planner owns the cached OSM footprints.
  const originalGroup=scene.group;
  try{const files=await (await fetch('/data/scenery/index.json')).json();if(!files.includes(track.id)||scene.group!==originalGroup)return false;const r=await fetch(`/data/scenery/${track.id}.json`);if(!r.ok)return false;const data=await r.json();if(scene.group!==originalGroup)return false;
  const waterMat=material('#397f90',{metalness:.45,roughness:.28}),forestMat=material('#526b45'),campusBuildings=new CampusBuildings(scene,track);
