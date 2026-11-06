@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.42.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.43.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1705,3 +1705,24 @@ snapshot. The game test suite, driving and multiplayer playtests were not run.
 No FPS claim is made. See [corner-by-corner surfaces, numeric checks, references
 and uncertainty list](docs/COTA-ENVIRONMENT-2.42.0.md), [sources](TRACK-SOURCES.md)
 and [attribution](TRACK-DATA-LICENSE.md).
+
+
+## 2.43.0 — Imola parkland, hills and gravel
+
+Dedicated Imola scenery replaces generic decoration: mapped pits/control tower,
+main/park hillside stands, dense mature trees, Santerno, park paths/bridges/gate,
+respectful original memorial areas, Italian flags, camps and terracotta town
+buildings. All 19 turns have shared paving/gravel/grass/safety planning, original
+readable dressing, slope/wet surface behaviour and four Free Practice approaches.
+Cached EU-DEM refines the undulating profile (~33.985m relief); original anchors,
+exact XY centreline, car and multiplayer protocol remain retained. The pit
+corridor is corrected onto the mapped garage side.
+
+Complete footprints reserve all racing/pit/access branches; visible safety and
+collision share geometry. 18,257 spectators and 1,600 trees are instanced, with
+226 maximum active scenery mesh submissions before culling/shadows. Both builds,
+static clearance/runoff/elevation/parity checks and parked browser views are
+reported; the game test suite and driving/multiplayer playtests were not run.
+Current F1 bypasses the old Variante Bassa. Source-driven vs fitted details,
+memorial set-back, limitations and references are in
+[the Imola release note](docs/IMOLA-ENVIRONMENT-2.43.0.md).

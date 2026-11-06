@@ -371,3 +371,38 @@ Footbridge 191582102 location is mapped; 80m span/height are safe artistic fits.
 Runoff widths/gravel boundaries and temporary event dressing are interpretive.
 All sampled data are local; no raw official map/photo artwork is redistributed.
 Complete limits: docs/COTA-ENVIRONMENT-2.42.0.md.
+
+
+## Imola parkland and cached terrain — 2.43.0
+
+- [Official present-day track and separate motorcycle Variante Bassa](https://www.autodromoimola.it/tracciato/).
+- [FIA 2025 19-turn circuit, pit and emergency maps](https://www.fia.com/system/files/decision-document/2025_emilia_romagna_grand_prix_-_race_director_event_notes_-_circuit_map_pit_lane_emergency_exits_quarantine_zone_and_red_zones.pdf).
+- [FIA 2025 edge-line and gravel/grass change notes](https://www.fia.com/system/files/decision-document/2025_emilia_romagna_grand_prix_-_race_directors_event_notes_.pdf).
+- [Official 2025 grandstand-area map; use FIA map for turn numbering](https://www.autodromoimola.it/downloads/f1/F1_IMOLA_2025_pricelist_v1.pdf).
+- [Official F1 current circuit flow and nominal 4.909km](https://www.formula1.com/en/racing/2025/emiliaromagna).
+- [Official control tower seven above-ground floors](https://www.autodromoimola.it/business/torre/).
+- [Official tourism memorial context and photograph](https://turismoimolese.cittametropolitana.bo.it/it/luoghi/piazze-vie-monumenti/monumento-ayrton-senna).
+- [Municipal remembrance context for both drivers](https://www.comune.imola.bo.it/novita/comunicati/2024/03/senna-30-years-imola-propone-un-ricco-calendario-di-eventi-per-ricordare-ayrton-senna-e-roland-ratzenberger).
+- [OSM park, pit, stand, river, memorial and road snapshot 2026-11-06](https://api.openstreetmap.org/api/0.6/map?bbox=11.695,44.329,11.733,44.354).
+- [EU-DEM 25m terrain dataset provenance via Open Topo Data](https://www.opentopodata.org/datasets/eudem/).
+
+`public/data/imola-architecture.js` retains sanitized OSM source outlines/IDs for
+pits, stands, woods/park, town houses, Santerno, footpaths, memorial nodes and
+crossings. `shared/imola-access.mjs` retains mapped vehicle/service/alternate
+roads, small park bridges and gate candidates with conservative corridor widths.
+Only geographic/name/type tags needed for the scene are kept; private contact
+metadata from the raw response is excluded. Source coordinates remain alongside
+original fitted envelopes and displacement records.
+
+`shared/imola-terrain-data.mjs`, re-exported in `public/data/imola-terrain.js`,
+caches 441 surrounding points at 150m spacing and 129 road samples (~38m) from
+EU-DEM25m via Open Topo Data. Original SRTM anchors are retained; only Imola adds
+refined anchors. Relief is 33.985m versus the original 35.12m, not a forced exact
+30m. This old/coarse terrain does not verify current road bumps or camber.
+FIA 2025 notes establish selected gravel/grass edge context, including grass at
+Tosa exit; exact widths and trap outlines remain game fits. Current F1 uses the
+Tamburello chicane and bypasses the old Variante Bassa. The official stand map
+contains older turn-label conventions; the FIA 19-turn map controls numbering.
+No user reference photos accompanied the attachment. Official maps and the
+respectful tourism memorial photo were inspected; their artwork is not shipped.
+Complete uncertainties and checks: docs/IMOLA-ENVIRONMENT-2.43.0.md.

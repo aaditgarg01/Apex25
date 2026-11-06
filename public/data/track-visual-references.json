@@ -416,6 +416,46 @@
     {
       "feature": "COTA 2.42.0 — OSM buildings, tower, service roads and crossings snapshot 2026-11-05",
       "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-97.650,30.120,-97.620,30.145"
+    },
+    {
+      "feature": "Imola 2.43.0 — Official present-day track and separate motorcycle Variante Bassa",
+      "url": "https://www.autodromoimola.it/tracciato/"
+    },
+    {
+      "feature": "Imola 2.43.0 — FIA 2025 19-turn circuit, pit and emergency maps",
+      "url": "https://www.fia.com/system/files/decision-document/2025_emilia_romagna_grand_prix_-_race_director_event_notes_-_circuit_map_pit_lane_emergency_exits_quarantine_zone_and_red_zones.pdf"
+    },
+    {
+      "feature": "Imola 2.43.0 — FIA 2025 edge-line and gravel/grass change notes",
+      "url": "https://www.fia.com/system/files/decision-document/2025_emilia_romagna_grand_prix_-_race_directors_event_notes_.pdf"
+    },
+    {
+      "feature": "Imola 2.43.0 — Official 2025 grandstand-area map; use FIA map for turn numbering",
+      "url": "https://www.autodromoimola.it/downloads/f1/F1_IMOLA_2025_pricelist_v1.pdf"
+    },
+    {
+      "feature": "Imola 2.43.0 — Official F1 current circuit flow and nominal 4.909km",
+      "url": "https://www.formula1.com/en/racing/2025/emiliaromagna"
+    },
+    {
+      "feature": "Imola 2.43.0 — Official control tower seven above-ground floors",
+      "url": "https://www.autodromoimola.it/business/torre/"
+    },
+    {
+      "feature": "Imola 2.43.0 — Official tourism memorial context and photograph",
+      "url": "https://turismoimolese.cittametropolitana.bo.it/it/luoghi/piazze-vie-monumenti/monumento-ayrton-senna"
+    },
+    {
+      "feature": "Imola 2.43.0 — Municipal remembrance context for both drivers",
+      "url": "https://www.comune.imola.bo.it/novita/comunicati/2024/03/senna-30-years-imola-propone-un-ricco-calendario-di-eventi-per-ricordare-ayrton-senna-e-roland-ratzenberger"
+    },
+    {
+      "feature": "Imola 2.43.0 — OSM park, pit, stand, river, memorial and road snapshot 2026-11-06",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=11.695,44.329,11.733,44.354"
+    },
+    {
+      "feature": "Imola 2.43.0 — EU-DEM 25m terrain dataset provenance via Open Topo Data",
+      "url": "https://www.opentopodata.org/datasets/eudem/"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
@@ -427,5 +467,6 @@
   "spa": "Mapped Eau Rouge venue, pits, Endurance/Raidillon/F1/Silver stands. Original procedural pine forest, steep rolling terrain around the existing official elevation profile, rocky banks, chalet detailing, terraces, cranes, tractors, safety gates, LED panels, tyres and brand artwork. Shifting cloud sky and sunlight; occasional hillside smoke. Shared runoff envelope keeps visible guardrails and collision aligned. No track centreline, elevation or car changes. Terrain away from the track and building/forest/event details are artistic approximations.",
   "monaco": "Mapped Mediterranean coastline, Port Hercule, 210 building outlines and hotel/Casino positions. Road-clear building render rings preserve the narrow streets; Fairmont retains overhead tunnel clearance. Procedural pastel facades, balconies, bougainvillea, Casino towers/clocks, superyachts with reflective rippling harbor water, water-supported stands, palms, cliffs, marshals and mapped quay cranes add detail. Clear midday sun; original track, elevations, hairpin, tunnel cover and car unchanged. Architectural detailing, terrain outside the road and event dressing remain artistic approximations.",
   "jeddah": "Mapped Red Sea Corniche shoreline, Al-Rahmah Floating Mosque (Island Mosque), Jeddah Yacht Club & Marina, and Jeddah Tower horizon anchor. Narrow street-circuit paved runoff without gravel traps shares concrete wall and black catch-fence boundaries between renderer and collision logic. Procedural banked Turn 13 coastal embankment with animated wave foam, neon-lit Corniche skyscrapers, beach resorts, superyachts, uplight palms, illuminated fountains, Tecpro corner blocks, Aramco/stc/Rolex branding, live LED gantry bridges, wave-roofed grandstands, Saudi flags, synchronized fireworks, white camera poles, recovery cranes, and white-suited marshals in LED vests. Track mesh and car model are unchanged.",
-  "singapore": "Mapped Marina Reservoir and Singapore River water, 450 road-clear city footprints, Marina Bay Sands towers/skypark, Flyer, Fullerton, Old Supreme Court and Esplanade references. Original procedural architecture and textures, emissive windows, reflective bay water, permanent road illumination field and LED fixtures, tropical foliage, green uplights, four colourful grandstands with phone glints, flags, marshals, pit detailing and hospitality artwork. Existing 19-corner route, driving elevations and car retained; historic Bay Grandstand underpass is not restored."
+  "singapore": "Mapped Marina Reservoir and Singapore River water, 450 road-clear city footprints, Marina Bay Sands towers/skypark, Flyer, Fullerton, Old Supreme Court and Esplanade references. Original procedural architecture and textures, emissive windows, reflective bay water, permanent road illumination field and LED fixtures, tropical foliage, green uplights, four colourful grandstands with phone glints, flags, marshals, pit detailing and hospitality artwork. Existing 19-corner route, driving elevations and car retained; historic Bay Grandstand underpass is not restored.",
+  "imola": "Dedicated mapped park, pit/control/stand/river/memorial context, 19-corner shared surface plan and cached EU-DEM hills. Original geometry/textures/neutral Italian dressing; fitted widths, roofs, stand shifts and water levels. Current F1 bypasses the old Bassa chicane. Senna model set back 16m to clear a mapped service-road envelope; Ratzenberger marker mapped by Tosa. No inscriptions or copied sculpture designs. See docs/IMOLA-ENVIRONMENT-2.43.0.md."
 }

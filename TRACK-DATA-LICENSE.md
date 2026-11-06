@@ -246,3 +246,23 @@ The provider documents a 2020-04-23 dataset snapshot. Shipped surrounding sample
 are spaced 140m; road samples ~43m. This is not a current engineering/road survey.
 Original SRTM anchors retain their provenance alongside the refined COTA profile.
 Reference photos, FIA/official map artwork and external 3D assets are not shipped.
+
+
+## Imola geographic adaptations and EU-DEM (2.43.0)
+
+Imola building/stand/woodland/park/river/path/access/crossing/memorial coordinates
+and identifiers derive from © OpenStreetMap contributors, ODbL 1.0, retrieved
+2026-11-06. Adapted geographic databases in public/data/imola-architecture.js and
+shared/imola-access.mjs remain available under ODbL 1.0 with original coordinates
+and IDs: https://www.openstreetmap.org/copyright . In-game attribution is shown.
+Event anchors, source-to-model adjustments and conservative widths are original
+fitted adaptations, not surveyed dimensions.
+
+EU-DEM © European Union, Copernicus Land Monitoring Service, processed/distributed
+via Open Topo Data: https://www.opentopodata.org/datasets/eudem/ . Attribution and
+source are retained with cached samples. Shipped grid spacing is 150m and road
+spacing ~38m; underlying raster is nominally 25m. No current engineering survey
+or commercial high-resolution elevation asset is claimed. Original SRTM data
+retain their existing attribution. Procedural models, textures, flags and neutral
+lettering are original game work. Reference photos, official maps, sculpture
+artwork/inscriptions, trademarks and external 3D assets are not redistributed.

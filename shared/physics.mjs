@@ -1,3 +1,4 @@
+import {imolaSurfaceAt,imolaSurfaceY,imolaTerrainHeight} from './imola.mjs';
 import {cotaSurfaceAt} from './cota.mjs';
 import {monzaSurfaceAt} from './monza.mjs';
 import {mexicoSurfaceAt} from './mexico.mjs';
@@ -43,7 +44,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.ai&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)&&(laps===Infinity||laps*track.length-c.progress>track.length*.45)){c.pitCompound=availableTyreChoice(c);c.pitRequested=true;}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
- const roadOffset=conditions.wetness||['us-2012','nl-1948','us-2022','gb-1948','at-1969','mx-1962','it-1922'].includes(track.id)?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2022'?miamiSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='gb-1948'?silverstoneSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='at-1969'?redbullringSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2012'?cotaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='it-1922'?monzaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='mx-1962'?mexicoSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
+ const roadOffset=conditions.wetness||['it-1953','us-2012','nl-1948','us-2022','gb-1948','at-1969','mx-1962','it-1922'].includes(track.id)?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2022'?miamiSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='gb-1948'?silverstoneSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='at-1969'?redbullringSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='it-1953'?imolaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2012'?cotaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='it-1922'?monzaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='mx-1962'?mexicoSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
  if(duneSurface&&track.id==='nl-1948'){const bank=duneSurface.bank;c.bankedRoad=true;c.bankRoll=bank.roll;c.bankTurnSign=-bank.outerSide;c.roadCurvature=angleDiff(sample(track,c.s+5).heading,sample(track,c.s-5).heading)/10;c.bankNormalLoad=bankSupport(bank.bank,Math.abs(c.v),1/Math.max(.0001,Math.abs(c.roadCurvature)),conditions.wetness).normalLoad;}
  c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>roadHalfWidth(track,c.s)-.8?conditions.curbGrip:1):1;
  if(duneSurface)c.surfaceGrip*=duneSurface.grip;
@@ -88,7 +89,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(near.distance>(duneSurface?duneSurface.boundary+3:half+24)){c.v*=Math.exp(-dt*4);const p=sample(track,c.s);c.x+=(p.x-c.x)*dt*.6;c.z+=(p.z-c.z)*dt*.6;}
  const surface=sample(track,c.s);
  const fall=clamp(near.distance-(half+6.5),0,1);
- if(track.id==='nl-1948'){const slope=sample(track,c.s,near.offset);const attitude=surfaceAttitude(slope,c.heading);c.y=slope.y;c.pitch=attitude.pitch;c.roll=attitude.roll;}else if(track.id==='at-1969'){const runoffY=redbullringSurfaceY(track,c.s,near.offset),blend=clamp((near.distance-(duneSurface?.boundary||half))/30,0,1);c.y=runoffY*(1-blend)+(redbullringTerrainHeight(track,c.x,c.z)+.85)*blend;c.pitch=surface.pitch;}else{c.y=fall?surface.y*(1-fall)+(terrainHeight(track,c.x,c.z)-.9)*fall:surface.y;c.pitch=surface.pitch;}
+ if(track.id==='nl-1948'){const slope=sample(track,c.s,near.offset);const attitude=surfaceAttitude(slope,c.heading);c.y=slope.y;c.pitch=attitude.pitch;c.roll=attitude.roll;}else if(track.id==='it-1953'){const runoffY=imolaSurfaceY(track,c.s,near.offset),blend=clamp((near.distance-(duneSurface?.boundary||half))/30,0,1);c.y=runoffY*(1-blend)+(imolaTerrainHeight(track,c.x,c.z)+.85)*blend;c.pitch=surface.pitch;}else if(track.id==='at-1969'){const runoffY=redbullringSurfaceY(track,c.s,near.offset),blend=clamp((near.distance-(duneSurface?.boundary||half))/30,0,1);c.y=runoffY*(1-blend)+(redbullringTerrainHeight(track,c.x,c.z)+.85)*blend;c.pitch=surface.pitch;}else{c.y=fall?surface.y*(1-fall)+(terrainHeight(track,c.x,c.z)-.9)*fall:surface.y;c.pitch=surface.pitch;}
  wearTyres(c,track,dt,Math.hypot(c.x-previousPose.x,c.z-previousPose.z),boost);
  updateLap(c,track,elapsed,laps);
 }

@@ -1,3 +1,5 @@
+import {imolaParkStructures} from './imola-structures.mjs';
+import {imolaBoundaryOffset,imolaWallClear,imolaSurfaceY,imolaSection} from './imola.mjs';
 import {cotaFootbridge} from './cota-structures.mjs';
 import {cotaBoundaryOffset,cotaWallClear,cotaSurfaceY,cotaSection} from './cota.mjs';
 import {monzaFootbridge} from './monza-structures.mjs';
@@ -24,13 +26,14 @@ import {campusTunnelLayout} from './campus-geometry.mjs';
 const cache=new WeakMap(),CELL=12,HALF_WIDTH=1.24,HALF_LENGTH=2.6;
 const wrap=(n,m)=>((n%m)+m)%m,angle=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 function roadPoint(track,s){const f=wrap(s,track.length)/track.step,i=Math.floor(f),t=f-i,a=track.points[i],b=track.points[(i+1)%track.points.length];return {x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t,y:a.y+(b.y-a.y)*t,groundY:a.groundY+(b.groundY-a.groundY)*t,heading:a.heading+angle(b.heading,a.heading)*t};}
-function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,offset);return {x:p.x+Math.cos(p.heading)*o,z:p.z-Math.sin(p.heading)*o,y:track.id==='us-2012'?cotaSurfaceY(track,i*track.step,o):track.id==='at-1969'?redbullringSurfaceY(track,i*track.step,o):bankedHeight(track,i*track.step,o,p.y)};}
+function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,offset);return {x:p.x+Math.cos(p.heading)*o,z:p.z-Math.sin(p.heading)*o,y:track.id==='it-1953'?imolaSurfaceY(track,i*track.step,o):track.id==='us-2012'?cotaSurfaceY(track,i*track.step,o):track.id==='at-1969'?redbullringSurfaceY(track,i*track.step,o):bankedHeight(track,i*track.step,o,p.y)};}
 function pitEdge(track,i,offset){const p=track.points[i];return {x:p.x+Math.cos(p.heading)*offset,z:p.z-Math.sin(p.heading)*offset,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
- const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',interlagos=track.id==='br-1940',zandvoort=track.id==='nl-1948',miami=track.id==='us-2022',silverstone=track.id==='gb-1948',austria=track.id==='at-1969',mexico=track.id==='mx-1962',monza=track.id==='it-1922',cota=track.id==='us-2012',jeddah=track.id==='sa-2021',wideRunoff=cota||monza||mexico||austria||silverstone||miami||shanghai||bahrain||spa||jeddah||interlagos||zandvoort,concreteWalls=cota||mexico||miami||melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=cota?cotaBoundaryOffset:monza?monzaBoundaryOffset:mexico?mexicoBoundaryOffset:austria?redbullringBoundaryOffset:silverstone?silverstoneBoundaryOffset:miami?miamiBoundaryOffset:zandvoort?zandvoortBoundaryOffset:interlagos?interlagosBoundaryOffset:jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
+ const walls=[],grid=new Map(),half=track.width/2,melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',interlagos=track.id==='br-1940',zandvoort=track.id==='nl-1948',miami=track.id==='us-2022',silverstone=track.id==='gb-1948',austria=track.id==='at-1969',mexico=track.id==='mx-1962',monza=track.id==='it-1922',cota=track.id==='us-2012',imola=track.id==='it-1953',jeddah=track.id==='sa-2021',wideRunoff=imola||cota||monza||mexico||austria||silverstone||miami||shanghai||bahrain||spa||jeddah||interlagos||zandvoort,concreteWalls=imola||cota||mexico||miami||melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=imola?imolaBoundaryOffset:cota?cotaBoundaryOffset:monza?monzaBoundaryOffset:mexico?mexicoBoundaryOffset:austria?redbullringBoundaryOffset:silverstone?silverstoneBoundaryOffset:miami?miamiBoundaryOffset:zandvoort?zandvoortBoundaryOffset:interlagos?interlagosBoundaryOffset:jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
  function add(a,b,width,height,kind,inward=null,style=null){
-  if((cota||monza||miami||silverstone||austria||mexico)&&['track','fence'].includes(kind)&&!miamiWallClear(track,a,b,width))return;
+  if((imola||cota||monza||miami||silverstone||austria||mexico)&&['track','fence'].includes(kind)&&!miamiWallClear(track,a,b,width))return;
+  if(imola&&['track','fence'].includes(kind)&&!imolaWallClear(track,a,b,width))return;
   if(cota&&['track','fence'].includes(kind)&&!cotaWallClear(track,a,b,width))return;
   if(monza&&['track','fence'].includes(kind)&&!monzaWallClear(track,a,b,width))return;
   if(mexico&&['track','fence'].includes(kind)&&!mexicoWallClear(track,a,b,width))return;
@@ -38,7 +41,7 @@ export function trackBarriers(track){
   if(silverstone&&['track','fence'].includes(kind)&&!silverstoneWallClear(track,a,b,width))return;
   const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);if(length<.01)return;
   const wall={a,b,width,height,kind,x:(a.x+b.x)/2,z:(a.z+b.z)/2,tx:dx/length,tz:dz/length,length,inward,bottom:Math.min(a.y,b.y),top:Math.max(a.y,b.y)+height};
-  if(cota||mexico||monza)wall.style=style||'concrete';
+  if(imola||cota||mexico||monza)wall.style=style||'concrete';
   const id=walls.length;walls.push(wall);const pad=width/2+.1;
   for(let x=Math.floor((Math.min(a.x,b.x)-pad)/CELL);x<=Math.floor((Math.max(a.x,b.x)+pad)/CELL);x++)for(let z=Math.floor((Math.min(a.z,b.z)-pad)/CELL);z<=Math.floor((Math.max(a.z,b.z)+pad)/CELL);z++){const key=x+':'+z;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(id);}
  }
@@ -56,9 +59,9 @@ export function trackBarriers(track){
   const ai=edge(track,i,side*inner),ao=edge(track,i,side*outer),bi=edge(track,next,side*(wideRunoff?boundaryOffset(track,next,side)-.35:inner)),bo=edge(track,next,side*(wideRunoff?boundaryOffset(track,next,side)+.35:outer)),a={x:(ai.x+ao.x)/2,z:(ai.z+ao.z)/2,y:ai.y+.04},b={x:(bi.x+bo.x)/2,z:(bi.z+bo.z)/2,y:bi.y+.04};
   const cx=(track.points[i].x+track.points[next].x)/2,cz=(track.points[i].z+track.points[next].z)/2,nx=cx-(a.x+b.x)/2,nz=cz-(a.z+b.z)/2,n=Math.hypot(nx,nz);
   const width=Math.max(.12,(Math.hypot(ai.x-ao.x,ai.z-ao.z)+Math.hypot(bi.x-bo.x,bi.z-bo.z))/2);
-  const style=cota?(cotaSection(track,i*track.step,side).barrier||'armco'):monza?(monzaSection(track,i*track.step,side).barrier||'armco'):mexico?(mexicoSection(track,i*track.step,side).barrier||'concrete'):null,wallHeight=cota?(style==='armco'?.76:1.05):monza?(style==='armco'?.76:1.05):mexico&&style==='armco'?.76:concreteWalls?1.05:.76;
+  const style=imola?(imolaSection(track,i*track.step,side).barrier||'armco'):cota?(cotaSection(track,i*track.step,side).barrier||'armco'):monza?(monzaSection(track,i*track.step,side).barrier||'armco'):mexico?(mexicoSection(track,i*track.step,side).barrier||'concrete'):null,wallHeight=imola?(style==='armco'?.76:1.05):cota?(style==='armco'?.76:1.05):monza?(style==='armco'?.76:1.05):mexico&&style==='armco'?.76:concreteWalls?1.05:.76;
   add(a,b,width,wallHeight,'track',n?{x:nx/n,z:nz/n}:null,style);
-  const fa=monza||concreteWalls||spa||zandvoort||silverstone||austria?{...a,y:a.y+(cota||mexico||monza?wallHeight:((spa||zandvoort||silverstone||austria)? .76:1.05))}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=monza||concreteWalls||spa||zandvoort||silverstone||austria?{...b,y:b.y+(cota||mexico||monza?wallHeight:((spa||zandvoort||silverstone||austria)? .76:1.05))}:edge(track,next,side*(half+(track.urban?3.2:8)));
+  const fa=monza||concreteWalls||spa||zandvoort||silverstone||austria?{...a,y:a.y+(imola||cota||mexico||monza?wallHeight:((spa||zandvoort||silverstone||austria)? .76:1.05))}:edge(track,i,side*(half+(track.urban?3.2:8))),fb=monza||concreteWalls||spa||zandvoort||silverstone||austria?{...b,y:b.y+(imola||cota||mexico||monza?wallHeight:((spa||zandvoort||silverstone||austria)? .76:1.05))}:edge(track,next,side*(half+(track.urban?3.2:8)));
   // Historic stone wall provides the castle-side enclosure; retain the low
   // collision barrier without putting a second debris fence in front of it.
   if(!(track.id==='az-2016'&&side===1&&i*track.step>=2470&&i*track.step<=2760))add(fa,fb,.12,concreteWalls||spa||zandvoort||silverstone||austria?2.9:3.5,'fence',n?{x:nx/n,z:nz/n}:null);
@@ -68,6 +71,7 @@ export function trackBarriers(track){
   add(pitEdge(track,i,a.side*a.outer),pitEdge(track,next,b.side*b.outer),.4,1.05,'pit-wall');
   if(a.divider&&b.divider)add(pitEdge(track,i,a.side*(half+.65)),pitEdge(track,next,b.side*(half+.65)),.35,1.05,'pit-divider');
  }
+ if(imola)for(const w of imolaParkStructures(track).solids)add(w.a,w.b,w.width,w.height,w.kind,null);
  if(cota)for(const w of cotaFootbridge(track)?.solids||[])add(w.a,w.b,w.width,w.height,w.kind,null);
  if(monza)for(const w of monzaFootbridge(track)?.solids||[])add(w.a,w.b,w.width,w.height,w.kind,null);
  if(monza)for(const w of monzaBankingPlan(track).solids)add(w.a,w.b,w.width,w.height,w.kind,null);
