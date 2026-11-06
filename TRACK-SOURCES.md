@@ -470,3 +470,17 @@ No new surveyed road elevations or gravel-trap locations are claimed. Temporary
 stands, skyline silhouettes/visibility, bridge heights, radial runoff widths and
 clearance-fitted architecture/wall shifts are approximate. See
 `docs/MONTREAL-ENVIRONMENT-2.46.0.md` for the table and measured scope.
+
+
+## Yas Marina / Abu Dhabi — 2.47.0 (2026-11-07)
+
+- [Yas Marina post-2021 North / South / hotel layout changes](https://www.yasmarinacircuit.com/en/w/ymc-track-changes-1)
+- [FIA 2025 Abu Dhabi circuit map and pit lane drawing, 16 corners / 5281 m](https://www.fia.com/system/files/decision-document/2025_abu_dhabi_grand_prix_-_event_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_quarantine_zone_and_red_zones.pdf)
+- [Official marina setting](https://www.yasmarinacircuit.com/en/aboutus/discover-yas-island/yas-marina)
+- [2025 official Formula 1 Abu Dhabi overview](https://www.formula1.com/en/racing/2025/united-arab-emirates)
+- [Yas Island OSM architecture and coastline extract](https://api.openstreetmap.org/api/0.6/map?bbox=54.599,24.461,54.616,24.479)
+- [Yas Island northern landmark OSM extract](https://api.openstreetmap.org/api/0.6/map?bbox=54.596,24.478,54.615,24.491)
+
+OSM building ways 133907082 (pits), 133907079/133907081/133907352/168411369/188731381 (stands), 520940413/1228229328 (hotel wings), 188732696 (media/hospitality), 168412289/188852394 (resorts), 855448338 (unsigned red roof), 312812656 (mall), 227206840 (waterpark). Coastline ways 312181485/188215353/188205155 define the marina shoreline; offshore closure is fitted. All 1,192 mapped highway/path ways are cached before corridor filtering; 10,215 remaining access segments are reserved. OSM © contributors, ODbL 1.0.
+
+The preserved centreline matches the post-2021 16-corner layout, not the 21-corner original. Existing SRTM 90 m / OpenTopoData elevation anchors retain the 6.52 m range; no new surveyed dip is invented. Hotel upper wings stay at source anchors with fitted supports and raised clearance. The generated pit route is unchanged: a covered approach is approximate, not a true under-T1 tunnel. Runoff types/widths, kerbs, wall setbacks, arena omission, mast locations, appearance and ground-clearance fits are approximate. No current racing gravel trap was verified; none is invented. No reference photographs accompanied this request. See docs/YASMARINA-ENVIRONMENT-2.47.0.md.

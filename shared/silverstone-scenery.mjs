@@ -1,3 +1,4 @@
+import {nearestLandmarkOffsets} from './landmark-placement.mjs';
 import {sample,terrainHeight} from './tracks.mjs';
 import {pitLayout} from './pit-layout.mjs';
 import {silverstoneBoundaries,silverstoneAccessCorridors} from './silverstone.mjs';
@@ -15,7 +16,8 @@ export function planSilverstone(track,data){
  function mappedSite(feature,kind){
   const envelope=feature.envelope,near=closestStation(track,envelope.x,envelope.z),isWing=kind==='wing',w=isWing?28:envelope.w+2,d=isWing?390:envelope.d+2,mappedHeading=isWing?pit.frame.heading:envelope.heading,heading=!isWing&&Math.cos(mappedHeading-near.road.heading)<0?mappedHeading+Math.PI:mappedHeading;
   const base={...envelope,id:'osm-'+feature.way,kind,w,d,heading,side:isWing?pit.side:near.side,s:near.s,sourceWay:feature.way,label:feature.tags.name||'NATIONAL GARAGES',rows:Math.max(8,Math.min(22,Math.floor((w-6)/.8))),roof:!['Stowe A','Stowe B','Stowe C','Chapel','Farm Curve','Village A'].includes(feature.tags.name),margin:isWing?1:5};let site=null;
-  search:for(const scale of (isWing?[1]:[1,.94,.86,.74,.62]))for(const shift of (isWing?[-12,-9,-15,-6,0,-18,-24]:Array.from({length:39},(_,i)=>i*6)))for(const along of (isWing?[12,6,18,0,-6,24]:[0,-12,12,-24,24,-48,48,-80,80])){const h=isWing?heading:near.road.heading,across=isWing?shift:near.side*shift;site=planner.reserve({...base,w:base.w*scale,d:base.d*scale,x:envelope.x+Math.cos(h)*across+Math.sin(h)*along,z:envelope.z-Math.sin(h)*across+Math.cos(h)*along,approximateShift:Math.hypot(shift,along),approximateScale:scale});if(site)break search;}
+  if(kind==='clubhouse'){close:for(const delta of nearestLandmarkOffsets(90,6))for(const scale of [1,.94,.86,.74,.62]){site=planner.reserve({...base,w:base.w*scale,d:base.d*scale,x:envelope.x+delta.x,z:envelope.z+delta.z,approximateShift:delta.distance,approximateScale:scale});if(site)break close;}}
+  search:for(const scale of (isWing?[1]:[1,.94,.86,.74,.62]))for(const shift of (isWing?[-12,-9,-15,-6,0,-18,-24]:Array.from({length:39},(_,i)=>i*6)))for(const along of (isWing?[12,6,18,0,-6,24]:[0,-12,12,-24,24,-48,48,-80,80])){if(site)break search;const h=isWing?heading:near.road.heading,across=isWing?shift:near.side*shift;site=planner.reserve({...base,w:base.w*scale,d:base.d*scale,x:envelope.x+Math.cos(h)*across+Math.sin(h)*along,z:envelope.z-Math.sin(h)*across+Math.cos(h)*along,approximateShift:Math.hypot(shift,along),approximateScale:scale});if(site)break search;}
   if(!site&&kind==='stand'){site=planner.roadside({...base,w:12,d:48,rows:8,offset:near.offset,approximateScale:.4,approximateShift:true});}
   if(!site)planner.rejected.push(base.id);else mapped.push(site);return site;
  }

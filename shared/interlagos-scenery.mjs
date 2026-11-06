@@ -1,3 +1,4 @@
+import {yasmarinaBoundaries,yasmarinaAccessCorridors} from './yasmarina.mjs';
 import {montrealBoundaries,montrealAccessCorridors} from './montreal.mjs';
 import {barcelonaBoundaries,barcelonaAccessCorridors} from './barcelona.mjs';
 import {hungaroringBoundaries,hungaroringAccessCorridors} from './hungaroring.mjs';
@@ -24,9 +25,10 @@ function segmentBox(a,b,hx,hz){
 }
 export function interlagosCorridors(track){
  if(cache.has(track))return cache.get(track);
- const pit=pitLayout(track),segments=[],boundary=track.id==='ca-1978'?montrealBoundaries(track):track.id==='es-1991'?barcelonaBoundaries(track):track.id==='hu-1986'?hungaroringBoundaries(track):track.id==='it-1953'?imolaBoundaries(track):track.id==='us-2012'?cotaBoundaries(track):track.id==='it-1922'?monzaBoundaries(track):track.id==='mx-1962'?mexicoBoundaries(track):track.id==='at-1969'?redbullringBoundaries(track):track.id==='gb-1948'?silverstoneBoundaries(track):track.id==='us-2022'?miamiBoundaries(track):track.id==='nl-1948'?zandvoortBoundaries(track):interlagosBoundaries(track);
+ const pit=pitLayout(track),segments=[],boundary=track.id==='ae-2009'?yasmarinaBoundaries(track):track.id==='ca-1978'?montrealBoundaries(track):track.id==='es-1991'?barcelonaBoundaries(track):track.id==='hu-1986'?hungaroringBoundaries(track):track.id==='it-1953'?imolaBoundaries(track):track.id==='us-2012'?cotaBoundaries(track):track.id==='it-1922'?monzaBoundaries(track):track.id==='mx-1962'?mexicoBoundaries(track):track.id==='at-1969'?redbullringBoundaries(track):track.id==='gb-1948'?silverstoneBoundaries(track):track.id==='us-2022'?miamiBoundaries(track):track.id==='nl-1948'?zandvoortBoundaries(track):interlagosBoundaries(track);
  for(let i=0;i<track.points.length;i++){const next=(i+1)%track.points.length,left=Math.max(boundary[1][i].offset,boundary[1][next].offset),right=Math.max(boundary[-1][i].offset,boundary[-1][next].offset),shift=(left-right)/2,move=p=>({...p,x:p.x+Math.cos(p.heading)*shift,z:p.z-Math.sin(p.heading)*shift});segments.push({a:move(track.points[i]),b:move(track.points[next]),half:(left+right)/2,kind:'race'});}
  for(let d=0;d<pit.length;d+=3)segments.push({a:pitRoadPose(track,d),b:pitRoadPose(track,Math.min(d+3,pit.length)),half:pit.width/2,kind:'pit'});
+ if(track.id==='ae-2009')segments.push(...yasmarinaAccessCorridors(track));
  if(track.id==='ca-1978')segments.push(...montrealAccessCorridors(track));
  if(track.id==='es-1991')segments.push(...barcelonaAccessCorridors(track));
  if(track.id==='hu-1986')segments.push(...hungaroringAccessCorridors(track));
@@ -38,12 +40,21 @@ export function interlagosCorridors(track){
  if(track.id==='gb-1948')segments.push(...silverstoneAccessCorridors(track));
  cache.set(track,segments);return segments;
 }
+// Yas Island has thousands of cached access edges. A conservative spatial
+// index selects potentially intersecting edges; the same exact whole-footprint
+// predicate below still decides placement. Distant edges cannot cross its AABB.
+const yasIndexCache=new WeakMap(),YAS_CELL=80;
+function footprintCorridors(track,site,margin){
+ const all=interlagosCorridors(track);if(track.id!=='ae-2009')return all;
+ if(!yasIndexCache.has(track)){const buckets=new Map();for(const edge of all){const pad=edge.half*Math.SQRT2;for(let x=Math.floor((Math.min(edge.a.x,edge.b.x)-pad)/YAS_CELL);x<=Math.floor((Math.max(edge.a.x,edge.b.x)+pad)/YAS_CELL);x++)for(let z=Math.floor((Math.min(edge.a.z,edge.b.z)-pad)/YAS_CELL);z<=Math.floor((Math.max(edge.a.z,edge.b.z)+pad)/YAS_CELL);z++){const key=x+':'+z;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(edge);}}yasIndexCache.set(track,buckets);}
+ const grid=yasIndexCache.get(track),c=Math.abs(Math.cos(site.heading||0)),sn=Math.abs(Math.sin(site.heading||0)),rx=c*site.w/2+sn*site.d/2+margin*Math.SQRT2,rz=sn*site.w/2+c*site.d/2+margin*Math.SQRT2,found=new Set();for(let x=Math.floor((site.x-rx)/YAS_CELL);x<=Math.floor((site.x+rx)/YAS_CELL);x++)for(let z=Math.floor((site.z-rz)/YAS_CELL);z<=Math.floor((site.z+rz)/YAS_CELL);z++)for(const edge of grid.get(x+':'+z)||[])found.add(edge);return found;
+}
 // A segment vs expanded oriented rectangle test is conservative for the complete
 // footprint, including roofs, crowds, flag motion and props. Checks ALL branches.
 export function interlagosFootprintClear(track,site,margin=3){
  if(site.outline){const edges=interlagosCorridors(track).filter(e=>e.kind==='pit').concat(track.points.map((p,i)=>({a:p,b:track.points[(i+1)%track.points.length],half:track.width/2})));for(const edge of edges){if(interlagosContains(site.outline,edge.a.x,edge.a.z))return false;for(let i=0;i<site.outline.length;i++)if(segmentDistance(edge.a,edge.b,site.outline[i],site.outline[(i+1)%site.outline.length])<edge.half+margin)return false;}return true;}
  const c=Math.cos(site.heading||0),s=Math.sin(site.heading||0),project=p=>({x:(p.x-site.x)*c-(p.z-site.z)*s,z:(p.x-site.x)*s+(p.z-site.z)*c});
- for(const edge of interlagosCorridors(track)){const pad=edge.half+margin;if(segmentBox(project(edge.a),project(edge.b),site.w/2+pad,site.d/2+pad))return false;}return true;
+ for(const edge of footprintCorridors(track,site,margin)){const pad=edge.half+margin;if(segmentBox(project(edge.a),project(edge.b),site.w/2+pad,site.d/2+pad))return false;}return true;
 }
 export function interlagosEnvelopeOverlap(a,b,gap=2){
  for(const h of [a.heading||0,b.heading||0])for(const axis of [[Math.cos(h),-Math.sin(h)],[Math.sin(h),Math.cos(h)]]){
@@ -75,7 +86,7 @@ export function interlagosTerrainHeight(track,x,z,cell=12){
  for(let i=0;i<track.points.length;i+=4){const p=track.points[i],squaredDistance=(x-p.x)**2+(z-p.z)**2;if(squaredDistance<best){closest=p;best=squaredDistance;}}
  const distance=Math.sqrt(best)-track.width/2,blend=clamp((distance-12)/65,0,1),bank=4+4*Math.sin(x*.008+z*.005)**2;
  let y=terrainHeight(track,x,z)-.9+bank*blend;
- const reach=track.width/2+Math.SQRT2*cell+track.step,boundary=track.id==='ca-1978'?montrealBoundaries(track):track.id==='es-1991'?barcelonaBoundaries(track):track.id==='hu-1986'?hungaroringBoundaries(track):track.id==='it-1953'?imolaBoundaries(track):track.id==='us-2012'?cotaBoundaries(track):track.id==='it-1922'?monzaBoundaries(track):track.id==='mx-1962'?mexicoBoundaries(track):track.id==='at-1969'?redbullringBoundaries(track):track.id==='gb-1948'?silverstoneBoundaries(track):track.id==='us-2022'?miamiBoundaries(track):track.id==='nl-1948'?zandvoortBoundaries(track):interlagosBoundaries(track);
+ const reach=track.width/2+Math.SQRT2*cell+track.step,boundary=track.id==='ae-2009'?yasmarinaBoundaries(track):track.id==='ca-1978'?montrealBoundaries(track):track.id==='es-1991'?barcelonaBoundaries(track):track.id==='hu-1986'?hungaroringBoundaries(track):track.id==='it-1953'?imolaBoundaries(track):track.id==='us-2012'?cotaBoundaries(track):track.id==='it-1922'?monzaBoundaries(track):track.id==='mx-1962'?mexicoBoundaries(track):track.id==='at-1969'?redbullringBoundaries(track):track.id==='gb-1948'?silverstoneBoundaries(track):track.id==='us-2022'?miamiBoundaries(track):track.id==='nl-1948'?zandvoortBoundaries(track):interlagosBoundaries(track);
  for(let i=0;i<track.points.length;i++){const p=track.points[i],dx=x-p.x,dz=z-p.z,along=dx*Math.sin(p.heading)+dz*Math.cos(p.heading),across=dx*Math.cos(p.heading)-dz*Math.sin(p.heading),pad=Math.SQRT2*cell+track.step;if(Math.abs(along)<reach&&across>-boundary[-1][i].offset-pad&&across<boundary[1][i].offset+pad)y=Math.min(y,p.y-.9);}
  // Suppress discontinuities close to the asphalt; outside banks stay rolling.
  if(distance<12)y=Math.min(y,closest.y-.9);

@@ -321,3 +321,8 @@ lettering and neutral event props are procedural game work. Official diagrams an
 reference photographs are linked for research; their artwork is not redistributed.
 No licensed sponsor, team, casino or venue artwork was added. The wall greeting
 “Respect the final turn” is original user-selected text.
+
+
+### Yas Marina cached environment data (2.47.0)
+
+`public/data/yasmarina-architecture.js`, `shared/yasmarina-access.mjs`, `shared/yasmarina-coast-data.mjs` and `shared/yasmarina-landmark-data.mjs` contain adapted OpenStreetMap geometry, retrieved 2026-11-07: © OpenStreetMap contributors, ODbL 1.0, https://www.openstreetmap.org/copyright . Fitted envelopes and offshore clipping boundaries are modifications, not surveyed geometry. Procedural original artwork/configuration uses this repository’s code license. Official FIA/circuit pages are references only; no official maps, sponsor logos or venue artwork are redistributed. Original road/elevation data licenses remain applicable.

@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.46.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.47.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1821,3 +1821,14 @@ browser views are inspected. The game test suite and driving/multiplayer playtes
 were not run. Broad gravel extents, rebuilt building/stand setbacks, bridge scale
 and local gradients remain approximate. Full target/fitted table, verification
 limits and references: [Hungaroring release note](docs/HUNGARORING-ENVIRONMENT-2.44.0.md).
+
+
+## 2.47.0 — Yas Marina twilight, marina and landmark placement
+
+Dedicated post-2021 Yas Island scenery replaces the generic environment: mapped hotel wings with a glowing grid shell and high track-spanning link, marina shoreline, 65 instanced yachts, unsigned landmark buildings, palms, grandstands and original track dressing. Full-lap shared runoff adds painted turquoise tarmac, irrigated grass and sandy margins. Concrete, covered impact protection, fencing, marina rails and structural supports use the same solids for rendering and contact.
+
+A session-clock sunset fades to night, with a local fixed-night option also available in the pause menu. Permanent whole-circuit illumination uses two added fixed directional lights, emissive mast heads, a world-space field and throttled marina reflections. No per-pole lights or camera-triggered lighting. Free Practice adds hairpin, marina and hotel starts. The existing centreline, elevations, car, core equations, pit geometry/timing and multiplayer messages remain intact; surface adapters consume the new runoff plan. The covered pit approach is approximate and does **not** recreate the real under-T1 tunnel.
+
+Also corrects unnecessary landmark displacement in Montreal (Biosphere/amusement park) and Silverstone (clubhouse), using nearest-safe-position searches. Eleven existing cached planners were measured and eleven older dedicated environment placement implementations were reviewed for the same fallback issue; this was not an on-track visibility survey of every circuit.
+
+Requested static checks, builds and a parked browser inspection are recorded in [the release details, runoff table, sources and limitations](docs/YASMARINA-ENVIRONMENT-2.47.0.md). The game test suite was neither run nor edited. Driving and multiplayer playtesting remain manual.
