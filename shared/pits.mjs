@@ -1,3 +1,4 @@
+import {pitTransitPlan} from './pit-timing.mjs';
 import {wrap,angleDiff} from './tracks.mjs';
 import {clearImpact} from './motion.mjs';
 import {fitTyres,tyreAvailable,availableTyreChoice} from './tyres.mjs';
@@ -46,7 +47,7 @@ export function tryPitEntry(car,track,previousS){
  car.pitEntryOffset=gate?(car.lateral||0):layout.entryOffset;
  car.pitMerge=null;
  if(!gate){const p=pitRoadPose(track,car.pitTravel);car.pitMerge={start:car.pitTravel,length:Math.min(24,(car.pitState==='lane'?layout.box:layout.length)-car.pitTravel),x:car.x-p.x,y:car.y-p.y,z:car.z-p.z};}
- car.pitEntryProgress=car.progress-car.pitTravel;car.pitTimer=0;car.pitPenalty=0;car.pitFitted=false;car.v=Math.min(PIT_SPEED,Math.max(0,car.v));clearImpact(car);
+ car.pitEntryProgress=car.progress-car.pitTravel;car.pitTimer=0;car.pitPenalty=0;car.pitFitted=false;car.v=Math.min(pitTransitPlan(track).speed,Math.max(0,car.v));clearImpact(car);
  car.offtrack=false;car.offtrackTime=0;car.offtrackPenalty=false;car.boostActive=false;
  return true;
 }
@@ -63,7 +64,7 @@ export function preparePitTraffic(cars,track){
 }
 export function stepPit(car,track,dt){
  if(!car.pitState||car.pitState==='none')return false;
- const plan=pitLayout(track);clearImpact(car);car.boostActive=false;car.steer=0;car.sliding=false;
+ const plan=pitLayout(track),pitSpeed=pitTransitPlan(track).speed;clearImpact(car);car.boostActive=false;car.steer=0;car.sliding=false;
  car.offtrack=false;car.offtrackTime=0;car.offtrackPenalty=false;
  car.boost=Math.min(100,car.boost+dt*4);car.tyreImpactCooldown=Math.max(0,(car.tyreImpactCooldown||0)-dt);
  let moveDt=dt;
@@ -74,17 +75,17 @@ export function stepPit(car,track,dt){
   // Serve the captured penalty before tyre work. Elapsed race time already
   // includes this wait, so remove it from the outstanding finish-time penalty.
   if(car.pitPenalty>0&&car.pitTimer<=duration+1e-9){car.penalty=Math.max(0,(car.penalty||0)-car.pitPenalty);car.penaltyServed=(car.penaltyServed||0)+car.pitPenalty;car.pitPenalty=0;}
-  if(car.pitTimer===0){if(!car.pitFitted){fitTyres(car);car.pitFitted=true;car.lastPitService=duration;car.lastPitServiceAt=(car.physicsTime||0)-Math.max(0,dt-remainingService);car.lastPitServiceStop=car.pitStops;}car.pitState='exit';}
+  if(car.pitTimer===0){if(!car.pitFitted){fitTyres(car);car.pitFitted=true;car.lastPitService=duration+(car.pitServicePenalty||0);car.lastPitServiceAt=(car.physicsTime||0)-Math.max(0,dt-remainingService);car.lastPitServiceStop=car.pitStops;}car.pitState='exit';}
   moveDt=Math.max(0,dt-remainingService);
  }
  if(car.pitState!=='service'&&moveDt>0){
   const remaining=car.pitState==='lane'?plan.box-car.pitTravel:plan.length-car.pitTravel;
-  const stopAtBox=car.pitState==='lane',safeSpeed=stopAtBox?Math.sqrt(Math.max(0,2*18*remaining)):PIT_SPEED;
-  car.v=Math.min(PIT_SPEED,car.v+moveDt*8,safeSpeed);const a=pitPose(car,track,car.pitTravel-.2),b=pitPose(car,track,car.pitTravel+.2),rate=Math.max(.4,Math.hypot(b.x-a.x,b.z-a.z)/.4),move=Math.max(0,Math.min(car.v*moveDt/rate,remaining,car.pitClearance??Infinity));
+  const stopAtBox=car.pitState==='lane',safeSpeed=stopAtBox?Math.sqrt(Math.max(0,2*18*remaining)):pitSpeed;
+  car.v=Math.min(pitSpeed,car.v+moveDt*8,safeSpeed);const a=pitPose(car,track,car.pitTravel-.2),b=pitPose(car,track,car.pitTravel+.2),rate=Math.max(.4,Math.hypot(b.x-a.x,b.z-a.z)/.4),move=Math.max(0,Math.min(car.v*moveDt/rate,remaining,car.pitClearance??Infinity));
   if(move<car.v*moveDt/rate-.001)car.v=move*rate/moveDt;
   car.pitTravel+=move;
   if(remaining-move<.03){
-   if(stopAtBox){car.pitTravel=plan.box;car.pitState='service';car.pitServiceDuration=pitServiceFor(car);car.pitPenalty=Number.isFinite(car.tyreRaceLaps)?Math.max(0,car.penalty||0):0;car.pitTimer=car.pitServiceDuration+car.pitPenalty;car.v=0;}
+   if(stopAtBox){car.pitTravel=plan.box;car.pitState='service';car.pitServiceDuration=pitServiceFor(car);car.pitPenalty=Number.isFinite(car.tyreRaceLaps)?Math.max(0,car.penalty||0):0;car.pitServicePenalty=car.pitPenalty;car.pitTimer=car.pitServiceDuration+car.pitPenalty;car.v=0;}
    else{car.pitTravel=plan.length;car.pitState='none';car.pitEntryOffset=0;}
   }
  }

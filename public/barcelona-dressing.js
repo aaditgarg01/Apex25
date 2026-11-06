@@ -1,3 +1,4 @@
+import {pitTransitPlan} from '/shared/pit-timing.mjs';
 import * as THREE from '/vendor/three.module.js';
 import {sample} from '/shared/tracks.mjs';
 import {gridSlot} from '/shared/physics.mjs';
@@ -38,7 +39,7 @@ export function addBarcelonaDressing(scene,track,plan,h){
  function groundLabel(text,p,w,d){const g=new THREE.Group();g.position.set(p.x,p.y+.115,p.z);g.rotation.set(-Math.PI/2,p.heading,0,'YXZ');g.userData.barcelonaRoadMarking=text;scene.group.add(g);sign(g,text,w,d,0,0,0);}
  for(let i=0;i<22;i++){const slot=gridSlot(i),p=sample(track,slot.s-4,slot.offset);groundLabel(String(i+1),p,1.2,.85);if(i>=8){const slotPose=sample(track,slot.s,slot.offset),g=new THREE.Group();g.position.set(slotPose.x,slotPose.y+.11,slotPose.z);g.rotation.set(-slotPose.pitch,slotPose.heading,0,'YXZ');scene.group.add(g);scene.box(2.8,.025,.12,'#e1e0d5',0,0,2.85,g);scene.box(.12,.025,5.4,'#e1e0d5',slot.offset<0?-1.4:1.4,0,.2,g);}}
  for(const [text,station]of [['S1',1605],['S2',3346],['SC1',pit.entry+8],['SC2',pit.entry+pit.length-8],['DETECTION',2714]]){const p=sample(track,station),g=new THREE.Group();g.position.set(p.x,p.y+.105,p.z);g.rotation.set(-p.pitch,p.heading,0,'YXZ');scene.group.add(g);scene.box(track.width-1,.016,.14,'#d4d2bf',0,0,0,g);groundLabel(text,sample(track,station-4),4,1.1);}
- for(const [text,distance]of [['80',Math.min(pit.taper+5,pit.length/3)],['PIT LIMIT',Math.min(pit.taper+12,pit.length/3+10)],['PIT OUT',pit.length-15]])groundLabel(text,pitRoadPose(track,distance),3.5,1.4);
+ for(const [text,distance]of [[String(Math.round(pitTransitPlan(track).speed*3.6)),Math.min(pit.taper+5,pit.length/3)],['PIT LIMIT',Math.min(pit.taper+12,pit.length/3+10)],['PIT OUT',pit.length-15]])groundLabel(text,pitRoadPose(track,distance),3.5,1.4);
  // Original transparent dust/marble/oil decals on the road; they are cosmetic,
  // non-solid layers on their own ribbon, never new road meshes or obstacles.
  const c=document.createElement('canvas');c.width=c.height=256;const ink=c.getContext('2d');for(let i=0;i<650;i++){ink.fillStyle=i%7?'rgba(24,27,25,.23)':'rgba(181,168,133,.22)';ink.fillRect(i*37%256,i*71%256,1+i%3,1+i%2);}for(let i=0;i<16;i++){ink.fillStyle='rgba(30,33,30,.08)';ink.fillRect(40+i*5,0,1,256);}const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;

@@ -1,3 +1,4 @@
+import {pitTransitPlan} from '/shared/pit-timing.mjs';
 import * as THREE from '/vendor/three.module.js';
 import {planImola} from '/shared/imola-scenery.mjs';
 import {imolaTerrainHeight} from '/shared/imola.mjs';
@@ -24,7 +25,7 @@ export function addImola(scene,track){
    scene.box(w,6.5,d,'#c1c8c6',0,3.25,0,g);scene.box(w*.87,3.2,d*.96,'#63828c',0,8.5,0,g);
    for(let i=0;i<24;i++){const z=-d/2+(i+.5)*d/24;scene.box(w+1,.3,d/24+.1,'#d8ddda',0,11.2,z,g);scene.box(.16,.7,d/24,'#b83431',front*(w/2+.1),6.9,z,g);scene.box(.12,3.1,.15,'#bfcac6',front*(w*.435+.1),8.6,z,g);}
    for(let i=0;i<32;i++){const z=-d*.47+i*d*.94/31;scene.box(.15,4.3,7.6,'#3b505b',front*(w/2+.1),2.2,z,g);}
-   scene.box(4,1.2,17,'#447459',front*(w/2-2),1,d*.3,g);sign(g,'APEX · PIT & PADDOCK',55,1.8,front*(w/2+.2),6,0,front*Math.PI/2);scene.box(5,1.2,18,'#b0b5a7',front*(w/2-3),11.6,d*.3,g);sign(g,'PODIUM',16,1.4,front*(w/2+.2),12,d*.3,front*Math.PI/2);sign(g,'PIT LANE · 80',22,1.4,front*(w/2+.2),4.8,-d*.37,front*Math.PI/2);
+   scene.box(4,1.2,17,'#447459',front*(w/2-2),1,d*.3,g);sign(g,'APEX · PIT & PADDOCK',55,1.8,front*(w/2+.2),6,0,front*Math.PI/2);scene.box(5,1.2,18,'#b0b5a7',front*(w/2-3),11.6,d*.3,g);sign(g,'PODIUM',16,1.4,front*(w/2+.2),12,d*.3,front*Math.PI/2);sign(g,'PIT LANE · '+Math.round(pitTransitPlan(track).speed*3.6),22,1.4,front*(w/2+.2),4.8,-d*.37,front*Math.PI/2);
    for(const z of [-d*.4,0,d*.4])poles.push(world(site,-front*(w/2-2),0,z));
   }
   if(site.kind==='hospitality'){

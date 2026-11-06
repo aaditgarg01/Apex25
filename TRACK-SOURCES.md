@@ -451,3 +451,22 @@ in barcelona-terrain-data. Original anchors/centreline retained; refined samples
 keep the original 30.69m range. T1 gravel/blue lines/modern layout are documented;
 other trap extents, roof details, setbacks and bridge fits are approximate. Full
 scope and per-corner target/fitted table: docs/BARCELONA-ENVIRONMENT-2.45.0.md.
+
+## Montreal island environment (2.46.0)
+
+- [FIA 2025 circuit, pit and marshalling map](https://www.fia.com/system/files/decision-document/2025_canadian_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exits_map_ers_battery_containment_area_red_zones.pdf).
+- [Official F1 circuit facts](https://www.formula1.com/en/racing/2025/canada).
+- [Promoter grandstand positions and views](https://gpcanada.ca/en/type-de-billet/grandstands/).
+- [Olympic Basin geography](https://www.parcjeandrapeau.com/en/olympic-basin-montreal/).
+- [OSM island buildings, waterways, parkland, access and wall geometry](https://api.openstreetmap.org/api/0.6/map?bbox=-73.544,45.494,-73.512,45.518).
+- [Complete OSM river relation](https://api.openstreetmap.org/api/0.6/relation/15956768/full).
+
+OSM ways 42229671 (paddock), 26698931/439917766 (unsigned pavilion complex),
+26288030 (dome), 166808419 (final wall), 129924946 (rowing basin), complete local
+lagoon multipolygons and river relation 15956768 supply cached geometry. All
+464 mapped access/path ways are reserved, including documented bridge crossings.
+Original SRTM 90m via Open Topo Data road anchors remain untouched (7.37m range).
+No new surveyed road elevations or gravel-trap locations are claimed. Temporary
+stands, skyline silhouettes/visibility, bridge heights, radial runoff widths and
+clearance-fitted architecture/wall shifts are approximate. See
+`docs/MONTREAL-ENVIRONMENT-2.46.0.md` for the table and measured scope.

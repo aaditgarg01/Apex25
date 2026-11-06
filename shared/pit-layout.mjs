@@ -24,7 +24,7 @@ function mainStraight(track){
 // Match established mapped pit complexes. Other circuits prefer the infield.
 // Service-box stations fitted to the existing pit-building assets (metres from start/finish).
 const PIT_BOXES={'cn-2004':-69,'jp-1962':-102,'be-1925':12,'sa-2021':-303,'az-2016':-150,'sg-2008':-36,'es-2026':-20,'mx-1962':65,'us-2023':-85};
-const PIT_SIDES={'it-1953':-1,'cn-2004':-1,'jp-1962':-1,'be-1925':-1,'sa-2021':1,'az-2016':1,'sg-2008':1,'es-2026':1,'mx-1962':-1,'us-2023':-1,'mc-1929':-1};
+const PIT_SIDES={'ca-1978':1,'it-1953':-1,'cn-2004':-1,'jp-1962':-1,'be-1925':-1,'sa-2021':1,'az-2016':1,'sg-2008':1,'es-2026':1,'mx-1962':-1,'us-2023':-1,'mc-1929':-1};
 export function pitLayout(track){
  if(cache.has(track))return cache.get(track);
  const straight=mainStraight(track),available=straight.length-24,lengths=[Math.min(650,available),520,400,280,180].filter((length,i,all)=>length<=available&&length>=120&&all.indexOf(length)===i);let best=null;

@@ -546,5 +546,41 @@
   "singapore": "Mapped Marina Reservoir and Singapore River water, 450 road-clear city footprints, Marina Bay Sands towers/skypark, Flyer, Fullerton, Old Supreme Court and Esplanade references. Original procedural architecture and textures, emissive windows, reflective bay water, permanent road illumination field and LED fixtures, tropical foliage, green uplights, four colourful grandstands with phone glints, flags, marshals, pit detailing and hospitality artwork. Existing 19-corner route, driving elevations and car retained; historic Bay Grandstand underpass is not restored.",
   "imola": "Dedicated mapped park, pit/control/stand/river/memorial context, 19-corner shared surface plan and cached EU-DEM hills. Original geometry/textures/neutral Italian dressing; fitted widths, roofs, stand shifts and water levels. Current F1 bypasses the old Bassa chicane. Senna model set back 16m to clear a mapped service-road envelope; Ratzenberger marker mapped by Tosa. No inscriptions or copied sculpture designs. See docs/IMOLA-ENVIRONMENT-2.43.0.md.",
   "hungaroring": "Dedicated Mogyorod bowl, 14-corner classified runoff with gravel/grass/dressing, mapped pit/stand/camp/access context, local DEM smoothed/fitted to published 34.7m relief. Original angular architecture, textures and generic artwork. Broad trap widths, rebuilt footprints/setbacks, bridge and temporary dressing are approximate. See docs/HUNGARORING-ENVIRONMENT-2.44.0.md.",
-  "barcelona": "Modern no-final-chicane centreline retained; dedicated mapped/fitted pit/main stands, Rooftop, Mediterranean terrain and 14-corner split runoff with gravel/grass/dressing. Original geometry/artwork, local DEM shape within original anchor range. Extents, setbacks, bridge spans and local grades approximate. See docs/BARCELONA-ENVIRONMENT-2.45.0.md."
+  "barcelona": "Modern no-final-chicane centreline retained; dedicated mapped/fitted pit/main stands, Rooftop, Mediterranean terrain and 14-corner split runoff with gravel/grass/dressing. Original geometry/artwork, local DEM shape within original anchor range. Extents, setbacks, bridge spans and local grades approximate. See docs/BARCELONA-ENVIRONMENT-2.45.0.md.",
+  "montreal": {
+    "date": "2026-11-07",
+    "references": [
+      {
+        "title": "FIA 2025 circuit, pit and marshalling map",
+        "url": "https://www.fia.com/system/files/decision-document/2025_canadian_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exits_map_ers_battery_containment_area_red_zones.pdf"
+      },
+      {
+        "title": "Official F1 circuit facts",
+        "url": "https://www.formula1.com/en/racing/2025/canada"
+      },
+      {
+        "title": "Promoter grandstand positions and views",
+        "url": "https://gpcanada.ca/en/type-de-billet/grandstands/"
+      },
+      {
+        "title": "Olympic Basin geography",
+        "url": "https://www.parcjeandrapeau.com/en/olympic-basin-montreal/"
+      },
+      {
+        "title": "OSM island buildings, waterways, parkland, access and wall geometry",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-73.544,45.494,-73.512,45.518"
+      },
+      {
+        "title": "Complete OSM river relation",
+        "url": "https://api.openstreetmap.org/api/0.6/relation/15956768/full"
+      }
+    ],
+    "data": [
+      "montreal-architecture.js",
+      "montreal-runoff.js",
+      "montreal-skyline.js",
+      "montreal-water.js"
+    ],
+    "scope": "Mapped footprints/water/wall; fitted widths, stand envelopes, architecture, bridge heights and distant skyline visibility. Centreline and SRTM elevation anchors unchanged. Original procedural signs; final wall wording chosen by user."
+  }
 }

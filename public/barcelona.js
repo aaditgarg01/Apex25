@@ -1,3 +1,4 @@
+import {pitTransitPlan} from '/shared/pit-timing.mjs';
 import {mergeGeometries} from '/vendor/BufferGeometryUtils.js';
 import * as THREE from '/vendor/three.module.js';
 import {planBarcelona} from '/shared/barcelona-scenery.mjs';
@@ -27,7 +28,7 @@ export function addBarcelona(scene,track){
    // Long terrace canopy with an original solar-panel band, neutral garage faces.
    scene.box(w*.72,.24,d*.97,'#d8d7c9',0,11,0,g);
    for(let i=0;i<18;i++){const z=-d*.46+i*d*.054;scene.box(w*.38,.08,d*.045,'#405969',-front*w*.12,11.18,z,g);for(const x of [-w*.31,w*.31])scene.box(.16,2,.16,'#b7bdb5',x,10,z,g);}
-   sign(g,'APEX · PIT & PADDOCK',54,1.6,front*(w/2+.25),5.1,0,front*Math.PI/2);sign(g,'MONTMELO · CONTROL',25,1.2,front*(w*.435+.23),8.6,-d*.33,front*Math.PI/2);sign(g,'PODIUM',16,1.4,front*(w/2+.26),7,d*.32,front*Math.PI/2);sign(g,'PIT LANE · 80',22,1.25,front*(w/2+.25),4.5,-d*.38,front*Math.PI/2);
+   sign(g,'APEX · PIT & PADDOCK',54,1.6,front*(w/2+.25),5.1,0,front*Math.PI/2);sign(g,'MONTMELO · CONTROL',25,1.2,front*(w*.435+.23),8.6,-d*.33,front*Math.PI/2);sign(g,'PODIUM',16,1.4,front*(w/2+.26),7,d*.32,front*Math.PI/2);sign(g,'PIT LANE · '+Math.round(pitTransitPlan(track).speed*3.6),22,1.25,front*(w/2+.25),4.5,-d*.38,front*Math.PI/2);
    for(const z of [-d*.4,0,d*.4])poles.push(world(site,-front*(w/2-2),0,z));
   }
   if(site.kind==='tower'){

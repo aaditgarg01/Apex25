@@ -1,3 +1,4 @@
+import {pitTransitPlan} from '/shared/pit-timing.mjs';
 import {roadClearance} from '/shared/venues.mjs';
 import {pitReserved} from '/shared/pit-layout.mjs';
 import * as THREE from '/vendor/three.module.js';
@@ -24,7 +25,7 @@ export function addSilverstone(scene,track){
    const positions=[],faces=[];for(let i=0;i<=104;i++){const t=i/104,z=-bodyD/2+t*bodyD,crest=15+12*Math.pow(Math.sin(t*Math.PI*3),2),curve=Math.sin(t*Math.PI)*2.2;for(const side of [-1,1])positions.push(curve+side*(bodyW/2+2),crest+(side===front?1.4:-2.2),z);if(i<104){const n=i*2;faces.push(n,n+2,n+1,n+1,n+2,n+3);}}
    const roof=new THREE.BufferGeometry();roof.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));roof.setIndex(faces);roof.computeVertexNormals();mesh(g,roof,mat('#c8cdcb',{side:THREE.DoubleSide}));
    for(let bay=0;bay<40;bay++){const z=-bodyD/2+6+bay*(bodyD-12)/39,curve=Math.sin((z/bodyD+.5)*Math.PI)*2.2;scene.box(.18,4.6,7.8,'#394d55',front*(bodyW/2+.15)+curve,2.3,z,g);scene.box(.19,.4,7.8,['#6d8395','#8d4e59','#b4a572','#d4d3c5'][Math.floor(bay/4)%4],front*(bodyW/2+.2)+curve,4.8,z,g);}
-   scene.box(4,1.3,20,'#344e69',front*(bodyW/2-2),1,bodyD*.28,g);sign(g,'SILVERSTONE · THE WING',55,2.2,front*(bodyW/2+2.7),7.8,0,front*Math.PI/2);sign(g,'PIT LANE · 80',24,1.6,front*(bodyW/2+2.7),5.6,-bodyD*.3,front*Math.PI/2);sign(g,'PODIUM',18,1.4,front*(bodyW/2+2.7),2.6,bodyD*.28,front*Math.PI/2);
+   scene.box(4,1.3,20,'#344e69',front*(bodyW/2-2),1,bodyD*.28,g);sign(g,'SILVERSTONE · THE WING',55,2.2,front*(bodyW/2+2.7),7.8,0,front*Math.PI/2);sign(g,'PIT LANE · '+Math.round(pitTransitPlan(track).speed*3.6),24,1.6,front*(bodyW/2+2.7),5.6,-bodyD*.3,front*Math.PI/2);sign(g,'PODIUM',18,1.4,front*(bodyW/2+2.7),2.6,bodyD*.28,front*Math.PI/2);
    for(const z of [-bodyD*.4,0,bodyD*.4])poles.push(world(site,-front*(bodyW/2-2),0,z));
   }
   if(['museum','experience','clubhouse','national-pits','hospitality','hangar'].includes(site.kind)){

@@ -1,0 +1,1 @@
+export const MONTREAL_FINAL_WALL={"way": "166808419", "points": [[-73.5239167, 45.5036643], [-73.5238485, 45.5034199], [-73.5238021, 45.5033526], [-73.5236923, 45.5029973]], "height": 1.05, "width": 0.5, "greeting": "Respect the final turn", "note": "OSM centreline mapped; height/width estimated; shifted outward where the retained 17m road requires clearance."};

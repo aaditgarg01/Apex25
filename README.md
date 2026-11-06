@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.45.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.46.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1727,6 +1727,26 @@ Current F1 bypasses the old Variante Bassa. Source-driven vs fitted details,
 memorial set-back, limitations and references are in
 [the Imola release note](docs/IMOLA-ENVIRONMENT-2.43.0.md).
 
+
+## 2.46.0 — Montreal island, walls, pit timing and AI
+
+Dedicated Montreal parkland, mapped basin/lagoons/river, fitted paddock and unsigned
+pavilions, main/hairpin stands, skyline/dome silhouettes and complete track dressing.
+All 14 corners have shared surface stacks; the mapped final-chicane wall carries
+original **Respect the final turn** lettering. Walls, fences, canal rails and bridge
+structures share rendering/collision geometry. Centreline and original elevations
+are retained. Footprints, temporary stands, runoff widths, wall shifts and distant
+skyline visibility include documented approximations.
+
+Pit transit targets about **18s lost versus dry racing**, with service and penalties
+extra; arcade limiter speeds/signs are fitted to each existing lane. Stationary pit
+results now include served penalties (2.337 + 4 = **6.337s**) for everyone. AI uses
+strategy-based starting/next tyres and can recover when stranded without gaining
+progress, with lap invalidity and the normal recovery penalty.
+
+Syntax/import/name checks, both builds, clearance/runoff/wall/elevation/corner audits
+and parked browser dry/wet previews are recorded; the game test suite is neither
+run nor edited. See [the runoff table, sources, limitations and release details](docs/MONTREAL-ENVIRONMENT-2.46.0.md).
 
 ## 2.45.2 — Variable pit service and shared stop times
 

@@ -305,3 +305,19 @@ Runoff targets, architecture, textures, generic lettering, flags and props are
 original procedural game content. Official/FIA photographs and diagrams are linked
 for reference and not redistributed. No licensed sponsor/team artwork was added.
 Consult docs/BARCELONA-ENVIRONMENT-2.45.0.md for fitted/uncertain details.
+
+## Montreal additions (2.46.0)
+
+`public/data/montreal-architecture.js`, `montreal-water.js`, and the shared
+Montreal access/ground/wall data adapt OpenStreetMap geometry retrieved 2026-11-06:
+© OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright).
+Only geographic/structural tags are retained; address, contact and operator data
+are omitted. Public skyline data mixes the mapped dome anchor with explicitly
+approximate original distant silhouettes. Existing SRTM provenance is retained;
+no new DEM survey was introduced.
+
+Buildings, foliage, surface textures, national/provincial flag drawings, original
+lettering and neutral event props are procedural game work. Official diagrams and
+reference photographs are linked for research; their artwork is not redistributed.
+No licensed sponsor, team, casino or venue artwork was added. The wall greeting
+“Respect the final turn” is original user-selected text.

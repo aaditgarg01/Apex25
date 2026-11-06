@@ -1,9 +1,9 @@
 import {TYRES,tyreProfile,tyreGrip,tyreSpeedFactor,tyreWearFactor,tyreStintLaps,surfaceWetness,defaultTyre,tyreAvailable,estimatedTyreLaps} from './tyres.mjs';
 import {tyreCircuitProfile} from './tyre-circuits.mjs';
-import {pitLayout} from './pit-layout.mjs';
+import {PIT_TRANSIT_LOSS} from './pit-timing.mjs';
 import {PIT_EXPECTED_SERVICE_SECONDS} from './pits.mjs';
 const ids=Object.keys(TYRES),dry=['soft','medium','hard'],clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-export function estimatedPitLoss(track){const lane=pitLayout(track);return Math.max(12,lane.length/22.22-lane.length/65+PIT_EXPECTED_SERVICE_SECONDS+5);}
+export function estimatedPitLoss(){return PIT_TRANSIT_LOSS+PIT_EXPECTED_SERVICE_SECONDS;}
 function stintCost(track,distance,raceLaps,id,wetness,life=100,practice=false){
  const car={tyreTrackId:track.id,tyreCompound:id,trackWetness:wetness,tyreLife:life,v:55},profile=tyreCircuitProfile(track);
  const wearPerLap=100/tyreStintLaps(raceLaps,id,practice,track)*1.12*tyreWearFactor(car),lapTime=track.length/(36+profile.power*22);

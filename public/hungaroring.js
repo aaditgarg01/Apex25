@@ -1,3 +1,4 @@
+import {pitTransitPlan} from '/shared/pit-timing.mjs';
 import {mergeGeometries} from '/vendor/BufferGeometryUtils.js';
 import * as THREE from '/vendor/three.module.js';
 import {planHungaroring} from '/shared/hungaroring-scenery.mjs';
@@ -26,7 +27,7 @@ export function addHungaroring(scene,track){
    for(let i=0;i<8;i++){const z=-d*.44+i*d*.125;scene.box(w*.52,1.8,d*.075,'#9a3442',-front*w*.18,13.8,z,g);scene.box(.2,3.8,.2,'#e1e4da',front*w*.39,11.3,z,g);}
    // Angular white outline and recessed terraces evoke the rebuilt complex.
    for(const z of [-d*.46,0,d*.46]){const frame=scene.box(.45,3.5,d*.075,'#e9e9dc',front*w*.43,11.2,z,g);frame.rotation.z=front*.1;}
-   sign(g,'APEX · PIT & PADDOCK',55,1.7,front*(w/2+.22),5.4,0,front*Math.PI/2);sign(g,'MOGYOROD · CONTROL',26,1.25,front*(w*.435+.22),10.6,-d*.34,front*Math.PI/2);sign(g,'PODIUM',16,1.4,front*(w/2+.24),8.7,d*.32,front*Math.PI/2);sign(g,'PIT LANE · 80',22,1.3,front*(w/2+.22),4.6,-d*.38,front*Math.PI/2);
+   sign(g,'APEX · PIT & PADDOCK',55,1.7,front*(w/2+.22),5.4,0,front*Math.PI/2);sign(g,'MOGYOROD · CONTROL',26,1.25,front*(w*.435+.22),10.6,-d*.34,front*Math.PI/2);sign(g,'PODIUM',16,1.4,front*(w/2+.24),8.7,d*.32,front*Math.PI/2);sign(g,'PIT LANE · '+Math.round(pitTransitPlan(track).speed*3.6),22,1.3,front*(w/2+.22),4.6,-d*.38,front*Math.PI/2);
    for(const z of [-d*.4,0,d*.4])poles.push(world(site,-front*(w/2-2),0,z));
   }
   if(site.kind==='hospitality'){
