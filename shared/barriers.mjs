@@ -1,3 +1,5 @@
+import {sepangWalls} from './sepang.mjs';
+import {buddhWalls} from './buddh.mjs';
 import {singaporeWalls} from './singapore.mjs';
 import {singaporeStructures} from './singapore-structures.mjs';
 import {lusailBoundaryOffset,lusailWallClear,lusailSection} from './lusail.mjs';
@@ -42,7 +44,7 @@ function edge(track,i,offset){const p=track.points[i],o=ribbonOffset(track,i,off
 function pitEdge(track,i,offset){const p=track.points[i];return {x:p.x+Math.cos(p.heading)*offset,z:p.z-Math.sin(p.heading)*offset,y:p.y};}
 export function trackBarriers(track){
  if(cache.has(track))return cache.get(track);
- const walls=[],grid=new Map(),half=track.width/2,singapore=track.id==='sg-2008',lusail=track.id==='qa-2004',yasmarina=track.id==='ae-2009',montreal=track.id==='ca-1978',melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',interlagos=track.id==='br-1940',zandvoort=track.id==='nl-1948',miami=track.id==='us-2022',silverstone=track.id==='gb-1948',austria=track.id==='at-1969',mexico=track.id==='mx-1962',monza=track.id==='it-1922',cota=track.id==='us-2012',imola=track.id==='it-1953',hungaroring=track.id==='hu-1986',barcelona=track.id==='es-1991',jeddah=track.id==='sa-2021',wideRunoff=lusail||yasmarina||montreal||barcelona||hungaroring||imola||cota||monza||mexico||austria||silverstone||miami||shanghai||bahrain||spa||jeddah||interlagos||zandvoort,concreteWalls=lusail||yasmarina||montreal||barcelona||hungaroring||imola||cota||mexico||miami||melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=lusail?lusailBoundaryOffset:yasmarina?yasmarinaBoundaryOffset:montreal?montrealBoundaryOffset:barcelona?barcelonaBoundaryOffset:hungaroring?hungaroringBoundaryOffset:imola?imolaBoundaryOffset:cota?cotaBoundaryOffset:monza?monzaBoundaryOffset:mexico?mexicoBoundaryOffset:austria?redbullringBoundaryOffset:silverstone?silverstoneBoundaryOffset:miami?miamiBoundaryOffset:zandvoort?zandvoortBoundaryOffset:interlagos?interlagosBoundaryOffset:jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
+ const walls=[],grid=new Map(),half=track.width/2,sepang=track.id==='my-1999',buddh=track.id==='in-2011',singapore=track.id==='sg-2008',lusail=track.id==='qa-2004',yasmarina=track.id==='ae-2009',montreal=track.id==='ca-1978',melbourne=track.id==='au-1953',shanghai=track.id==='cn-2004',bahrain=track.id==='bh-2002',spa=track.id==='be-1925',interlagos=track.id==='br-1940',zandvoort=track.id==='nl-1948',miami=track.id==='us-2022',silverstone=track.id==='gb-1948',austria=track.id==='at-1969',mexico=track.id==='mx-1962',monza=track.id==='it-1922',cota=track.id==='us-2012',imola=track.id==='it-1953',hungaroring=track.id==='hu-1986',barcelona=track.id==='es-1991',jeddah=track.id==='sa-2021',wideRunoff=lusail||yasmarina||montreal||barcelona||hungaroring||imola||cota||monza||mexico||austria||silverstone||miami||shanghai||bahrain||spa||jeddah||interlagos||zandvoort,concreteWalls=lusail||yasmarina||montreal||barcelona||hungaroring||imola||cota||mexico||miami||melbourne||shanghai||bahrain||jeddah||['az-2016','sg-2008','es-2026','us-2023'].includes(track.id),boundaryOffset=lusail?lusailBoundaryOffset:yasmarina?yasmarinaBoundaryOffset:montreal?montrealBoundaryOffset:barcelona?barcelonaBoundaryOffset:hungaroring?hungaroringBoundaryOffset:imola?imolaBoundaryOffset:cota?cotaBoundaryOffset:monza?monzaBoundaryOffset:mexico?mexicoBoundaryOffset:austria?redbullringBoundaryOffset:silverstone?silverstoneBoundaryOffset:miami?miamiBoundaryOffset:zandvoort?zandvoortBoundaryOffset:interlagos?interlagosBoundaryOffset:jeddah?jeddahBoundaryOffset:spa?spaBoundaryOffset:bahrain?bahrainBoundaryOffset:shanghaiBoundaryOffset;
  function add(a,b,width,height,kind,inward=null,style=null){
   if((barcelona||hungaroring||imola||cota||monza||miami||silverstone||austria||mexico)&&['track','fence'].includes(kind)&&!miamiWallClear(track,a,b,width))return;
   if(lusail&&['track','fence','pit-divider'].includes(kind)&&!lusailWallClear(track,a,b,width))return;
@@ -58,13 +60,13 @@ export function trackBarriers(track){
   if(silverstone&&['track','fence'].includes(kind)&&!silverstoneWallClear(track,a,b,width))return;
   const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);if(length<.01)return;
   const wall={a,b,width,height,kind,x:(a.x+b.x)/2,z:(a.z+b.z)/2,tx:dx/length,tz:dz/length,length,inward,bottom:Math.min(a.y,b.y),top:Math.max(a.y,b.y)+height};
-  if(singapore||lusail||yasmarina||montreal||barcelona||hungaroring||imola||cota||mexico||monza)wall.style=style||'concrete';
+  if(sepang||buddh||singapore||lusail||yasmarina||montreal||barcelona||hungaroring||imola||cota||mexico||monza)wall.style=style||'concrete';
   const id=walls.length;walls.push(wall);const pad=width/2+.1;
   for(let x=Math.floor((Math.min(a.x,b.x)-pad)/CELL);x<=Math.floor((Math.max(a.x,b.x)+pad)/CELL);x++)for(let z=Math.floor((Math.min(a.z,b.z)-pad)/CELL);z<=Math.floor((Math.max(a.z,b.z)+pad)/CELL);z++){const key=x+':'+z;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(id);}
  }
  // Campus streets have open verges. Their only solid walls come from the actual
  // subway retaining walls, portal pillars and roundabout island below.
- if(!track.campus&&!singapore)for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
+ if(!track.campus&&!sepang&&!buddh&&!singapore)for(let i=0;i<track.points.length;i++)for(const side of [-1,1]){
   if(montreal&&side===-1&&i*track.step>=4157&&i*track.step<=4238)continue;
   const next=(i+1)%track.points.length,inner=wideRunoff?boundaryOffset(track,i,side)-.35:half+(track.id==='az-2016'?.3:track.id==='mc-1929'?.35:6.5),outer=wideRunoff?boundaryOffset(track,i,side)+.35:half+(['mc-1929','az-2016'].includes(track.id)?.8:7.2);
   const pa=pitBoundary(track,i*track.step),pb=pitBoundary(track,next*track.step);
@@ -89,6 +91,7 @@ export function trackBarriers(track){
   add(pitEdge(track,i,a.side*a.outer),pitEdge(track,next,b.side*b.outer),.4,1.05,'pit-wall');
   if(a.divider&&b.divider)add(pitEdge(track,i,a.side*(half+.65)),pitEdge(track,next,b.side*(half+.65)),.35,1.05,'pit-divider');
  }
+ if(sepang||buddh)for(const wall of (sepang?sepangWalls(track):buddhWalls(track)).walls)add(wall.a,wall.b,wall.width,wall.height,wall.kind,wall.inward,wall.style);
  if(singapore)for(const w of [...singaporeWalls(track),...singaporeStructures(track).solids]){
   const before=walls.length;
   add(w.a,w.b,w.width,w.height,w.kind,w.inward,w.style);

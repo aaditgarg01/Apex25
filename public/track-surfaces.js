@@ -1,3 +1,6 @@
+import {sepangRunoff} from '/shared/sepang.mjs';
+import {buddhRunoff} from '/shared/buddh.mjs';
+import {addRunoffLettering} from './runoff-lettering.js';
 import {singaporeBands} from '/shared/singapore.mjs';
 import {singaporePavement} from './singapore.js';
 import {lusailRunoffQuads,lusailSection} from '/shared/lusail.mjs';
@@ -29,7 +32,7 @@ export function trackAppearance(track){
  const theme=track.campus?'campus':VENUES[track.id]?.theme||'fields',street=track.urban&&!track.campus;
  const sand=['desert','dunes'].includes(theme),forest=['forest','alpine'].includes(theme);
  const colors={desert:'#aaa18b',dunes:'#929174',forest:'#596d4b',alpine:'#657451',tropical:'#657d51',coast:'#78876b',fields:'#79815b',campus:'#738360',skyline:'#777e78',city:'#78806c',neon:'#717579',marina:'#728681'};
- return {theme,street,sand,forest,ground:track.id==='qa-2004'?'#b5a185':track.id==='ae-2009'?'#c2b59a':track.id==='ca-1978'?'#67935d':track.id==='es-1991'?'#a99b70':track.id==='hu-1986'?'#a29967':track.id==='it-1953'?'#64854d':track.id==='us-2012'?'#a49a69':track.id==='it-1922'?'#586e43':track.id==='at-1969'?'#71945b':track.id==='gb-1948'?'#799465':track.id==='us-2022'?'#899e78':track.id==='nl-1948'?'#b6af8d':track.id==='br-1940'?'#5c7e47':track.id==='us-2023'?'#35363b':track.id==='es-2026'?'#b1a783':track.id==='sg-2008'?'#1f2c32':track.id==='az-2016'?'#b7ae99':track.id==='sa-2021'?'#cbb894':track.id==='mc-1929'?'#b5af9c':track.id==='be-1925'?'#526f43':track.id==='bh-2002'?'#cdbb9b':track.id==='jp-1962'?'#567448':colors[theme]||'#74815a',kerb:track.id==='br-1940'?['#e4d13f','#4c8d58']:track.id==='sa-2021'?['#0a7e4a','#eceae2']:track.id==='be-1925'?['#bd3729','#e8ba2d']:track.campus?['#35383a','#dfdccd']:['#bd3730','#e8e5dc'],runoff:track.id==='sa-2021'?'#155b78':track.id==='fr-1969'?'#376b9c':track.id==='ae-2009'?'#609ba5':track.id==='us-2012'?'#a34b40':'#548475',gravel:(track.id==='jp-1962'||forest||theme==='fields')&&track.id!=='sa-2021',fog:street?.00044:sand?.00055:.00036};
+ return {theme,street,sand,forest,ground:track.id==='my-1999'?'#6a8c4d':track.id==='in-2011'?'#b6a579':track.id==='qa-2004'?'#b5a185':track.id==='ae-2009'?'#c2b59a':track.id==='ca-1978'?'#67935d':track.id==='es-1991'?'#a99b70':track.id==='hu-1986'?'#a29967':track.id==='it-1953'?'#64854d':track.id==='us-2012'?'#a49a69':track.id==='it-1922'?'#586e43':track.id==='at-1969'?'#71945b':track.id==='gb-1948'?'#799465':track.id==='us-2022'?'#899e78':track.id==='nl-1948'?'#b6af8d':track.id==='br-1940'?'#5c7e47':track.id==='us-2023'?'#35363b':track.id==='es-2026'?'#b1a783':track.id==='sg-2008'?'#1f2c32':track.id==='az-2016'?'#b7ae99':track.id==='sa-2021'?'#cbb894':track.id==='mc-1929'?'#b5af9c':track.id==='be-1925'?'#526f43':track.id==='bh-2002'?'#cdbb9b':track.id==='jp-1962'?'#567448':colors[theme]||'#74815a',kerb:track.id==='br-1940'?['#e4d13f','#4c8d58']:track.id==='sa-2021'?['#0a7e4a','#eceae2']:track.id==='be-1925'?['#bd3729','#e8ba2d']:track.campus?['#35383a','#dfdccd']:['#bd3730','#e8e5dc'],runoff:track.id==='sa-2021'?'#155b78':track.id==='fr-1969'?'#376b9c':track.id==='ae-2009'?'#609ba5':track.id==='us-2012'?'#a34b40':'#548475',gravel:(track.id==='jp-1962'||forest||theme==='fields')&&track.id!=='sa-2021',fog:street?.00044:sand?.00055:.00036};
 }
 function noiseTexture(kind){
  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');let seed=1979;
@@ -84,16 +87,16 @@ export class TrackSurfaces{
  build(){
   const scene=this.scene,track=this.track,half=track.width/2,a=this.appearance;
   for(const side of [-1,1]){
-   const edge=side*half,limit=side*(half+(track.campus?1.8:6.5));if(!['sg-2008','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','gb-1948','at-1969'].includes(track.id))scene.ribbon(track,Math.min(edge,limit),Math.max(edge,limit),a.ground,-.08,false,{kind:['bh-2002','sa-2021'].includes(track.id)?'sand':'grass'});
-   const shoulder=side*(half+(a.street?.65:track.campus?1.4:1.6));if(!['sg-2008','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','gb-1948','at-1969'].includes(track.id))scene.ribbon(track,Math.min(edge,shoulder),Math.max(edge,shoulder),a.street?'#777f80':'#b8b4a7',.015,false,{kind:'paint'});
-   if(!track.campus&&!a.street&&!['qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948','br-1940','bh-2002','be-1925','sa-2021'].includes(track.id)){
+   const edge=side*half,limit=side*(half+(track.campus?1.8:6.5));if(!['my-1999','in-2011','sg-2008','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','gb-1948','at-1969'].includes(track.id))scene.ribbon(track,Math.min(edge,limit),Math.max(edge,limit),a.ground,-.08,false,{kind:['bh-2002','sa-2021'].includes(track.id)?'sand':'grass'});
+   const shoulder=side*(half+(a.street?.65:track.campus?1.4:1.6));if(!['my-1999','in-2011','sg-2008','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','gb-1948','at-1969'].includes(track.id))scene.ribbon(track,Math.min(edge,shoulder),Math.max(edge,shoulder),a.street?'#777f80':'#b8b4a7',.015,false,{kind:'paint'});
+   if(!track.campus&&!a.street&&!['my-1999','in-2011','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948','br-1940','bh-2002','be-1925','sa-2021'].includes(track.id)){
     const lo=side*(half+1.6),hi=side*(half+6.3),kind=a.gravel?'gravel':'asphalt',color=a.gravel?'#c0b79d':'#a0a09a';scene.ribbon(track,Math.min(lo,hi),Math.max(lo,hi),color,.022,false,{kind,mask:this.outsideMask[side]});
     const p=side*(half+1.6),q=side*(half+3);if(track.id!=='jp-1962')scene.ribbon(track,Math.min(p,q),Math.max(p,q),a.runoff,.04,false,{kind:'paint',mask:this.outsideMask[side]});
    }
   }
   scene.ribbon(track,-half,half,['sg-2008','qa-2004'].includes(track.id)?'#c2c5cc':'#ffffff',.05,false,{kind:'asphalt'});
   for(const side of [-1,1]){
-   const x=side*(half+.12),z=side*(half+(track.campus?1.25:1.15));if(!['sg-2008','qa-2004','ae-2009','ca-1978'].includes(track.id))scene.ribbon(track,Math.min(x,z),Math.max(x,z),a.kerb[0],.082,true,{kind:'paint',color2:a.kerb[1],mask:this.cornerMask,raised:true});
+   const x=side*(half+.12),z=side*(half+(track.campus?1.25:1.15));if(!['my-1999','in-2011','sg-2008','qa-2004','ae-2009','ca-1978'].includes(track.id))scene.ribbon(track,Math.min(x,z),Math.max(x,z),a.kerb[0],.082,true,{kind:'paint',color2:a.kerb[1],mask:this.cornerMask,raised:true});
    const p=side*(half-.27),q=side*(half-.12);scene.ribbon(track,Math.min(p,q),Math.max(p,q),'#dddcd2',.07,false,{kind:'paint'});
   }
   if(track.id==='fr-1969')for(const side of [-1,1])for(let band=0;band<4;band++){
@@ -101,6 +104,8 @@ export class TrackSurfaces{
   }
   if(track.id==='mx-1962'){const mask=track.points.map((_,i)=>i*track.step/track.length>.835&&i*track.step/track.length<.91);scene.ribbon(track,-half,half,'#55595b',.056,false,{kind:'paint',mask});}
   if(track.id==='sg-2008')this.singaporeRunoff();
+  if(track.id==='in-2011')this.buddhRunoff();
+  if(track.id==='my-1999')this.permanentRunoff('sepang',sepangRunoff(track).bands);
   if(track.id==='qa-2004')this.lusailRunoff();if(track.id==='ae-2009')this.yasmarinaRunoff();if(track.id==='ca-1978')this.montrealRunoff();if(track.id==='es-1991')this.barcelonaRunoff();if(track.id==='hu-1986')this.hungaroringRunoff();if(track.id==='it-1953')this.imolaRunoff();if(track.id==='us-2012')this.cotaRunoff();if(track.id==='it-1922')this.monzaRunoff();if(track.id==='br-1940')this.interlagosRunoff();if(track.id==='nl-1948')this.zandvoortRunoff();if(track.id==='us-2022')this.miamiRunoff();if(track.id==='gb-1948')this.silverstoneRunoff();if(track.id==='at-1969')this.redbullringRunoff();if(track.id==='mx-1962'){this.mexicoRunoff();this.mexicoDressing();}
   this.rubber();this.repairs();
  }
@@ -251,6 +256,42 @@ export class TrackSurfaces{
    const faces=[];for(let i=0;i<12;i++){const n=i*2;faces.push(n,n+2,n+1,n+1,n+2,n+3);}
    const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(faces);geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,material);mesh.userData.imolaRunoffLettering=corner.turn;this.scene.group.add(mesh);
   }
+ }
+ buddhRunoff(){
+  this.permanentRunoff('buddh',buddhRunoff(this.track).bands);
+ }
+ permanentRunoff(prefix,bands){
+  const root=this.scene.group,lettering=[],labels=new Map(),tropical=prefix==='sepang';
+  const tones=tropical?{edge:'#ebe0ce',apron:'#416e7d',ochre:'#a87546',red:'#c5453d',white:'#f4ebd9'}:
+    {edge:'#e4d9bb',apron:'#487c68',ochre:'#dc8a49',red:'#be4337',white:'#ebe0c9'};
+  const tint=new THREE.Color();
+  for(const kind of ['tarmac','paint','kerb','gravel','grass','dirt']){
+   const positions=[],uv=[],colors=[];
+   for(const row of bands){
+    if(row.kind!==kind)continue;
+    const color=kind==='paint'?tones[row.tone]:kind==='kerb'?tones[row.kerb==='flat'||row.i%2?'white':'red']:
+      kind==='grass'?(row.i%12<6?(tropical?'#82a65c':'#a5a072'):(tropical?'#73974f':'#9c9767')):
+      kind==='dirt'?'#986b50':kind==='gravel'?(tropical?'#d0bea4':'#d2c7ad'):(tropical?'#949c98':'#a29e95');
+    tint.set(color);
+    for(const index of (row.side>0?[0,1,3,3,1,2]:[0,3,1,3,2,1])){
+     const p=row.polygon[index];positions.push(p.x,p.y,p.z);uv.push(p.x/8,p.z/8);colors.push(tint.r,tint.g,tint.b);
+    }
+    if(row.label){
+     const key=row.turn+':'+row.side;
+     if(!labels.has(key))labels.set(key,{label:tropical?(row.turn===15?'MALAYSIA':'SELANGOR'):(row.turn===4?'GREATER NOIDA':row.turn===10?'INDIA':'APEX INDIA')});
+     lettering.push({...row,apron:labels.get(key),lettering:true});
+    }
+   }
+   if(!positions.length)continue;
+   const geometry=new THREE.BufferGeometry();
+   geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+   geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+   geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+   geometry.computeVertexNormals();
+   const mesh=new THREE.Mesh(geometry,this.material(kind==='tarmac'?'asphalt':kind==='kerb'?'paint':kind==='dirt'?'sand':kind,'#ffffff',true));
+   mesh.receiveShadow=true;mesh.userData[prefix+'Band']=kind;root.add(mesh);
+  }
+  addRunoffLettering(root,lettering);
  }
  singaporeRunoff(){
   const bands=singaporeBands(this.track);
@@ -469,7 +510,7 @@ export class TrackSurfaces{
   if(!walls.length)return;const positions=[],uv=[];let distance=0;
   for(const w of walls){const a=w.a,b=w.b,h=w.height,len=Math.hypot(b.x-a.x,b.z-a.z),u=distance/.6,v=(distance+len)/.6;distance+=len;
    const panel=(p,q,start,end)=>{for(const [point,t,y] of [[p,start,0],[q,end,0],[q,end,h],[p,start,0],[q,end,h],[p,start,h]]){positions.push(point.x,point.y+y,point.z);uv.push(t,y/.6);}};
-   if(!['qa-2004','sg-2008'].includes(this.track.id)){panel(a,b,u,v);continue;}
+   if(!['my-1999','in-2011','qa-2004','sg-2008'].includes(this.track.id)){panel(a,b,u,v);continue;}
    const offset=(p,side)=>({x:p.x+w.tz*w.width/2*side,y:p.y,z:p.z-w.tx*w.width/2*side});
    const al=offset(a,-1),bl=offset(b,-1),ar=offset(a,1),br=offset(b,1);
    panel(al,bl,u,v);panel(ar,br,u,v);panel(al,ar,0,w.width/.6);panel(bl,br,0,w.width/.6);
@@ -481,7 +522,7 @@ export class TrackSurfaces{
   const jeddah=this.track.id==='sa-2021',singapore=['sg-2008','us-2023'].includes(this.track.id);
   for(const m of this.materials.values()){
    const kind=m.userData.surfaceKind;
-   if(['qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948','br-1940'].includes(this.track.id)&&['grass','gravel','sand'].includes(kind)){m.userData.interlagosDryColor??=m.color.clone();m.color.copy(m.userData.interlagosDryColor).multiplyScalar(1-wetness*.2);m.roughness=.94-wetness*.26;}
+   if(['my-1999','in-2011','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948','br-1940'].includes(this.track.id)&&['grass','gravel','sand'].includes(kind)){m.userData.interlagosDryColor??=m.color.clone();m.color.copy(m.userData.interlagosDryColor).multiplyScalar(1-wetness*.2);m.roughness=.94-wetness*.26;}
    if(kind==='asphalt'){const coat=Math.max(singapore?.15:jeddah?.24:0,wetness*.72);if((m.clearcoat>0)!==(coat>0))m.needsUpdate=true;m.roughness=(singapore?.72:jeddah?.74:.86)-wetness*.48;m.clearcoat=coat;m.bumpScale=.018-wetness*.01;if(['qa-2004','sg-2008'].includes(this.track.id)){m.userData.nightDryColor??=m.color.clone();m.color.copy(m.userData.nightDryColor).multiplyScalar(1-wetness*.31);}else m.color.set(wetness?'#939b9f':'#ffffff');}
    else if(kind==='concrete'){m.roughness=(jeddah?.58:.92)-wetness*.18;if(jeddah||singapore)m.metalness=.06;}
    else if(kind==='paint'){m.roughness=(jeddah?.42:.9)-wetness*.28;if(jeddah||singapore)m.metalness=.12;}

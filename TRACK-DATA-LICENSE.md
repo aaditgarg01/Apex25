@@ -347,3 +347,26 @@ extract includes public geometry and road types. Width defaults and fitted
 temporary structures are game approximations. Original textures, flags,
 architecture and signage follow the repository code license. The linked
 official maps, photographs and event artwork are reference material.
+
+## Buddh cached venue data (2.50.0)
+
+`shared/buddh-map-data.mjs` adapts mapped highway ways and selected building
+outlines within the Buddh venue bounds, retrieved 2026-11-07. © OpenStreetMap
+contributors, [ODbL 1.0](https://www.openstreetmap.org/copyright).
+`shared/buddh-dem.mjs` samples the Mapzen Terrain Tiles N28E077 Skadi tile,
+accessed 2026-11-07 via the [AWS Registry](https://registry.opendata.aws/terrain-tiles/).
+See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
+The fitted scenery, colours, flags, dressing and safety dimensions are
+original game content. FIA maps and engineering photos are reference links.
+
+## Sepang cached venue data (2.51.0)
+
+`shared/sepang-map-data.mjs` adapts OpenStreetMap highway ways, selected
+building and fence outlines, and waterways from the Sepang venue extract
+retrieved 2026-11-07. © OpenStreetMap contributors,
+[ODbL 1.0](https://www.openstreetmap.org/copyright).
+`shared/sepang-dem.mjs` samples the Mapzen Terrain Tiles N02E101 Skadi tile
+accessed 2026-11-07 via the [AWS Registry](https://registry.opendata.aws/terrain-tiles/).
+See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
+Runoff dimensions, structures, materials, flags and lettering are original game
+assets. The official maps and architecture references are linked as references.

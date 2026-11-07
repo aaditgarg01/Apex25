@@ -1,3 +1,4 @@
+import {footprintBox as singaporeBox, footprintStrip as singaporeStrip, footprintContains as singaporeContains, footprintsOverlap as singaporePolygonsOverlap, footprintBounds as bounds, footprintCells, boxesOverlap} from './venue-footprints.mjs';
 import {sample, wrap} from './tracks.mjs';
 import {ribbonOffset} from './surface.mjs';
 import {pitLayout, pitRoadPose} from './pit-layout.mjs';
@@ -20,61 +21,8 @@ export function singaporeLocal(track, [lon, lat]) {
   };
 }
 
-export function singaporeBox(site, margin = 0) {
-  const c = Math.cos(site.heading || 0), s = Math.sin(site.heading || 0);
-  return [[-1, -1], [-1, 1], [1, 1], [1, -1]].map(([x, z]) => ({
-    x: site.x + c * x * (site.w / 2 + margin) + s * z * (site.d / 2 + margin),
-    z: site.z - s * x * (site.w / 2 + margin) + c * z * (site.d / 2 + margin)
-  }));
-}
-
-export function singaporeStrip(a, b, half) {
-  const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
-  if (length < 1e-5) return [];
-  const nx = dz / length * half, nz = -dx / length * half;
-  return [{x: a.x - nx, z: a.z - nz}, {x: b.x - nx, z: b.z - nz},
-    {x: b.x + nx, z: b.z + nz}, {x: a.x + nx, z: a.z + nz}];
-}
-
-export function singaporeContains(polygon, point) {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const a = polygon[i], b = polygon[j];
-    if ((a.z > point.z) !== (b.z > point.z) &&
-        point.x < a.x + (point.z - a.z) * (b.x - a.x) / (b.z - a.z)) inside = !inside;
-  }
-  return inside;
-}
-
-function bounds(polygon) {
-  return {
-    minX: Math.min(...polygon.map(p => p.x)), maxX: Math.max(...polygon.map(p => p.x)),
-    minZ: Math.min(...polygon.map(p => p.z)), maxZ: Math.max(...polygon.map(p => p.z))
-  };
-}
-
-function cells(box, visit) {
-  for (let x = Math.floor(box.minX / CELL); x <= Math.floor(box.maxX / CELL); x++) {
-    for (let z = Math.floor(box.minZ / CELL); z <= Math.floor(box.maxZ / CELL); z++) visit(x + ':' + z);
-  }
-}
-
-const boxesOverlap = (a, b) => a.minX <= b.maxX && b.minX <= a.maxX && a.minZ <= b.maxZ && b.minZ <= a.maxZ;
-const orient = (a, b, p) => (b.x - a.x) * (p.z - a.z) - (b.z - a.z) * (p.x - a.x);
-
-export function singaporePolygonsOverlap(a, b) {
-  if (!a.length || !b.length || !boxesOverlap(bounds(a), bounds(b))) return false;
-  if (a.some(p => singaporeContains(b, p)) || b.some(p => singaporeContains(a, p))) return true;
-  for (let i = 0; i < a.length; i++) {
-    const p = a[i], q = a[(i + 1) % a.length];
-    for (let j = 0; j < b.length; j++) {
-      const r = b[j], s = b[(j + 1) % b.length];
-      if (orient(p, q, r) * orient(p, q, s) < -1e-10 &&
-          orient(r, s, p) * orient(r, s, q) < -1e-10) return true;
-    }
-  }
-  return false;
-}
+export {singaporeBox, singaporeStrip, singaporeContains, singaporePolygonsOverlap};
+const cells = (box, visit) => footprintCells(box, CELL, visit);
 
 function pointToSegment(point, a, b) {
   const dx = b.x - a.x, dz = b.z - a.z;

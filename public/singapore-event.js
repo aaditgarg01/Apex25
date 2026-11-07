@@ -1,3 +1,4 @@
+import {addRunoffLettering} from './runoff-lettering.js';
 import * as THREE from '/vendor/three.module.js';
 import {sample} from '/shared/tracks.mjs';
 import {gridSlot} from '/shared/physics.mjs';
@@ -18,73 +19,6 @@ function canvasTexture(width, height, paint) {
   const map = new THREE.CanvasTexture(canvas);
   map.colorSpace = THREE.SRGBColorSpace;
   return map;
-}
-
-function addApronLettering(root, track) {
-  const byApron = new Map();
-  for (const row of singaporeBands(track).paint) {
-    if (!row.lettering || !row.apron.label) continue;
-    const width = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
-    if (Math.min(width(row.polygon[0], row.polygon[3]), width(row.polygon[1], row.polygon[2])) < 1.25) continue;
-    if (!byApron.has(row.apron)) byApron.set(row.apron, []);
-    byApron.get(row.apron).push(row);
-  }
-  const labelMaterials = new Map();
-  for (const [apron, rows] of byApron) {
-    let run = [], best = [];
-    for (const row of rows) {
-      if (run.length && row.i !== run.at(-1).i + 1) run = [];
-      run.push(row);
-      if (run.length > best.length) best = [...run];
-    }
-    if (best.length < 4) continue;
-    if (best.length > 10) {
-      const start = Math.floor((best.length - 10) / 2);
-      best = best.slice(start, start + 10);
-    }
-    if (!labelMaterials.has(apron.label)) {
-      const emblem = apron.design === 'opening-inside';
-      const map = canvasTexture(emblem ? 512 : 1024, emblem ? 256 : 128, (ctx, w, h) => {
-        if (emblem) {
-          ctx.fillStyle = '#ffd660';
-          ctx.beginPath();
-          ctx.moveTo(.22 * w, .5 * h);
-          ctx.lineTo(.48 * w, .12 * h);
-          ctx.lineTo(.77 * w, .5 * h);
-          ctx.lineTo(.48 * w, .88 * h);
-          ctx.closePath();
-          ctx.fill();
-          ctx.fillStyle = '#243c87';
-          ctx.fillRect(.33 * w, .44 * h, .34 * w, .12 * h);
-          return;
-        }
-        ctx.font = 'italic 900 108px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#fff6e1';
-        ctx.fillText(apron.label, w / 2, h / 2, w * .94);
-      });
-      labelMaterials.set(apron.label, new THREE.MeshStandardMaterial({map, side: THREE.DoubleSide,
-        alphaTest: .33, roughness: .8, polygonOffset: true, polygonOffsetFactor: -2}));
-    }
-    const positions = [], uv = [];
-    for (const [i, row] of best.entries()) {
-      const a = i / best.length, b = (i + 1) / best.length;
-      const coords = [[a, 0], [b, 0], [b, 1], [a, 1]];
-      for (const index of [0, 1, 3, 3, 1, 2]) {
-        const p = row.polygon[index], [u, v] = coords[index];
-        positions.push(p.x, p.y + .012, p.z);
-        uv.push(row.side < 0 ? 1 - u : u, row.side < 0 ? v : 1 - v);
-      }
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-    geometry.computeVertexNormals();
-    const label = new THREE.Mesh(geometry, labelMaterials.get(apron.label));
-    label.userData.singaporeApronLettering = apron.turn;
-    root.add(label);
-  }
 }
 
 export function addSingaporeEvent(scene, track, plan) {
@@ -486,7 +420,7 @@ export function addSingaporeEvent(scene, track, plan) {
       wall.x + normal.x * depth, (wall.a.y + wall.b.y) / 2 + .57,
       wall.z + normal.z * depth, Math.atan2(normal.x, normal.z), opening ? '#203e83' : gate ? '#a95229' : boardColors[i % 3]);
   }
-  addApronLettering(root, track);
+  addRunoffLettering(root, singaporeBands(track).paint);
   const pit = pitLayout(track);
   function roadLabel(text, pose, width, height) {
     const label = sign(root, text, width, height, pose.x, pose.y + .104, pose.z, 0, null);

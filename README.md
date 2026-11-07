@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.49.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.51.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1896,3 +1896,49 @@ road footprints by at least 1.53 m. The overhead board has 8.20 m clearance.
 Syntax, module imports, lint, both builds, wall geometry, runoff overlaps
 and pit entry/exit checks passed. Parked dry and wet previews rendered both
 sides without browser console warnings or errors.
+
+## 2.50.0 — Buddh International Circuit and Singapore runoff lettering
+
+Buddh now has a dedicated Indian GP environment on its retained 16-turn
+clockwise route. The right-side pit complex, main grandstand canopy, fan
+zones, hazy farmland and skyline frame a shared runoff and barrier plan.
+The FIA’s 14 m T1–T3 climb is fitted over the retained elevation anchors.
+The runoff includes original Greater Noida lettering, kerbs, tarmac, gravel
+and grass. Three venue-specific Free Practice starts are available.
+
+Singapore now reads “SINGAPORE” on both blue aprons at Turn 1. The lettering
+follows the existing paint boundaries on each side.
+
+Both builds, static clearance, shared barrier geometry, terrain and pit
+checks passed. Parked dry and wet views and the practice menu loaded with a
+clean browser console. Dimensions for temporary safety furniture and
+secondary stands are fitted estimates. [Audit, corner table and verification](docs/BUDDH-ENVIRONMENT-2.50.0.md).
+
+## 2.51.0 — Sepang International Circuit
+
+Sepang now has a dedicated Malaysian GP environment. A double-front tensile
+grandstand overlooks both straights, with a petal canopy at the final hairpin.
+The pit building and external lane sit on the FIA-mapped side of the straight.
+Plantation rows, laterite verges, drainage, fan plazas and original `MALAYSIA`
+and `SELANGOR` runoff lettering replace the generic scenery. All 15 corners
+have a surface and barrier schedule. The tropical weather adds storm clouds,
+standing water, heavier rain and spray, and vapour as the track clears.
+
+The existing centreline, elevation anchors, car model and multiplayer protocol
+remain in place. The mapped building and road footprints and sampled terrain
+are source-driven. Kerb profiles, safety setbacks, secondary grandstands and
+canopy details are fitted approximations. Free Practice adds three out-lap
+starts near the opening hairpin, back straight and final hairpin.
+
+Both builds, source checks, shared barrier geometry, pit entry and exit,
+runoff clearance and parked browser rendering were checked. The
+[Sepang audit](docs/SEPANG-ENVIRONMENT-2.51.0.md) records the corner table,
+measured clearances, weather checks and reference limitations.
+
+## 2.51.1 — Sepang canopy and grandstand roofs
+
+Photo references guide a shallower final-hairpin canopy with a continuous
+scalloped edge, pale fabric, dark radial steelwork and a stepped circular
+tower. The covered grandstands use the same fabric and steel treatment in
+repeated bays. The existing reserved footprints still protect the racing
+ribbon, pit lane and mapped service roads.

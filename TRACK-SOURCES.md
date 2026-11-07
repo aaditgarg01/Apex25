@@ -531,3 +531,24 @@ lighting positions are fitted for the game.
 - [National Heritage Board Singapore River bridges](https://www.nhb.gov.sg/-/media/nhb/files/media/releases/new-releases/15-oct-2019-singapore-river-bridges-gazette.pdf)
 - [National Heritage Board Esplanade Park memorials](https://www.nhb.gov.sg/~/media/nhb/files/places/sites%20monuments/public%20programmes/monument%20open%20house/monument_open_house_brochure_2012_d.pdf?la=en)
 - [OpenTopoData SRTM90m](https://www.opentopodata.org/datasets/srtm/)
+
+## Buddh dedicated environment (2.50.0)
+
+- [FIA 2013 circuit map](https://www.fia.com/sites/default/files/external_archive/node3786/16-india-circuit-print.pdf) for F1 corner order, pit side, marshal positions and schematic runoff.
+- [FIA 2013 preview](https://api.fia.com/news/2013-indian-grand-prix-preview) for the 5.125 km official lap and 14 m rise from T1 to T3.
+- [OSM relation 2532569](https://www.openstreetmap.org/relation/2532569) and the [local map bounds](https://www.openstreetmap.org/export#map=15/28.3478/77.5339) for the existing raceway, service roads, alternate links, garage, race control and main grandstand.
+- [2023 engineering photographs and upgrade notes](https://driven-international.com/buddh-fim-homologation) for the main canopy, resurfaced areas, kerbs, barriers and gravel. These show a later event configuration.
+- [2023 event guide](https://assets-in.bmscdn.com/mailers/images/01092023/mailer/motogp_guide.pdf) for secondary stand and fan-zone context.
+- [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) and [Skadi N28E077 tile](https://s3.amazonaws.com/elevation-tiles-prod/skadi/N28/N28E077.hgt.gz), accessed 2026-11-07, sampled every 80 m around the circuit. The original SRTM90 road anchors are retained, with a local FIA-constrained fit between T1 and the back straight.
+
+See [the Buddh environment audit](docs/BUDDH-ENVIRONMENT-2.50.0.md) for fitted dimensions and limitations.
+
+## Sepang dedicated environment (2.51.0)
+
+- [FIA 2017 Malaysian Grand Prix preview and circuit map](https://www.fia.com/sites/default/files/2017_malaysian_preview_1.pdf) for the 5.543 km, 15-turn layout, pit side, marshal and tyre protection context, and the 2017 detection and activation markers.
+- [Circuit architecture](https://www.sepangcircuit.com/architecture) for the double-front grandstand, canopy and pit building.
+- [Formula 1 2016 circuit upgrade notes](https://www.formula1.com/en/latest/article/f1-malaysia-gp-preview-sepang-revamp.3pYvhHo5JLfokzQzrcLhME.3pYvhHo5JLfokzQzrcLhME) for resurfacing, kerbs, drainage and changes to the final hairpin.
+- [OpenStreetMap venue extract](https://api.openstreetmap.org/api/0.6/map?bbox=101.718,2.744,101.756,2.777) for the service roads, footbridges, water, selected boundaries and building footprints. See the [main grandstand](https://www.openstreetmap.org/way/144247993) and [pit complex](https://www.openstreetmap.org/way/144362327).
+- [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) and [Skadi tile N02E101](https://s3.amazonaws.com/elevation-tiles-prod/skadi/N02/N02E101.hgt.gz) for the 60 m scenery grid and centreline elevation spot checks.
+
+See the [Sepang audit and corner table](docs/SEPANG-ENVIRONMENT-2.51.0.md) for source coverage, fitted dimensions and validation.

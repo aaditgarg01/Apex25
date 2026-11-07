@@ -23,5 +23,19 @@ export function applyElevation(id,points,length,elevations){
  // Coarse 90 m terrain includes buildings/trees. Reduce that relief for Mexico's near-flat racing surface.
  if(id==='mx-1962'){const mean=profile.reduce((sum,p)=>sum+p[1],0)/profile.length;profile=profile.map(([s,y])=>[s,2240+(y-mean)*.16]);source='Near-flat race-surface blockout · reduced coarse terrain relief';}
  const base=Math.min(...profile.map(p=>p[1]));for(let i=0;i<points.length;i++)points[i].y=interpolateProfile(profile,i/points.length*length)-base;
- return {source,min:base,max:Math.max(...profile.map(p=>p[1])),range:Math.max(...profile.map(p=>p[1]))-base};
+ let max=Math.max(...profile.map(p=>p[1]));
+ if(id==='in-2011'){
+  // Fit the FIA's measured rise from T1 to T3 over the retained DEM anchors.
+  const first=306,crest=693,blendEnd=1160;
+  const correction=14+interpolateProfile(profile,first)-interpolateProfile(profile,crest);
+  for(const [i,point] of points.entries()){
+   const station=i/points.length*length;
+   if(station<=first||station>=blendEnd)continue;
+   const t=station<crest?(station-first)/(crest-first):(blendEnd-station)/(blendEnd-crest);
+   point.y+=correction*t*t*(3-2*t);
+   max=Math.max(max,base+point.y);
+  }
+  source+=' · T1–T3 rise fitted to FIA measurement';
+ }
+ return {source,min:base,max,range:max-base};
 }

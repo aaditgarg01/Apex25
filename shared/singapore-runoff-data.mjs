@@ -35,10 +35,10 @@ export const SINGAPORE_CORNERS = corners.map(([turn, station, outside, span, ker
 // complexes use the same event palette with original lettering. Widths are
 // fitted below against the saved track, the pit lane and mapped branches.
 export const SINGAPORE_APRONS = [
-  {turn: 1, station: 272, side: -1, span: 135, width: 14, label: 'MARINA BAY',
+  {turn: 1, station: 272, side: -1, span: 135, width: 14, label: 'SINGAPORE', letteringIndex: 100,
     profile: [[137, .8], [160, 2.8], [225, 3.5], [254, 7], [281, 14], [330, 14], [370, 4.2], [407, .8]],
     design: 'opening-outside'},
-  {turn: 1, station: 300, side: 1, span: 34, width: 13, label: 'apex-diamond',
+  {turn: 1, station: 300, side: 1, span: 34, width: 13, label: 'SINGAPORE', letteringIndex: 99,
     profile: [[266, 1], [278, 3.3], [297, 13], [308, 10.5], [319, 6.0], [334, 1]],
     design: 'opening-inside'},
   {turn: 2, station: 373, side: 1, span: 46, width: 10, label: 'MARINA BAY'},
