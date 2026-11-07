@@ -556,7 +556,14 @@
     {
       "feature": "Yas Island northern landmark OSM extract",
       "url": "https://api.openstreetmap.org/api/0.6/map?bbox=54.596,24.478,54.615,24.491"
-    }
+    },
+    {"feature": "FIA 2025 Qatar circuit, sectors, DRS and marshal map", "url": "https://www.fia.com/system/files/decision-document/2025_lusail_event_-_circuit_map_-_qatar_2025.pdf"},
+    {"feature": "FIA 2025 Qatar runoff and gravel changes", "url": "https://www.fia.com/system/files/decision-document/2025_qatar_grand_prix_-_race_directors_event_notes_v2.pdf"},
+    {"feature": "Formula 1 2024 Lusail rounded kerb locations", "url": "https://www.formula1.com/en/latest/article/what-tyres-will-the-teams-and-drivers-have-for-the-2024-qatar-grand-prix.3wg5fMRihKy4tF17WRrDvw"},
+    {"feature": "Formula 1 2023 historical Turns 1 and 2 gravel reference", "url": "https://www.formula1.com/en/latest/article/verstappen-cruises-to-qatar-gp-victory-over-piastri-and-norris-after-mercedes.63iY0CEd0WFzm1y0Z4ycui"},
+    {"feature": "Lusail International Circuit promoter stand names and viewing areas", "url": "https://www.lcsc.qa/news/lusail-international-circuit-announces-early-bird-promotion-formula-1-qatar-airways-qatar"},
+    {"feature": "OpenStreetMap Lusail pit, stand, access and parking footprints", "url": "https://api.openstreetmap.org/api/0.6/map?bbox=51.443,25.482,51.466,25.499"},
+    {"feature": "OpenTopoData SRTM90m terrain source", "url": "https://www.opentopodata.org/datasets/srtm/"}
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",
   "date": "2026-10-14",

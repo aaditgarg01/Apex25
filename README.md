@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.47.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.48.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1832,3 +1832,20 @@ A session-clock sunset fades to night, with a local fixed-night option also avai
 Also corrects unnecessary landmark displacement in Montreal (Biosphere/amusement park) and Silverstone (clubhouse), using nearest-safe-position searches. Eleven existing cached planners were measured and eleven older dedicated environment placement implementations were reviewed for the same fallback issue; this was not an on-track visibility survey of every circuit.
 
 Requested static checks, builds and a parked browser inspection are recorded in [the release details, runoff table, sources and limitations](docs/YASMARINA-ENVIRONMENT-2.47.0.md). The game test suite was neither run nor edited. Driving and multiplayer playtesting remain manual.
+
+## 2.48.0 — Lusail night race environment
+
+Lusail has a dedicated floodlit desert setting with a fitted pit and paddock,
+grandstands, three pedestrian bridges, a desert fan zone, service roads, and
+original maroon-and-white signage. A single runoff plan draws and classifies
+the paved, painted, gravel, and sand surfaces, with barriers shared between
+the renderer and collision system. There are three new Free Practice starts:
+Turn 1 approach, Fast sweepers, and Final corner. Full floodlight effects can
+be switched off in setup or while paused; the track stays lit at night.
+
+The circuit centreline, existing elevations, pit route and timing, car model,
+and multiplayer protocol are unchanged. The FIA documents the corner sequence
+and selected gravel and kerb treatments; venue geometry is fitted to the game
+and many widths, roof profiles and light positions are approximate.
+[See the corner table, sources, and verification results](docs/LUSAIL-ENVIRONMENT-2.48.0.md).
+The game test suite was neither run nor edited.

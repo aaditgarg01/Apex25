@@ -326,3 +326,13 @@ No licensed sponsor, team, casino or venue artwork was added. The wall greeting
 ### Yas Marina cached environment data (2.47.0)
 
 `public/data/yasmarina-architecture.js`, `shared/yasmarina-access.mjs`, `shared/yasmarina-coast-data.mjs` and `shared/yasmarina-landmark-data.mjs` contain adapted OpenStreetMap geometry, retrieved 2026-11-07: © OpenStreetMap contributors, ODbL 1.0, https://www.openstreetmap.org/copyright . Fitted envelopes and offshore clipping boundaries are modifications, not surveyed geometry. Procedural original artwork/configuration uses this repository’s code license. Official FIA/circuit pages are references only; no official maps, sponsor logos or venue artwork are redistributed. Original road/elevation data licenses remain applicable.
+
+## Lusail cached environment data (2.48.0)
+
+`public/data/lusail-architecture.js` and `shared/lusail-access.mjs` contain
+adapted OpenStreetMap geometry retrieved 2026-11-07: © OpenStreetMap contributors,
+ODbL 1.0 (https://www.openstreetmap.org/copyright). Fitted architectural
+envelopes and assumed widths are not survey geometry. Road and elevation data
+keep their existing licenses. Original procedural materials, flags, dressing
+and runoff/lighting configuration follow the code license. Official references
+are linked; their maps, photos, logos and event artwork are not redistributed.

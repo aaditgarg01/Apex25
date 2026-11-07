@@ -484,3 +484,27 @@ clearance-fitted architecture/wall shifts are approximate. See
 OSM building ways 133907082 (pits), 133907079/133907081/133907352/168411369/188731381 (stands), 520940413/1228229328 (hotel wings), 188732696 (media/hospitality), 168412289/188852394 (resorts), 855448338 (unsigned red roof), 312812656 (mall), 227206840 (waterpark). Coastline ways 312181485/188215353/188205155 define the marina shoreline; offshore closure is fitted. All 1,192 mapped highway/path ways are cached before corridor filtering; 10,215 remaining access segments are reserved. OSM © contributors, ODbL 1.0.
 
 The preserved centreline matches the post-2021 16-corner layout, not the 21-corner original. Existing SRTM 90 m / OpenTopoData elevation anchors retain the 6.52 m range; no new surveyed dip is invented. Hotel upper wings stay at source anchors with fitted supports and raised clearance. The generated pit route is unchanged: a covered approach is approximate, not a true under-T1 tunnel. Runoff types/widths, kerbs, wall setbacks, arena omission, mast locations, appearance and ground-clearance fits are approximate. No current racing gravel trap was verified; none is invented. No reference photographs accompanied this request. See docs/YASMARINA-ENVIRONMENT-2.47.0.md.
+
+## Lusail / Qatar — 2.48.0 (2026-11-07)
+
+- [FIA 2025 Qatar circuit, sectors, DRS and marshal map](https://www.fia.com/system/files/decision-document/2025_lusail_event_-_circuit_map_-_qatar_2025.pdf).
+- [FIA 2025 Qatar runoff and gravel changes](https://www.fia.com/system/files/decision-document/2025_qatar_grand_prix_-_race_directors_event_notes_v2.pdf).
+- [Formula 1 2024 Lusail rounded kerb locations](https://www.formula1.com/en/latest/article/what-tyres-will-the-teams-and-drivers-have-for-the-2024-qatar-grand-prix.3wg5fMRihKy4tF17WRrDvw).
+- [Formula 1 2023 historical Turns 1 and 2 gravel reference](https://www.formula1.com/en/latest/article/verstappen-cruises-to-qatar-gp-victory-over-piastri-and-norris-after-mercedes.63iY0CEd0WFzm1y0Z4ycui).
+- [Lusail International Circuit promoter stand names and viewing areas](https://www.lcsc.qa/news/lusail-international-circuit-announces-early-bird-promotion-formula-1-qatar-airways-qatar).
+- [OpenStreetMap Lusail pit, stand, access and parking footprints](https://api.openstreetmap.org/api/0.6/map?bbox=51.443,25.482,51.466,25.499).
+- [OpenTopoData SRTM90m terrain source](https://www.opentopodata.org/datasets/srtm/).
+
+The FIA map identifies the 5,419 m, 16-corner F1 layout. The retained game
+ribbon samples to approximately 5,427 m. OSM ways 152483596 and 152483597
+identify the main grandstand and pit building; 1316236372, 1316236376 and
+1316236368 locate three footbridges. Overlaps between the mapped raceway and
+the game's main ribbon are deduplicated only for nearby parallel segments
+of three identified raceway ways. Separate pit branches, motorcycle and kart
+layouts, roads and paths remain in the clearance data.
+
+Five independent SRTM90m spot elevations of 10–13 m above sea level were
+consistent with the retained SRTM90m anchors and their 6.55 m range. No
+new road anchors, camber or banking were added. Positions, heights, surface
+widths and reference dates are qualified in the
+[Lusail release details](docs/LUSAIL-ENVIRONMENT-2.48.0.md).
