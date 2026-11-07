@@ -29,13 +29,15 @@ function nearShapes(grid, shape) {
   return [...found];
 }
 
-function roadVertex(track, index, offset) {
+function roadVertex(track, index, offset, height) {
   const p = track.points[index], lateral = ribbonOffset(track, index, offset);
-  return {x: p.x + Math.cos(p.heading) * lateral, z: p.z - Math.sin(p.heading) * lateral, y: p.y};
+  return {x: p.x + Math.cos(p.heading) * lateral, z: p.z - Math.sin(p.heading) * lateral, y: height ? height(track, index * track.step, lateral, p.y) : p.y};
 }
 
 // Shared footprint, runoff, terrain and barrier solver for permanent venues.
-export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, paintCorners, boundaries = [], pedestrianBridges = false, dirtProfile}) {
+export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, paintCorners, boundaries = [], pedestrianBridges = false,
+  dirtProfile, roadHeight, baseTarmac = 2.2, baseGrass = 4.8, wallStyle = 'armco',
+  wallGap = .7, edgeStart = .025, accessDeckClearance = 0}) {
   const roadCache = new WeakMap(), planCache = new WeakMap(), wallCache = new WeakMap();
   function roads(track) {
     if (roadCache.has(track)) return roadCache.get(track);
@@ -44,8 +46,8 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     const h = half - .015;
     track.points.forEach((_, index) => {
       const next = (index + 1) % track.points.length;
-      add([roadVertex(track, index, -h), roadVertex(track, next, -h),
-        roadVertex(track, next, h), roadVertex(track, index, h)], {kind: 'race'});
+      add([roadVertex(track, index, -h, roadHeight), roadVertex(track, next, -h, roadHeight),
+        roadVertex(track, next, h, roadHeight), roadVertex(track, index, h, roadHeight)], {kind: 'race'});
     });
     for (let d = 0; d < pit.length; d += 3) {
       const end = Math.min(d + 3, pit.length), width = pit.width / 2 + .06;
@@ -85,7 +87,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
   }
 
   function runoffVertex(track, index, side, distance, lift = 0, depth = 0) {
-    const p = roadVertex(track, index, side * (track.width / 2 + distance)), center = track.points[index];
+    const p = roadVertex(track, index, side * (track.width / 2 + distance), roadHeight), center = track.points[index];
     const delta = demHeight(track, p.x, p.z) - demHeight(track, center.x, center.z);
     p.y += clamp(delta, -distance * .09, distance * .09) * smooth(distance / 27) + lift - depth;
     return p;
@@ -107,9 +109,9 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
           .sort((a, b) => Math.abs(a.station - s) - Math.abs(b.station - s));
         const corner = active.find(c => c.side === side), apex = active[0];
         const strength = corner ? smooth((corner.span - Math.abs(corner.station - s)) / 43) : 0;
-        const tarmac = 2.2 + ((corner?.tarmac || 2.2) - 2.2) * strength;
+        const tarmac = baseTarmac + ((corner?.tarmac ?? baseTarmac) - baseTarmac) * strength;
         const gravel = (corner?.gravel || 0) * strength;
-        const grass = 4.8 + ((corner?.grass || 4.8) - 4.8) * strength;
+        const grass = baseGrass + ((corner?.grass ?? baseGrass) - baseGrass) * strength;
         const total = tarmac + gravel + grass;
         let high = total;
         for (let j = -3; j <= 3; j++) {
@@ -127,8 +129,8 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
           else high = probe;
         }
         return {width: low, total, tarmac, gravel, grass, depth: (corner?.gravelDepth || 0) * strength,
-          turn: apex?.turn || 0, kerb: apex && Math.abs(apex.station - s) < Math.min(50, apex.span * .64) ? apex.kerb : null,
-          barrier: strength > .52 ? corner.barrier : 'armco'};
+          turn: apex?.turn || 0, kerb: apex && Math.abs(apex.station - s) < (apex.kerbSpan ?? Math.min(50, apex.span * .64)) ? apex.kerb : null,
+          barrier: strength > .52 ? corner.barrier : wallStyle};
       });
       for (let pass = 0; pass < 2; pass++) {
         const widths = rows.map(row => row.width);
@@ -153,7 +155,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
           const row = {i, side, turn: a.turn, kind, ...extra};
           bands.push(indexShape(grid, polygon, row));
         }
-        push('tarmac', .025, .025, a.tarmac, b.tarmac, .025);
+        push('tarmac', edgeStart, edgeStart, a.tarmac, b.tarmac, .025);
         const stripeA = Math.min(a.tarmac, a.turn ? .7 : .32), stripeB = Math.min(b.tarmac, b.turn ? .7 : .32);
         push('paint', .08, .08, stripeA, stripeB, .047, {tone: 'edge'});
         const label = paintCorners.includes(a.turn) && a.turn === b.turn && Math.min(a.tarmac, b.tarmac) > 5;
@@ -269,7 +271,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
       if (side === pit.side && alongPit < pit.length) continue;
       if (Math.min(row.width, next.width) < .22) continue;
       const style = alongPit < pit.length && side !== pit.side ? 'concrete' : row.barrier;
-      const a = runoffVertex(track, i, side, row.width + .7), b = runoffVertex(track, j, side, next.width + .7);
+      const a = runoffVertex(track, i, side, row.width + wallGap), b = runoffVertex(track, j, side, next.width + wallGap);
       const p = track.points[i], normal = {x: -Math.cos(p.heading) * side, z: Math.sin(p.heading) * side};
       const height = style === 'armco' ? .77 : 1.06;
       if (add(a, b, style === 'covered' ? .68 : .46, height, 'track', style, normal)) {
@@ -312,7 +314,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     }
     const bridges = [];
     if (pedestrianBridges) for (const [way, type, width, elevated, coords] of mappedRoads) {
-      if (!elevated || type !== 'footway') continue;
+      if (!elevated || type !== 'footway' || (Array.isArray(pedestrianBridges) && !pedestrianBridges.includes(way))) continue;
       const points = coords.map(coord => venueLocal(track, coord));
       const first = points[0], last = points.at(-1), heading = Math.atan2(last.x - first.x, last.z - first.z);
       const supportSites = [];
@@ -328,14 +330,14 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
         }
       }
       if (supportSites.length !== 2) continue;
-      const roadHeights = points.slice(1).flatMap((p,i) => {
+      const minimumDeckHeights = points.slice(1).flatMap((p,i) => {
         const deck = footprintStrip(points[i],p,width/2+.3);
         return nearShapes(roads(track).grid,deck)
-          .filter(row => row.kind !== 'access' && footprintsOverlap(row.polygon,deck))
-          .flatMap(row => row.polygon.map(vertex => vertex.y));
+          .filter(row => (row.kind !== 'access' || (accessDeckClearance && !row.bridge)) && footprintsOverlap(row.polygon,deck))
+          .flatMap(row => row.polygon.map(vertex => row.kind === 'access'
+            ? ground(track, vertex.x, vertex.z) + .12 + accessDeckClearance : vertex.y + 7.8));
       });
-      const y = Math.max(Math.max(...points.map(p=>ground(track,p.x,p.z)))+4.8,
-        roadHeights.length ? Math.max(...roadHeights)+7.8 : -Infinity);
+      const y = Math.max(Math.max(...points.map(p=>ground(track,p.x,p.z)))+4.8, ...minimumDeckHeights);
       for (const {site,footprint} of supportSites) {
         const foot = ground(track,site.x,site.z)-.12;
         const at = d => ({x:site.x+Math.sin(heading)*d,y:foot,z:site.z+Math.cos(heading)*d});

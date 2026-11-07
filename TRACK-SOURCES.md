@@ -556,3 +556,11 @@ guide cosmetic traffic. The shapes and materials of the new props are fitted.
 - [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) and [Skadi tile N02E101](https://s3.amazonaws.com/elevation-tiles-prod/skadi/N02/N02E101.hgt.gz) for the 60 m scenery grid and centreline elevation spot checks.
 
 See the [Sepang audit and corner table](docs/SEPANG-ENVIRONMENT-2.51.0.md) for source coverage, fitted dimensions and validation.
+
+
+## Madrid environment refresh (2.53.0)
+
+- [FIA circuit, pit lane and emergency maps](https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_competition_notes_-_circuit_map_pit_lane_drawing_and_emergency_exits_map.pdf) and [race director notes](https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_race_directors_competition_notes.pdf) guide turn numbering, paved escapes, garage separation and pit direction.
+- [Promoter circuit details](https://www.madring.com/en/circuit), [ticket zones](https://ticketsf1.madring.com/en/), the [IFEMA campus map](https://www.ifema.es/en/doc/access-map/plano-ifema-accesos.pdf), and the [IFEMA report](https://www.ifema.es/en/doc/2024-annual-report/memoria-anual-en-2024.pdf) guide the circuit's building and spectator context.
+- [OpenStreetMap extract](https://api.openstreetmap.org/api/0.6/map?bbox=-3.632,40.463,-3.604,40.486) supplies hall outlines, access corridors, selected boundaries and pedestrian crossings. The [mapped pit way](https://www.openstreetmap.org/way/1552567031) guided the side correction. Road widths and accepted structures are fitted to the existing game course.
+- [Mapzen Terrain Tiles N40W004](https://registry.opendata.aws/terrain-tiles/) supplies the local terrain grid. The centreline elevation and banking module are preserved. See the [Madrid audit](docs/MADRID-ENVIRONMENT-2.53.0.md) for the reference discrepancies and placement checks.

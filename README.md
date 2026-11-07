@@ -4,9 +4,9 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 ## Play online
 
-[Play APEX 25](https://apex-25-production.up.railway.app/).
+[Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends currently uses the [Railway multiplayer server](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.52.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.53.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1956,3 +1956,27 @@ The [Buddh environment audit](docs/BUDDH-ENVIRONMENT-2.50.0.md) includes the
 16-corner runoff table, FIA and OSM references, fitted details and measured
 clearances. Both builds, placement and collision probes, pit entry and exit,
 whole-lap weather, and parked browser views passed the targeted checks.
+
+
+## 2.53.0 — Madrid environment refresh
+
+Madrid uses mapped exhibition hall footprints, two garage blocks on the
+driver-right side, paved escape areas, red-and-white kerbs, dry grass verges,
+and a shared safety plan for the walls, fences and overhead structures. The
+stands around La Monumental rise on fitted terraces. Catch fencing, corner and
+braking boards, generic event signs, pit markings, marshal posts and street
+furniture follow the local profile. Damp and wet conditions darken the
+concrete and grass and add roadside puddles.
+
+The 5.436 km playable centreline, saved elevation, car and multiplayer
+protocol are preserved. The existing banking function still gives Madrid
+zero road camber. La Monumental's FIA-era dressing follows that surface.
+Madrid's pit lane moved from driver left to right to match the FIA and mapped
+approach. The generator, dimensions, service station and timing rules carry
+over. The other 41 pit layouts were compared against the previous revision.
+
+The [Madrid audit and 22-corner runoff table](docs/MADRID-ENVIRONMENT-2.53.0.md)
+distinguish mapped references from fitted measurements. Targeted checks
+covered clearances, pit entry and exit, shared wall contacts, road heights,
+parked dry/wet/dynamic renders and both builds. The game test suite was
+outside the requested verification scope.

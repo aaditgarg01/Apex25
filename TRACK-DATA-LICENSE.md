@@ -371,3 +371,15 @@ accessed 2026-11-07 via the [AWS Registry](https://registry.opendata.aws/terrain
 See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
 Runoff dimensions, structures, materials, flags and lettering are original game
 assets. The official maps and architecture references are linked as references.
+
+
+## Madrid cached venue data (2.53.0)
+
+The mapped ways, selected boundary traces and building outlines in
+`shared/madrid-map-data.mjs` derive from OpenStreetMap data retrieved
+2026-11-07. © OpenStreetMap contributors, [ODbL 1.0](https://www.openstreetmap.org/copyright).
+The same module caches local terrain heights from Mapzen Terrain Tiles
+N40W004, retrieved through the [AWS Registry](https://registry.opendata.aws/terrain-tiles/).
+See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
+The original game artwork, fitted widths and safety layouts follow the
+repository code license. The official maps and photographs are reference links.

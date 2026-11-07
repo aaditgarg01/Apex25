@@ -162,6 +162,30 @@
       "url": "https://www.openstreetmap.org/relation/9542146"
     },
     {
+      "feature": "Madrid FIA race layout, pit lane, sector distances and emergency access",
+      "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_competition_notes_-_circuit_map_pit_lane_drawing_and_emergency_exits_map.pdf"
+    },
+    {
+      "feature": "Madrid FIA paved escape and driver-right pit entry guidance",
+      "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_race_directors_competition_notes.pdf"
+    },
+    {
+      "feature": "Madrid OSM access roads, pedestrian bridges, boundaries and exhibition footprints",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-3.632,40.463,-3.604,40.486"
+    },
+    {
+      "feature": "Madrid IFEMA public venue plan and halls",
+      "url": "https://www.ifema.es/en/doc/access-map/plano-ifema-accesos.pdf"
+    },
+    {
+      "feature": "Madrid official grandstand and ticket zones",
+      "url": "https://ticketsf1.madring.com/en/"
+    },
+    {
+      "feature": "Madrid terrain source for offline scenery, tile N40W004",
+      "url": "https://registry.opendata.aws/terrain-tiles/"
+    },
+    {
       "feature": "Madrid named corners, La Monumental 550m/24% bank, Cárcavas climb and Norte tunnel context",
       "url": "https://www.madring.com/en/circuit"
     },

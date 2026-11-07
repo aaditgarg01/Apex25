@@ -369,7 +369,7 @@ export function addPermanentVenue(scene, track, {
   const fieldMat = new THREE.MeshStandardMaterial({vertexColors: true, side: THREE.DoubleSide, roughness: .95});
   landMesh(fieldPositions, fieldMat, fieldColors);
   const access = {paved: [], dirt: []};
-  const elevatedWays = new Set(trackBarriers(track).bridges?.map(({way}) => way));
+  const elevatedWays = new Set(plan.bridges?.map(({way}) => way));
   for (const road of roads(track).entries) {
     if (road.kind !== 'access' || elevatedWays.has(road.way) || !roadClear(track, road.polygon, other => other.kind !== 'access')) continue;
     const positions = access[road.type === 'track' ? 'dirt' : 'paved'];
