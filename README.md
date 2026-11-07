@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.51.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.52.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1942,3 +1942,17 @@ scalloped edge, pale fabric, dark radial steelwork and a stepped circular
 tower. The covered grandstands use the same fabric and steel treatment in
 repeated bays. The existing reserved footprints still protect the racing
 ribbon, pit lane and mapped service roads.
+
+## 2.52.0 — Buddh runoff and Greater Noida dressing
+
+Buddh now has dusty runoff verges that darken and lose grip in the wet,
+fitted braking and tyre-marble decals, mapped boundary fencing and
+drainage, and cosmetic traffic on the Yamuna Expressway. Jali-style pit
+detailing, local planting, fan bunting, and kiln and water-tank silhouettes
+round out the scenery. The existing clockwise F1 centreline, elevation
+profile, external pit lane and three Free Practice starts are preserved.
+
+The [Buddh environment audit](docs/BUDDH-ENVIRONMENT-2.50.0.md) includes the
+16-corner runoff table, FIA and OSM references, fitted details and measured
+clearances. Both builds, placement and collision probes, pit entry and exit,
+whole-lap weather, and parked browser views passed the targeted checks.

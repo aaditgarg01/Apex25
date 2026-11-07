@@ -271,7 +271,7 @@ export class TrackSurfaces{
     if(row.kind!==kind)continue;
     const color=kind==='paint'?tones[row.tone]:kind==='kerb'?tones[row.kerb==='flat'||row.i%2?'white':'red']:
       kind==='grass'?(row.i%12<6?(tropical?'#82a65c':'#a5a072'):(tropical?'#73974f':'#9c9767')):
-      kind==='dirt'?'#986b50':kind==='gravel'?(tropical?'#d0bea4':'#d2c7ad'):(tropical?'#949c98':'#a29e95');
+      kind==='dirt'?(tropical?'#986b50':'#ad906b'):kind==='gravel'?(tropical?'#d0bea4':'#d2c7ad'):(tropical?'#949c98':'#a29e95');
     tint.set(color);
     for(const index of (row.side>0?[0,1,3,3,1,2]:[0,3,1,3,2,1])){
      const p=row.polygon[index];positions.push(p.x,p.y,p.z);uv.push(p.x/8,p.z/8);colors.push(tint.r,tint.g,tint.b);
@@ -523,6 +523,7 @@ export class TrackSurfaces{
   for(const m of this.materials.values()){
    const kind=m.userData.surfaceKind;
    if(['my-1999','in-2011','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948','br-1940'].includes(this.track.id)&&['grass','gravel','sand'].includes(kind)){m.userData.interlagosDryColor??=m.color.clone();m.color.copy(m.userData.interlagosDryColor).multiplyScalar(1-wetness*.2);m.roughness=.94-wetness*.26;}
+   if(this.track.id==='in-2011'&&kind==='sand'){m.color.multiplyScalar(1-wetness*.28);m.roughness=.93-wetness*.42;}
    if(kind==='asphalt'){const coat=Math.max(singapore?.15:jeddah?.24:0,wetness*.72);if((m.clearcoat>0)!==(coat>0))m.needsUpdate=true;m.roughness=(singapore?.72:jeddah?.74:.86)-wetness*.48;m.clearcoat=coat;m.bumpScale=.018-wetness*.01;if(['qa-2004','sg-2008'].includes(this.track.id)){m.userData.nightDryColor??=m.color.clone();m.color.copy(m.userData.nightDryColor).multiplyScalar(1-wetness*.31);}else m.color.set(wetness?'#939b9f':'#ffffff');}
    else if(kind==='concrete'){m.roughness=(jeddah?.58:.92)-wetness*.18;if(jeddah||singapore)m.metalness=.06;}
    else if(kind==='paint'){m.roughness=(jeddah?.42:.9)-wetness*.28;if(jeddah||singapore)m.metalness=.12;}

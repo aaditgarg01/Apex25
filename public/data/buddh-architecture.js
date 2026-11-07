@@ -1,4 +1,4 @@
-export {BUDDH_BUILDINGS} from '/shared/buddh-map-data.mjs';
+export {BUDDH_BUILDINGS, BUDDH_DRAINAGE} from '/shared/buddh-map-data.mjs';
 
 // Positions of the secondary stands and fan zones are fitted to the event guide.
 export const BUDDH_STANDS = [
@@ -12,3 +12,11 @@ export const BUDDH_STANDS = [
 export const BUDDH_FAN_ZONES = [
   ['north-fan', 245, 1], ['east-fan', 2035, 1], ['south-fan', 4580, -1]
 ];
+
+// Approximate landscape landmarks and a checked pair of mapped motorway ways.
+export const BUDDH_LANDMARKS = [
+  ['kiln', -1060, -590, 30, 27], ['kiln', 1130, 530, 30, 27],
+  ['tank', -890, 1060, 16, 16], ['tank', 1020, -985, 16, 16],
+  ['telecom', -800, -970, 13, 13], ['telecom', 1370, 745, 13, 13]
+];
+export const BUDDH_TRAFFIC_WAYS = [87188879, 169624173];

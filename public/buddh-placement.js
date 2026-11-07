@@ -1,8 +1,8 @@
 import {sample, wrap} from '/shared/tracks.mjs';
 import {pitLayout, pitRoadPose} from '/shared/pit-layout.mjs';
 import {buddhBarrierClear, buddhGround, buddhLocal, buddhRoadClear, buddhRunoff, buddhRunoffClear, buddhWalls} from '/shared/buddh.mjs';
-import {footprintBox, footprintsOverlap} from '/shared/venue-footprints.mjs';
-import {BUDDH_BUILDINGS, BUDDH_FAN_ZONES, BUDDH_STANDS} from './data/buddh-architecture.js';
+import {footprintBox, footprintStrip, footprintsOverlap} from '/shared/venue-footprints.mjs';
+import {BUDDH_BUILDINGS, BUDDH_DRAINAGE, BUDDH_FAN_ZONES, BUDDH_LANDMARKS, BUDDH_STANDS} from './data/buddh-architecture.js';
 import {BUDDH_CORNERS} from './data/buddh-runoff.js';
 
 const cache = new WeakMap();
@@ -117,7 +117,35 @@ export function planBuddh(track) {
   for (const [i, [x, z]] of [[-920,-650],[-810,-845],[955,-550],[925,405],[-940,880],[-860,1030]].entries()) {
     reserve({id: 'pylon-' + i, kind: 'pylon', x, z, w: 13, d: 7, heading: 0, variant: i % 3});
   }
-  const data = {sites, skipped, gantry};
+  for (const [i, [kind, x, z, w, d]] of BUDDH_LANDMARKS.entries()) {
+    reserve({id: 'landmark-' + i, kind, x, z, w, d, heading: .12});
+  }
+
+  for (const [i, [x, z]] of [[-635, 980], [550, -715], [920, 410]].entries()) {
+    for (const [dx, dz] of [[0, 0], [58, 0], [-58, 0], [0, 76], [0, -76], [90, 50], [-90, -50]]) {
+      if (reserve({id: 'parking-' + i, kind: 'parking', x: x + dx, z: z + dz, w: 35, d: 58, heading: .16})) break;
+    }
+  }
+  for (const [i, [x, z]] of [[799, -357], [939, 290], [1042, 695]].entries()) {
+    reserve({id: 'express-sign-' + i, kind: 'express-sign', x, z, w: 9, d: 3, heading: .26});
+  }
+  const drains = [];
+  for (const [way, type, coords] of BUDDH_DRAINAGE) {
+    const points = coords.map(p => buddhLocal(track, p));
+    const half = type === 'canal' ? 2.6 : .7;
+    for (let i = 1; i < points.length; i++) {
+      const a = points[i - 1], b = points[i], length = Math.hypot(b.x - a.x, b.z - a.z);
+      const pieces = Math.ceil(length / 10);
+      const at = t => ({x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t});
+      for (let j = 0; j < pieces; j++) {
+        const from = at(j / pieces), to = at((j + 1) / pieces);
+        const polygon = footprintStrip(from, to, half);
+        if (buddhRoadClear(track, polygon) && buddhRunoffClear(track, polygon) && buddhBarrierClear(track, polygon) &&
+            !reserved.some(other => footprintsOverlap(polygon, other))) drains.push({way, type, from, to, half, polygon});
+      }
+    }
+  }
+  const data = {sites, skipped, gantry, drains};
   cache.set(track, data);
   return data;
 }

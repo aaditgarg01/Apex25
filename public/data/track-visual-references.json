@@ -658,6 +658,10 @@
       "url": "https://assets-in.bmscdn.com/mailers/images/01092023/mailer/motogp_guide.pdf"
     },
     {
+      "feature": "Buddh cached venue fences, drainage and Yamuna Expressway alignments",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=77.525,28.335,77.549,28.361"
+    },
+    {
       "feature": "Buddh cached terrain tile, downsampled for offline use",
       "url": "https://registry.opendata.aws/terrain-tiles/"
     }

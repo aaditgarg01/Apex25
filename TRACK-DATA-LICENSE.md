@@ -351,7 +351,8 @@ official maps, photographs and event artwork are reference material.
 ## Buddh cached venue data (2.50.0)
 
 `shared/buddh-map-data.mjs` adapts mapped highway ways and selected building
-outlines within the Buddh venue bounds, retrieved 2026-11-07. © OpenStreetMap
+outlines within the Buddh venue bounds, retrieved 2026-11-07. Release 2.52.0
+also uses fence and drainage traces from the same extract. © OpenStreetMap
 contributors, [ODbL 1.0](https://www.openstreetmap.org/copyright).
 `shared/buddh-dem.mjs` samples the Mapzen Terrain Tiles N28E077 Skadi tile,
 accessed 2026-11-07 via the [AWS Registry](https://registry.opendata.aws/terrain-tiles/).

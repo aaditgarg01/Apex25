@@ -288,13 +288,22 @@ export function addPermanentVenue(scene, track, {
       o.position.y += 4.9 + p.variant * .38;
     });
   }
-  batch(new THREE.CylinderGeometry(.15, .26, 6, 6), standard('#75624d'), trees, (p, o) => {o.position.y += 2.75;});
+  batch(new THREE.CylinderGeometry(.15, .26, 6, 6), standard('#75624d'), trees, (p, o) => {
+    const eucalyptus = prefix === 'buddh' && p.variant === 2;
+    o.scale.y = eucalyptus ? 1.34 : 1;
+    o.position.y += eucalyptus ? 3.77 : 2.75;
+  });
   batch(new THREE.IcosahedronGeometry(1, 2), standard('#ffffff'), trees.flatMap(p => [-1, 0, 1].map(index => ({
     ...p, index, tint: ['#5e7544', '#718450', '#7e8250', '#646e41'][p.variant % 4]
   }))), (p, o) => {
     o.position.y += 5.6 + p.variant * .55 + (p.index === 0 ? .7 : 0);
     o.position.x += p.index * .92;
-    o.scale.set(p.variant === 2 ? 1.38 : 2.25, p.variant === 2 ? 3.3 : 1.49, 2.06);
+    if (prefix === 'buddh') {
+      // Low acacia, rounded neem, narrow eucalyptus and dense mango crowns.
+      const [w, h, d] = [[2.66, 1.03, 2.27], [2.12, 1.64, 2.18], [1.14, 3.25, 1.31], [2.40, 2.15, 2.43]][p.variant % 4];
+      o.scale.set(w, h, d);
+      if (p.variant === 2) o.position.y += 1.25 + p.index * .34;
+    } else o.scale.set(p.variant === 2 ? 1.38 : 2.25, p.variant === 2 ? 3.3 : 1.49, 2.06);
   });
   batch(new THREE.ConeGeometry(.72, .74, 5), standard('#ffffff'), grass.map(p => ({
     ...p, tint: (tropical ? ['#648b40','#527e3d','#7d9947','#607d3e'] : ['#998853','#ad985b','#7d834d','#a18153'])[p.variant % 4]

@@ -543,6 +543,10 @@ lighting positions are fitted for the game.
 
 See [the Buddh environment audit](docs/BUDDH-ENVIRONMENT-2.50.0.md) for fitted dimensions and limitations.
 
+For 2.52.0, the [cached venue bounds](https://api.openstreetmap.org/api/0.6/map?bbox=77.525,28.335,77.549,28.361)
+also supply fence and drainage traces. Two mapped Yamuna Expressway ways
+guide cosmetic traffic. The shapes and materials of the new props are fitted.
+
 ## Sepang dedicated environment (2.51.0)
 
 - [FIA 2017 Malaysian Grand Prix preview and circuit map](https://www.fia.com/sites/default/files/2017_malaysian_preview_1.pdf) for the 5.543 km, 15-turn layout, pit side, marshal and tyre protection context, and the 2017 detection and activation markers.

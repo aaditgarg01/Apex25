@@ -88,3 +88,44 @@ use throttled updates.
   return to the old profile are interpolated. No new banking was added.
 
 [Sources and provenance](../TRACK-SOURCES.md)
+
+## 2.52.0 dressing and surface pass
+
+The centreline, elevation anchors and fitted pit layout from the original
+release are preserved. The 16-corner table above still gives the target
+widths and setbacks. The outer part of each existing grass band now gives
+way to ochre dirt. Its terrain profile and collision limits use the same
+plan as the other surfaces. The dirt grip multiplier is 0.55 dry and 0.16
+saturated, with more drag when wet. Asphalt, painted kerbs, gravel and grass
+retain their previous responses. Surface decals add marbles, fine dust, and
+braking and oil traces. They have no physical height or penalty effect.
+
+Added fenced boundaries and drainage traces from the cached OSM extract,
+and cosmetic traffic on clear parts of mapped Yamuna Expressway ways.
+The refreshed dressing also adds jali-style pit accents, fan bunting,
+service stacks, speaker and cable details, field plants, varied broadleaf
+silhouettes, brick kilns, water tanks, telecom masts and dry heat haze.
+Existing braking boards, grid and pit marks, marshal lights, cranes,
+flags, recovery areas, and the three practice starts remain available.
+
+| Check | 2.52.0 result |
+|---|---|
+| Source and builds | 11 syntax checks and module imports passed. Undefined-name and shadow checks, Node build and Vercel build passed. |
+| Reserved footprints | 525 scenery sites checked against 15,929 road polygons. Minimum clearances of 2.36 m to the racing ribbon, 2.81 m to the generated pit lane and 0.55 m to mapped access. Gantry supports had 0.71 m minimum sampled clearance. |
+| Runoff and barriers | 14,551 patches, zero overlaps with protected road branches or scenery. All 16 corners passed their layer checks, including scheduled gravel and the added dirt verge. All 3,865 barrier solids matched their render vertices and registered collision contact. |
+| Elevation and terrain | T1–T3 rise remains 14.00 m. Maximum adjacent elevation step 0.22 m. Terrain probes cleared the race surface by 0.111 m, the pit surface by 0.100 m and all runoff surfaces by at least 0.028 m. |
+| Pit and practice | Early limiter rejection, legal late entry, complete transit and exit passed. Time lost before service was 17.98 s. The three practice starts resolved to the expected stations. |
+| Weather | Parked dry, wet and dynamic-damp scenes rendered with a clean console. A separate dynamic-session check held conditions for the full selected period before changing at the whole-lap boundary. |
+| Performance | 141 draw calls at the parked dry pit straight, with 9,672 crowd instances in the full scene. Added 183 flower instances, six visitor flags and three cosmetic expressway vehicles. |
+| Regression | The Sepang placement and runoff audit passed. The game test suite was left untouched. |
+
+Fence and drainage alignments are sourced, with representative heights,
+profiles and materials. The 2023 resurfacing and safety upgrade account
+guides the treatment, while exact present-day trap edges, temporary
+barrier placements and kerb dimensions remain approximate. The cached
+extract identified vehicle bridges and did not identify a pedestrian
+footbridge. Detailed elevated highway structures remain approximate. One fitted
+pylon cable span clears the mapped corridors. The support-paddock model still has no
+verified safe footprint. Landmark silhouettes and traffic are scenic
+approximations. The photo references used here were the FIA and engineering
+source material. No Buddh-specific photo was attached to this request.

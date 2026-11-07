@@ -2,6 +2,7 @@ import {buddhGround, buddhRoads, buddhRoadClear, buddhRunoff} from '/shared/budd
 import {BUDDH_SECTORS} from './data/buddh-runoff.js';
 import {planBuddh} from './buddh-placement.js';
 import {addPermanentVenue} from './permanent-venue.js';
+import {addBuddhDressing, dressBuddhLandmark} from './buddh-dressing.js';
 
 function paintFlag(flagInk) {
   for (const [i, tone] of ['#ed923d', '#f5eee2', '#2f8a4e'].entries()) {
@@ -23,10 +24,17 @@ function paintFlag(flagInk) {
 }
 
 export function addBuddh(scene, track) {
-  addPermanentVenue(scene, track, {
-    prefix: 'buddh', plan: planBuddh(track), ground: buddhGround, roads: buddhRoads,
+  const plan = planBuddh(track);
+  const {batch} = addPermanentVenue(scene, track, {
+    prefix: 'buddh', plan, ground: buddhGround, roads: buddhRoads,
     roadClear: buddhRoadClear, runoff: buddhRunoff, sectors: BUDDH_SECTORS, detection: [677, 4332],
     title: 'GREATER NOIDA', wallTitle: 'APEX INDIA', crowdColors: ['#e89335', '#efe6ca', '#399367', '#2b64a2', '#ca6747', '#263953', '#d2c9a8'],
-    crowdLimit: 10000, paintFlag
+    crowdLimit: 10000, paintFlag, drawLandmark: dressBuddhLandmark
   });
+  const venue = scene.environmentFx, dressing = addBuddhDressing(scene.group, track, plan, batch);
+  scene.environmentFx = {
+    setConditions(wet) { venue.setConditions(wet); dressing.setConditions(wet); },
+    frame(now, cars) { venue.frame(now, cars); dressing.frame(now); },
+    dispose() { venue.dispose(); }
+  };
 }
