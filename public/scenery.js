@@ -105,7 +105,7 @@ export function addVenue(scene,track){
  return profile;
 }
 export async function addMappedScenery(scene,track){
- if(['qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948'].includes(track.id))return false; // Dedicated planner owns the cached OSM footprints.
+ if(['sg-2008','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948','us-2022','nl-1948'].includes(track.id))return false; // Dedicated planner owns the cached OSM footprints.
  const originalGroup=scene.group;
  try{const files=await (await fetch('/data/scenery/index.json')).json();if(!files.includes(track.id)||scene.group!==originalGroup)return false;const r=await fetch(`/data/scenery/${track.id}.json`);if(!r.ok)return false;const data=await r.json();if(scene.group!==originalGroup)return false;
  const waterMat=material('#397f90',{metalness:.45,roughness:.28}),forestMat=material('#526b45'),campusBuildings=new CampusBuildings(scene,track);

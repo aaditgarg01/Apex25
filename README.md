@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.48.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.49.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1849,3 +1849,50 @@ and selected gravel and kerb treatments; venue geometry is fitted to the game
 and many widths, roof profiles and light positions are approximate.
 [See the corner table, sources, and verification results](docs/LUSAIL-ENVIRONMENT-2.48.0.md).
 The game test suite was neither run nor edited.
+
+## 2.49.0 — Marina Bay night-race refresh
+
+The Singapore refresh keeps the mapped bay, Flyer and city landmarks and adds
+the lotus museum, Padang clubhouse, memorials, fitted bridges and eleven
+grandstand areas. The post-2023, 19-turn game route supplies the geometry for
+the new shared wall, kerb and runoff plan. Pit markings, surface repairs and
+street furniture follow the existing road height. The new night switch keeps
+a lit circuit with fewer effects when disabled.
+
+FIA and promoter references establish the layout, documented markings and
+viewing areas. OSM supplies permanent footprints and road branches. Temporary
+walls, stands and light positions use fitted dimensions. See the
+[Singapore audit, corner table and verification](docs/SINGAPORE-REFRESH-2.49.0.md)
+for clearance, collision, pit and parked-browser results.
+
+## 2.49.1 — Singapore runoff paint and Yas Marina sunset
+
+Singapore's corner aprons now use blue, white and gold paint, red-and-white
+kerbs and original ground lettering. The widest first-corner sections fit
+up to about 14 m beyond the white line. Additional complexes carry the same
+palette. The opening sector also gains the fitted Sheares viaduct and more
+frequent wall boards. The referenced photo supplies the styling. Deck height
+and temporary apron dimensions are fitted to the game.
+
+At Yas Marina the visible sky, sun and floodlight gain now fade continuously.
+A single baked reflection probe stays in place through the transition, and
+the moving sunset shadow pass has been removed for this venue. A parked
+browser preview checked the scene through the transition to full night.
+
+## 2.49.2 — Singapore Turn 1 dressing on both sides
+
+The supplied Turn 1 photo guided the gold approach stripe, layered blue,
+white and gold outside apron, and tapered blue inside wedge with a gold
+geometric emblem. The inside wedge has red-and-white kerbs and an unpainted
+escape strip behind it. Both sides now have illuminated race screens and
+blue wall boards. The infield gains a second spectator stand, and a red
+Marina Bay gantry faces the approach beneath the Sheares viaduct sightline.
+
+The paint and temporary fixtures are fitted approximations using the existing
+racing and pit geometry and the cached mapped road branches. The outer apron
+reaches about 13.9 m from the white line and the blue inner wedge reaches
+about 7.6 m across. The two screens, stands and gantry supports clear mapped
+road footprints by at least 1.53 m. The overhead board has 8.20 m clearance.
+Syntax, module imports, lint, both builds, wall geometry, runoff overlaps
+and pit entry/exit checks passed. Parked dry and wet previews rendered both
+sides without browser console warnings or errors.

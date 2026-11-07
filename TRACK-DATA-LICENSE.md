@@ -336,3 +336,14 @@ envelopes and assumed widths are not survey geometry. Road and elevation data
 keep their existing licenses. Original procedural materials, flags, dressing
 and runoff/lighting configuration follow the code license. Official references
 are linked; their maps, photos, logos and event artwork are not redistributed.
+
+## Singapore access and venue refresh (2.49.0)
+
+`shared/singapore-roads.mjs` and `shared/singapore-architecture-data.mjs`
+adapt OpenStreetMap data retrieved 2026-11-07 (© OpenStreetMap contributors,
+ODbL 1.0, https://www.openstreetmap.org/copyright). The original cached
+city and water outlines retain the same attribution. The filtered access
+extract includes public geometry and road types. Width defaults and fitted
+temporary structures are game approximations. Original textures, flags,
+architecture and signage follow the repository code license. The linked
+official maps, photographs and event artwork are reference material.

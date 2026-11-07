@@ -508,3 +508,26 @@ consistent with the retained SRTM90m anchors and their 6.55 m range. No
 new road anchors, camber or banking were added. Positions, heights, surface
 widths and reference dates are qualified in the
 [Lusail release details](docs/LUSAIL-ENVIRONMENT-2.48.0.md).
+
+## Singapore Marina Bay refresh (2.49.0)
+
+The saved 19-turn, post-2023 centreline is the basis for the refresh. The
+FIA 2025 race map specifies 4,927 m and documents the pit lane, marshalling
+and race markings. The game samples to 4,948 m. OSM supplies permanent
+footprints, bridges and public roads. The scene uses the retained SRTM90
+anchors. Temporary wall offsets, runoff widths, grandstand envelopes and
+lighting positions are fitted for the game.
+
+- [FIA Singapore 2025 centreline, pit lane, site photos and emergency exits](https://www.fia.com/system/files/decision-document/2025_singapore_grand_prix_-_event_notes_-_circuit_map_pit_lane_emergency_exits_map_and_quarantine_zone.pdf)
+- [FIA Singapore 2025 Race Director notes v2, resurfacing and safety lines](https://www.fia.com/system/files/decision-document/2025_singapore_grand_prix_-_race_directors_event_notes_v2.pdf)
+- [Formula 1 post-2023 layout change](https://www.formula1.com/en/latest/article/singapore-grand-prix-set-to-feature-revised-track-layout-in-2023.6KsrU6hQw3hxrVJ6zKeJ74)
+- [Singapore GP promoter circuit-park and grandstand map](https://singaporegp.sg/media/2023/circuit-park-map/2023-09-16-circuit-park-map.pdf)
+- [Singapore GP LED installation, 1,618 projectors](https://singaporegp.sg/media/2023/press-release/20230609/Annex_A.pdf)
+- [OpenStreetMap Singapore civic district, bay and access extract](https://api.openstreetmap.org/api/0.6/map?bbox=103.8482,1.2799,103.8673,1.3002)
+- [Hotel towers, SkyPark and lotus museum architectural reference](https://www.marinabaysands.com/guides/exceptional-experiences/marina-bay-sands-architecture.html)
+- [Singapore Flyer dimensions and capsule count](https://www.singaporeflyer.com/en/fun-facts)
+- [Esplanade twin sunshade domes](https://www.esplanade.com/about-us/our-story/architecture)
+- [URA National Gallery colonnades and Padang](https://www.ura.gov.sg/-/media/Corporate/Guidelines/Conservation/Best-Practices/Vol-8-Managing-Change.pdf)
+- [National Heritage Board Singapore River bridges](https://www.nhb.gov.sg/-/media/nhb/files/media/releases/new-releases/15-oct-2019-singapore-river-bridges-gazette.pdf)
+- [National Heritage Board Esplanade Park memorials](https://www.nhb.gov.sg/~/media/nhb/files/places/sites%20monuments/public%20programmes/monument%20open%20house/monument_open_house_brochure_2012_d.pdf?la=en)
+- [OpenTopoData SRTM90m](https://www.opentopodata.org/datasets/srtm/)
