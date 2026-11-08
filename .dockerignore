@@ -3,6 +3,8 @@
 !package.json
 !package-lock.json
 !server.mjs
+!backend/
+!backend/**
 !public/
 !public/**
 !shared/

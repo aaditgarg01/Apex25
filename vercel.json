@@ -6,6 +6,10 @@
   "functions": {
     "api/multiplayer-config.mjs": {
       "maxDuration": 15
+    },
+    "api/race-socket.mjs": {
+      "maxDuration": 300,
+      "includeFiles": "public/data/{circuits.geojson,elevations.json}"
     }
   },
   "headers": [
@@ -43,5 +47,6 @@
   ],
   "regions": [
     "sin1"
-  ]
+  ],
+  "fluid": true
 }

@@ -1,5 +1,28 @@
 # APEX 25 cloud hosting
 
+## Vercel multiplayer
+
+The APEX 25 Vercel project serves the static game and the same-origin
+`/api/race-socket` WebSocket function. The race engine still advances at 60 Hz.
+One function instance runs the authoritative simulation, and Redis relays
+messages when players connect to different instances. Redis keeps a short-lived
+checkpoint so a replacement instance can resume rooms after a worker exits.
+The client reconnects automatically and keeps the same driver seat for up to
+30 seconds. If the simulation worker stops abruptly, the race may briefly
+pause and resume from its last checkpoint.
+
+Connect a dedicated Upstash Redis store with `UPSTASH_REDIS_REST_URL` and
+`UPSTASH_REDIS_REST_TOKEN`, or supply a TLS `REDIS_URL`. Select the same
+primary region as `regions` in `vercel.json`. Preview deployments isolate
+their room data from production. Free Play runs in the browser independently.
+Room codes created on the previous server do not carry over.
+
+The standalone Node server still supports LAN and container deployments.
+To route the Vercel front end to an alternate Node server, explicitly set
+`APEX_MULTIPLAYER_ORIGIN` to its HTTPS origin.
+
+## Previous Railway deployments
+
 This package contains the latest Google Drive game and deployment configurations. It is deployed at https://apex-25-production.up.railway.app.
 
 Railway project: 218fbc1c-71cf-4281-9cc5-7d7eb3fc2676

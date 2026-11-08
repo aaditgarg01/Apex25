@@ -5,6 +5,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY public ./public
 COPY shared ./shared
+COPY backend ./backend
 COPY scripts/build.mjs ./scripts/build.mjs
 COPY server.mjs ./server.mjs
 RUN npm run build
