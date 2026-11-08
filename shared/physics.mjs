@@ -20,7 +20,7 @@ import {miamiSurfaceAt} from './miami.mjs';
 import {zandvoortSurfaceAt} from './zandvoort.mjs';
 import {bankSupport,surfaceAttitude} from './banked-road.mjs';
 import {prepareTyres,wearTyres,tyreGrip,tyreSpeedFactor,tyreDragFactor,availableTyreChoice} from './tyres.mjs';
-import {stepPit,tryPitEntry,pitAhead,preparePitTraffic,pitLayout,isOnPitRoad} from './pits.mjs';
+import {stepPit,tryPitEntry,pitAhead,preparePitTraffic,pitLayout,pitRoadPose,isOnPitRoad} from './pits.mjs';
 import {clearImpact,dampImpact,velocityOf,setVelocity} from './motion.mjs';
 import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
 import {LIVERIES,normalizeLiveryIndex} from './liveries.mjs';
@@ -51,7 +51,31 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.resetTimer>0)c.resetTimer-=dt;
  const prev=c.s,previousPose={x:c.x,z:c.z,heading:c.heading},conditions=conditionProfile(c.conditions,c.trackWetness);
  let throttle=input.throttle?1:0,brake=input.brake?1:0,steer=clamp(Number(input.steer)||0,-1,1);
- if(c.ai){const look=sampleGuide(track,c.s+Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)));if(c.pitRequested&&pitAhead(c,track)<170){const entry=pitLayout(track),p=sample(track,c.s+Math.max(8,c.v*.4),entry.entryOffset);Object.assign(look,p);}const lane=Math.sin(c.index*2+c.s*.003)*.35;look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;const aim=Math.atan2(look.x-c.x,look.z-c.z);steer=clamp(angleDiff(aim,c.heading)*3,-1,1);const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;const desired=Math.min(targetSpeed(track,c.s,c.conditions,c.trackWetness),targetSpeed(track,c.s+brakingLook,c.conditions,c.trackWetness))*(track.width<15?.65+c.index*.01:.78+c.index*.018)*Math.min(1,Math.sqrt(tyreGrip(c)))*tyreSpeedFactor(c);throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;}
+ if(c.ai){
+  const distance=Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)),station=c.s+distance;
+  let look=sampleGuide(track,station),lane=Math.sin(c.index*2+c.s*.003)*.35;
+  if(c.pitRequested){
+   const pit=pitLayout(track),ahead=pitAhead(c,track),past=track.length-ahead;
+   if(ahead<170||past<pit.taper-12){
+    const toGate=ahead<170?ahead:-past;
+    const pitLookAhead=Math.min(distance,Math.max(6,c.v*.42));
+    const lookFromGate=pitLookAhead-toGate;
+    if(lookFromGate>=0)look=pitRoadPose(track,lookFromGate);
+    else{
+     const blend=clamp(1+lookFromGate/85,0,1);
+     const approach=c.s+pitLookAhead,offset=sampleGuide(track,approach).offset;
+     look=sample(track,approach,offset+(pit.entryOffset-offset)*blend);
+    }
+    lane=0;
+   }
+  }
+  look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;
+  const aim=Math.atan2(look.x-c.x,look.z-c.z);
+  steer=clamp(angleDiff(aim,c.heading)*3,-1,1);
+  const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;
+  const desired=Math.min(targetSpeed(track,c.s,c.conditions,c.trackWetness),targetSpeed(track,c.s+brakingLook,c.conditions,c.trackWetness))*(track.width<15?.65+c.index*.01:.78+c.index*.018)*Math.min(1,Math.sqrt(tyreGrip(c)))*tyreSpeedFactor(c);
+  throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;
+ }
  // Booking a stop never brakes on the racing surface. The limiter starts at the gate.
  if(c.ai&&laps===Infinity&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)&&(laps===Infinity||laps*track.length-c.progress>track.length*.45)){c.pitCompound=availableTyreChoice(c);c.pitRequested=true;}
  const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;

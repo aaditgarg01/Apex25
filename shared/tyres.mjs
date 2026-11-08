@@ -13,10 +13,11 @@ export const tyreProfile=id=>TYRES[id]||TYRES.medium;
 export const tyreLifePercent=value=>Math.ceil(clamp(Number.isFinite(value)?value:0,0,100));
 export const validTyreChoice=id=>id==='auto'||Object.hasOwn(TYRES,id);
 export const normalizeTyreChoice=id=>validTyreChoice(id)?id:'auto';
+const STINT_LIFE_SCALE=1.12;
 export function tyreStintLaps(laps,compound='medium',practice=false,track=null){
  const distance=Number.isFinite(laps)&&laps>0?laps:practice?24:8;
  // One/two-lap sprints do not require a stop simply to reach the finish.
- return Math.ceil(Math.max(1.5,distance<3?distance*1.7:distance*tyreProfile(compound).life/tyreCircuitProfile(track).wear));
+ return Math.ceil(Math.max(1.5,distance<3?distance*1.7:distance*tyreProfile(compound).life/tyreCircuitProfile(track).wear))*STINT_LIFE_SCALE;
 }
 export function prepareTyres(car,laps=Infinity,starting=car.startTyre||'auto'){
  car.startTyre=normalizeTyreChoice(starting);car.tyreCompound=car.startTyre==='auto'?defaultTyre(car):car.startTyre;car.tyreLife=100;car.tyreRaceLaps=laps;
@@ -53,16 +54,27 @@ export function tyreSpeedFactor(car){
  const w=surfaceWetness(car),life=Number.isFinite(car.tyreLife)?car.tyreLife:100;
  return circuitCompoundSpeed(car.tyreTrackId,car.tyreCompound)*(1-w*.16)*mixTable(w,speedTable[family(car.tyreCompound)])*(life>=15?1:.90+.10*Math.max(0,life)/15);
 }
-export const tyreWearFactor=car=>mixTable(surfaceWetness(car),wearTable[family(car.tyreCompound)]);
+export const tyreWearFactor=(car,compound=car.tyreCompound)=>mixTable(surfaceWetness(car),wearTable[family(compound)]);
+export function expectedTyreWearPerLap(laps,compound,track,car,practice=false){
+ return 100*tyreWearFactor(car,compound)/tyreStintLaps(laps,compound,practice,track);
+}
+const boostLoad=heat=>.25+.55*heat;
+function normalDrivingLoad(track,wetness){
+ // A lap includes cornering and braking zones, with boost used in bursts on
+ // the exits and straights. Use distance shares, as wear accrues by distance.
+ const {power}=tyreCircuitProfile(track);
+ const scrub=.18-.11*power,boostShare=(.18+.15*power)*(1-.35*wetness);
+ return 1+scrub+boostShare*boostLoad(.42)+.035*wetness;
+}
 export function wearTyres(car,track,dt,distance,boosting=false){
  if(!Number.isFinite(car.tyreLife)||car.finished||car.pitState&&car.pitState!=='none')return;
  car.tyreImpactCooldown=Math.max(0,(car.tyreImpactCooldown||0)-dt);
  const speed=Math.abs(car.v),moving=speed>8;
  car.tyreBoostHeat=clamp((car.tyreBoostHeat||0)+dt*(boosting&&moving?1/6:-1/10),0,1);
  if(distance<=0||!Number.isFinite(distance))return;
- const scrub=Math.min(.35,Math.abs(car.steer||0)*speed/140),boostWear=boosting&&moving?.25+.55*car.tyreBoostHeat:0;
- const mismatch=tyreWearFactor(car);
- const wear=100*distance/(track.length*tyreStintLaps(car.tyreRaceLaps,car.tyreCompound,car.practice,track))*(1+scrub+boostWear+(car.sliding?.2:0)+(car.offtrack?.3:0))*mismatch;
+ const scrub=Math.min(.35,Math.abs(car.steer||0)*speed/140),boostWear=boosting&&moving?boostLoad(car.tyreBoostHeat):0;
+ const load=1+scrub+boostWear+(car.sliding?.2:0)+(car.offtrack?.3:0);
+ const wear=expectedTyreWearPerLap(car.tyreRaceLaps,car.tyreCompound,track,car,car.practice)*distance/track.length*load/normalDrivingLoad(track,surfaceWetness(car));
  car.tyreDistance=(car.tyreDistance||0)+distance;car.tyreLife=clamp(car.tyreLife-wear,0,100);
 }
 export function damageTyres(car,closingSpeed){
@@ -83,10 +95,9 @@ export function availableTyreChoice(car){
  const preferred=defaultTyre(car);if(tyreAvailable(car,preferred))return preferred;
  return Object.keys(TYRES).filter(id=>tyreAvailable(car,id)).sort((a,b)=>tyreGrip({...car,tyreCompound:b,tyreLife:100})-tyreGrip({...car,tyreCompound:a,tyreLife:100}))[0];
 }
-// Display the fresh-set lifespan, rounded up, with the same circuit/weather wear
-// as the simulation. Steering, sustained boost, sliding and impacts can shorten it.
+// Display the fresh-set lifespan for ordinary race driving, rounded up.
 export function estimatedTyreLaps(laps,compound,track,weather='normal',practice=false){
  const car=typeof weather==='object'?weather:{conditions:weather};
- return Math.ceil(tyreStintLaps(laps,compound,practice,track)/(1.12*tyreWearFactor({...car,tyreCompound:compound})));
+ return Math.ceil(100/expectedTyreWearPerLap(laps,compound,track,car,practice)-1e-9);
 }
 export const tyreDragFactor=car=>1/Math.pow(circuitCompoundSpeed(car.tyreTrackId,car.tyreCompound),3);

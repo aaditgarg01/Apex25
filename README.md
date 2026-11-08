@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends currently uses the [Railway multiplayer server](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.56.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.56.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 

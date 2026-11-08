@@ -1,7 +1,8 @@
 import {raceStrategy,liveTyreAdvice} from './strategy.mjs';
-import {TYRES,chooseStartingTyres,tyreAvailable} from './tyres.mjs';
+import {TYRES,chooseStartingTyres,tyreAvailable,availableTyreChoice} from './tyres.mjs';
 import {sampleGuide} from './racing-line.mjs';
 import {clearImpact} from './motion.mjs';
+const CRITICAL_TYRE_LIFE=5;
 export function prepareAiTyres(session,track){
  if(session.phase!=='race'||session.elapsed>=0||!session.cars.some(car=>car.ai))return;
  const plans=Object.keys(TYRES).map(compound=>raceStrategy(track,session.laps,session.weather||session.conditions,compound)).sort((a,b)=>a.seconds-b.seconds),choice=plans[0]?.stints[0]?.compound;
@@ -19,7 +20,13 @@ export function prepareAiRace(session,track,dt){
    const pose=sampleGuide(track,car.s),clear=session.cars.every(other=>other===car||other.finished||other.retired||Math.hypot(other.x-pose.x,other.z-pose.z)>9);
    if(clear){clearImpact(car);Object.assign(car,pose,{s:car.s,progress:car.progress,v:0,motionHeading:pose.heading,motionYawRate:0,resetTimer:.8,invalidLap:true,penalty:(car.penalty||0)+3,aiStuckTime:0,sliding:false});}
   }
-  if(session.phase!=='race'||session.elapsed<0||session.elapsed<(car.aiAdviceAt??0))continue;
+  if(session.phase!=='race'||session.elapsed<0)continue;
+  if(Number.isFinite(car.tyreLife)&&car.tyreLife<=CRITICAL_TYRE_LIFE){
+   car.pitCompound=availableTyreChoice(car);
+   car.pitRequested=true;
+   continue;
+  }
+  if(session.elapsed<(car.aiAdviceAt??0))continue;
   car.aiAdviceAt=session.elapsed+2+(car.index%4)*.2;
   const advice=liveTyreAdvice(track,session,car);
   if(tyreAvailable(car,advice.compound)){car.pitCompound=advice.compound;car.pitRequested=advice.box;}

@@ -153,7 +153,7 @@ function updatePitOptions(){
  if(c.pitState!=='service'&&!tyreAvailable(c,pitChoice))pitChoice=liveTyreAdvice(track,session,c).compound;
  $('pit-compound').value=c.pitState==='service'?c.pitCompound:pitChoice;
  const life=estimatedTyreLaps(c.tyreRaceLaps,$('pit-compound').value,track,c,c.practice);
- $('tyre-strategy').textContent=`${tyreProfile(c.tyreCompound).name} · ${tyreLifePercent(c.tyreLife)}% remaining · ${c.pitStops||0} stops. Next set: about ${Math.ceil(life)} laps with gentle driving. Boost, sliding and impacts shorten this.`;
+ $('tyre-strategy').textContent=`${tyreProfile(c.tyreCompound).name} · ${tyreLifePercent(c.tyreLife)}% remaining · ${c.pitStops||0} stops. Next set: about ${life} laps at race pace with normal braking and boost use. Sustained boost, sliding and impacts can shorten the stint.`;
  const advice=liveTyreAdvice(track,session,c);$('tyre-strategy').textContent+=' Recommended: '+tyreProfile(advice.compound).name+'. '+advice.reason+' Y selects this set. Estimates assume the current surface persists.';
  $('pit-menu-request').textContent=c.pitRequested?'CANCEL PIT STOP · P':c.pitState!=='none'?'PIT STOP IN PROGRESS':'REQUEST PIT STOP · P';
  $('pit-menu-request').disabled=c.pitState!=='none'||elapsed<0;
