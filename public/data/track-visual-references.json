@@ -708,6 +708,34 @@
     {
       "feature": "Buddh cached terrain tile, downsampled for offline use",
       "url": "https://registry.opendata.aws/terrain-tiles/"
+    },
+    {
+      "feature": "Portimão 2021 Portuguese GP layout, sectors and pit",
+      "url": "https://www.fia.com/sites/default/files/doc_1_-_2021_portuguese_grand_prix_-_circuit_map_1.pdf"
+    },
+    {
+      "feature": "Portimão stand names and placement",
+      "url": "https://autodromodoalgarve.com/wp-content/uploads/2020/07/Stands_map_new_ENG.pdf"
+    },
+    {
+      "feature": "Portimão main grandstand canopy",
+      "url": "https://autodromodoalgarve.com/wp-content/uploads/2024/05/plus_03_grandstand.png"
+    },
+    {
+      "feature": "Portimão circular VIP tower",
+      "url": "https://autodromodoalgarve.com/wp-content/uploads/2024/05/torre-vip-675x297_1.jpg"
+    },
+    {
+      "feature": "Portimão Turn 1 gravel",
+      "url": "https://f4spain-e3.alkamelsystems.com/Results/03_2026/10_PORTIMAO/667_F4Spain/F4Spain_Portimao_BOOKLET.pdf"
+    },
+    {
+      "feature": "Portimão mapped roads, crossings, buildings and fences",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-8.662,37.211,-8.600,37.252"
+    },
+    {
+      "feature": "Portimão and Monchique DEM · Skadi N37W009",
+      "url": "https://registry.opendata.aws/terrain-tiles/"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends currently uses the [Railway multiplayer server](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.54.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.55.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2003,3 +2003,23 @@ builds passed. Static checks covered the full road and runway network,
 runoff seams, walls, pit entry and exit, elevation and the three practice
 starts. Parked dry, wet and dynamic-weather views ran without console
 warnings. The game test suite was untouched.
+
+## 2.55.0 — Portimão and the Algarve hills
+
+Portimão now has terrain based on a cached elevation grid. The existing
+31.58 m road profile drives the Turn 1 drop, blind crests and downhill
+final corner. The Algarve surroundings include red-earth banks, stone
+pines, cork oaks and olive groves, with the Monchique ridge beyond them.
+
+All 15 corners use shared runoff and safety geometry for tarmac, gravel,
+grass, painted kerbs, Armco, covered tyres and fencing. The circular VIP
+tower, main grandstand, fitted pit building, pedestrian crossings and
+Portuguese track dressing use cached map and operator references. Free
+Practice adds starts at Turn 1, the climbs and the final corner. The
+clockwise centreline, road elevations and pit layout carry over.
+
+Both builds passed. Local geometry and gameplay probes covered road
+clearance, runoff, walls, pit entry and exit, track limits and recovery.
+Parked dry, wet and dynamic-weather views ran without console warnings.
+The [Portimão audit and per-corner runoff table](docs/PORTIMAO-ENVIRONMENT-2.55.0.md)
+records measured clearances and fitted details.

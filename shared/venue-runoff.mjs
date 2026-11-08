@@ -38,7 +38,7 @@ function roadVertex(track, index, offset, height) {
 export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, paintCorners, boundaries = [], pedestrianBridges = false,
   dirtProfile, roadHeight, baseTarmac = 2.2, baseGrass = 4.8, wallStyle = 'armco',
   wallGap = .7, edgeStart = .025, accessDeckClearance = 0, paintedApron, paintedGrip = {},
-  runoffReach = 46, serviceVergeWidth = 0}) {
+  runoffReach = 46, serviceVergeWidth = 0, groundBlend = [18, 83], runoffSlope = .09, wetSlopeGrip = 0}) {
   const roadCache = new WeakMap(), planCache = new WeakMap(), wallCache = new WeakMap();
   function roads(track) {
     if (roadCache.has(track)) return roadCache.get(track);
@@ -90,7 +90,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
   function runoffVertex(track, index, side, distance, lift = 0, depth = 0) {
     const p = roadVertex(track, index, side * (track.width / 2 + distance), roadHeight), center = track.points[index];
     const delta = demHeight(track, p.x, p.z) - demHeight(track, center.x, center.z);
-    p.y += clamp(delta, -distance * .09, distance * .09) * smooth(distance / 27) + lift - depth;
+    p.y += clamp(delta, -distance * runoffSlope, distance * runoffSlope) * smooth(distance / 27) + lift - depth;
     return p;
   }
 
@@ -241,7 +241,9 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     }
     const [grip, wetGrip, drag, wetDrag] = (kind === 'dirt' && dirtProfile) || paintedGrip[kind] || surfaces[kind];
     const edge = runoff(track).edges[offset < 0 ? -1 : 1][Math.floor(wrap(station, track.length) / track.step)];
-    return {kind, paved: kind === 'tarmac' || Object.hasOwn(paintedGrip, kind), grip: grip - wetGrip * wet, drag: drag + wetDrag * wet,
+    const slopeLoss = wetSlopeGrip && wet && (kind === 'grass' || kind === 'dirt')
+      ? wet * wetSlopeGrip * Math.min(1, Math.abs(sample(track, station).grade) / .10) : 0;
+    return {kind, paved: kind === 'tarmac' || Object.hasOwn(paintedGrip, kind), grip: grip - wetGrip * wet - slopeLoss, drag: drag + wetDrag * wet,
       boundary: half + Math.max(8, edge.width + 1.2), trackLimit: half + 1};
   }
 
@@ -264,7 +266,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
       if (d < distance) {distance = d; nearest = p;}
     }
     const close = Math.sqrt(distance), near = nearest.y - .34;
-    const alpha = smooth((close - track.width / 2 - cell * 1.42 - 18) / 83);
+    const alpha = smooth((close - track.width / 2 - cell * 1.42 - groundBlend[0]) / groundBlend[1]);
     let height = near * (1 - alpha) + demHeight(track, x, z) * alpha;
     if (close < track.width / 2 + runoffReach + cell * 1.42) {
       const limit = Math.SQRT2 * cell + 8;

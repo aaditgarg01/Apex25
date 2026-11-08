@@ -572,3 +572,23 @@ See the [Sepang audit and corner table](docs/SEPANG-ENVIRONMENT-2.51.0.md) for s
 - The [circuit operator](https://www.circuitpaulricard.com/en/the-circuit/technologies-innovations) documents the abrasive blue and red pavement. The two supplied aerials guide the stripe palette, spacing and white inner treatment at Le Beausset.
 - The [OpenStreetMap venue extract](https://api.openstreetmap.org/api/0.6/map?bbox=5.760,43.239,5.828,43.270) supplies public access, alternate layouts, karting, boundaries, runway, taxiways and selected building footprints. The [French aeronautical chart](https://www.sia.aviation-civile.gouv.fr/media/dvd/eAIP_16_APR_2026/FRANCE/AIRAC-2026-04-16/pdf/FR-AD-2.LFMQ-fr-FR.pdf) confirms runway 12/30 and the facilities layout.
 - [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/), tile N43E005, supplies the 90 m scenery grid. See the [audit](docs/PAULRICARD-ENVIRONMENT-2.54.0.md) for layout, source comparisons and fitted values.
+
+## Portimão environment (2.55.0)
+
+- The [2021 FIA circuit map](https://www.fia.com/sites/default/files/doc_1_-_2021_portuguese_grand_prix_-_circuit_map_1.pdf)
+  and [event notes](https://www.fia.com/sites/default/files/doc_7_-_2021_portuguese_grand_prix_-_race_directors_event_notes_version_2.pdf)
+  inform corner numbering, sectors, detection lines and pit-side checks. The
+  [FIA WEC lap guide](https://www.fiawec.com/en/news/two-weeks-until-portimao-the-track-explained/7613)
+  describes the climbs, crests and descents.
+- [OpenStreetMap venue extract](https://api.openstreetmap.org/api/0.6/map?bbox=-8.662,37.211,-8.600,37.252)
+  supplies cached roads, pedestrian crossings, building outlines and boundaries.
+- The operator's [stand map](https://autodromodoalgarve.com/wp-content/uploads/2020/07/Stands_map_new_ENG.pdf),
+  [main grandstand photo](https://autodromodoalgarve.com/wp-content/uploads/2024/05/plus_03_grandstand.png)
+  and [VIP tower photo](https://autodromodoalgarve.com/wp-content/uploads/2024/05/torre-vip-675x297_1.jpg)
+  inform fitted placements and original models.
+- [F4 race control](https://f4spain-e3.alkamelsystems.com/Results/03_2026/10_PORTIMAO/667_F4Spain/F4Spain_Portimao_BOOKLET.pdf)
+  documents gravel at Turn 1. The remaining corner surface widths, depth and
+  barrier setbacks are fitted for gameplay.
+- [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/), Skadi
+  tile N37W009, supplies a 100 m scenery grid and an independent cross-check
+  of the saved road heights.

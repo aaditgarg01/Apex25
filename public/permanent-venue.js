@@ -8,7 +8,7 @@ export function addPermanentVenue(scene, track, {
   prefix, plan, ground, roads, roadClear, runoff, sectors, detection, title, crowdColors, crowdLimit,
   paintFlag, drawRoof, drawLandmark, wallTitle = title, tropical = false
 }) {
-  const root = scene.group;
+  const root = scene.group, algarve = prefix === 'portimao';
   const crowd = [], trees = [], palms = [], grass = [], flags = [], tents = [], vehicles = [], panels = [], flareAnchors = [];
   const dummy = new THREE.Object3D(), color = new THREE.Color();
   function group(site) {
@@ -229,7 +229,7 @@ export function addPermanentVenue(scene, track, {
         const boom = box(.29, .24, 5.3, '#d0994a', 2.3, 7.8, .6);
         boom.rotation.x = -.2;
         box(.55, .51, .55, '#464e50', 2.3, 8.15, -1.85);
-        if (tropical) {
+        if (tropical || algarve) {
           for (let i = 0; i < 3; i++) box(1.1, .22, 1.13, '#323b39', -2.9, .18 + i * .24, 2.4);
           box(.43, .06, 4, '#939383', -3.3, -.015, -2.3);
           box(.53, .19, .63, '#6a7a73', -3.3, .06, -.5);
@@ -289,9 +289,10 @@ export function addPermanentVenue(scene, track, {
     });
   }
   batch(new THREE.CylinderGeometry(.15, .26, 6, 6), standard('#75624d'), trees, (p, o) => {
-    const eucalyptus = prefix === 'buddh' && p.variant === 2;
-    o.scale.y = eucalyptus ? 1.34 : 1;
-    o.position.y += eucalyptus ? 3.77 : 2.75;
+    const eucalyptus = (prefix === 'buddh' || algarve) && p.variant === 2;
+    const olive = algarve && p.variant === 3;
+    o.scale.y = eucalyptus ? 1.34 : olive ? .78 : 1;
+    o.position.y += eucalyptus ? 3.77 : olive ? 2.12 : 2.75;
   });
   batch(new THREE.IcosahedronGeometry(1, 2), standard('#ffffff'), trees.flatMap(p => [-1, 0, 1].map(index => ({
     ...p, index, tint: ['#5e7544', '#718450', '#7e8250', '#646e41'][p.variant % 4]
@@ -303,6 +304,11 @@ export function addPermanentVenue(scene, track, {
       const [w, h, d] = [[2.66, 1.03, 2.27], [2.12, 1.64, 2.18], [1.14, 3.25, 1.31], [2.40, 2.15, 2.43]][p.variant % 4];
       o.scale.set(w, h, d);
       if (p.variant === 2) o.position.y += 1.25 + p.index * .34;
+    } else if (algarve) {
+      // Stone pine, cork oak, taller eucalyptus and silvery olive.
+      const [w, h, d] = [[2.6,.95,2.35],[2.3,1.8,2.15],[1.12,2.85,1.29],[2.12,1.14,1.83]][p.variant];
+      o.scale.set(w, h, d);
+      o.position.y += p.variant === 3 ? -1.62 : p.variant === 0 ? .68 : 0;
     } else if (prefix === 'ricard') {
       const shape = [[2.95,.90,2.40],[2.63,1.53,2.15],[1.03,2.79,1.12],[2.29,1.37,2.19]][p.variant];
       o.scale.set(...shape);

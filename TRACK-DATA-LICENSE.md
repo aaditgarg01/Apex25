@@ -395,3 +395,15 @@ Tiles N43E005 via the [AWS Registry](https://registry.opendata.aws/terrain-tiles
 See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
 Stripe colours, kerbs, wall dimensions and scenery models are original
 game assets. The official maps and supplied photos are reference material.
+
+## Portimão cached venue data (2.55.0)
+
+Roads, crossings, boundaries and building footprints in
+`shared/portimao-map-data.mjs` derive from OpenStreetMap data retrieved
+2026-11-08. © OpenStreetMap contributors,
+[ODbL 1.0](https://www.openstreetmap.org/copyright). The scenery grid uses
+Mapzen Terrain Tiles N37W009 from the
+[AWS registry](https://registry.opendata.aws/terrain-tiles/).
+See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
+Circuit maps and operator photographs informed the original models and
+fitted runoff treatment.
