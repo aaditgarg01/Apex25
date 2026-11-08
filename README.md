@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends currently uses the [Railway multiplayer server](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.53.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.54.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -1980,3 +1980,26 @@ distinguish mapped references from fitted measurements. Targeted checks
 covered clearances, pit entry and exit, shared wall contacts, road heights,
 parked dry/wet/dynamic renders and both builds. The game test suite was
 outside the requested verification scope.
+
+
+## 2.54.0 — Paul Ricard and the Provençal plateau
+
+Paul Ricard now has blue and red abrasive aprons with dark separators,
+white inner stripes at Le Beausset, red-and-white kerbs, dry grass and
+pale service verges. The blue and red zones use the same polygons for
+rendering and grip. Red produces stronger drag, and both receive the
+paved-runoff penalty. Wet conditions darken the paint and add gloss.
+
+The clockwise French GP centreline, North Chicane, elevation profile and
+right-side pit corridor carry over. The updated venue includes the pit
+building and tower, mapped runway, terminal, hangars, 13 stands, two
+clearance-fitted pedestrian crossings and Provence scenery. Free Practice
+adds starts at Turn 1, the Mistral Straight and the final corners.
+
+The [Paul Ricard audit and 15-corner runoff table](docs/PAULRICARD-ENVIRONMENT-2.54.0.md)
+records the FIA, circuit, airport, OpenStreetMap, terrain and photo
+references. Stripe widths and wall setbacks are fitted estimates. Both
+builds passed. Static checks covered the full road and runway network,
+runoff seams, walls, pit entry and exit, elevation and the three practice
+starts. Parked dry, wet and dynamic-weather views ran without console
+warnings. The game test suite was untouched.

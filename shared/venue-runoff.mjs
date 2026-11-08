@@ -37,7 +37,8 @@ function roadVertex(track, index, offset, height) {
 // Shared footprint, runoff, terrain and barrier solver for permanent venues.
 export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, paintCorners, boundaries = [], pedestrianBridges = false,
   dirtProfile, roadHeight, baseTarmac = 2.2, baseGrass = 4.8, wallStyle = 'armco',
-  wallGap = .7, edgeStart = .025, accessDeckClearance = 0}) {
+  wallGap = .7, edgeStart = .025, accessDeckClearance = 0, paintedApron, paintedGrip = {},
+  runoffReach = 46, serviceVergeWidth = 0}) {
   const roadCache = new WeakMap(), planCache = new WeakMap(), wallCache = new WeakMap();
   function roads(track) {
     if (roadCache.has(track)) return roadCache.get(track);
@@ -109,7 +110,9 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
           .sort((a, b) => Math.abs(a.station - s) - Math.abs(b.station - s));
         const corner = active.find(c => c.side === side), apex = active[0];
         const strength = corner ? smooth((corner.span - Math.abs(corner.station - s)) / 43) : 0;
-        const tarmac = baseTarmac + ((corner?.tarmac ?? baseTarmac) - baseTarmac) * strength;
+        const pave = paintedApron?.(track, s, side, corner, apex, strength);
+        const tarmac = pave?.reduce((sum, zone) => sum + zone.width, 0) ??
+          baseTarmac + ((corner?.tarmac ?? baseTarmac) - baseTarmac) * strength;
         const gravel = (corner?.gravel || 0) * strength;
         const grass = baseGrass + ((corner?.grass ?? baseGrass) - baseGrass) * strength;
         const total = tarmac + gravel + grass;
@@ -128,7 +131,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
           if (clear(probe)) low = probe;
           else high = probe;
         }
-        return {width: low, total, tarmac, gravel, grass, depth: (corner?.gravelDepth || 0) * strength,
+        return {width: low, total, tarmac, gravel, grass, pave, depth: (corner?.gravelDepth || 0) * strength,
           turn: apex?.turn || 0, kerb: apex && Math.abs(apex.station - s) < (apex.kerbSpan ?? Math.min(50, apex.span * .64)) ? apex.kerb : null,
           barrier: strength > .52 ? corner.barrier : wallStyle};
       });
@@ -141,6 +144,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
       for (const row of rows) {
         const fraction = row.width / row.total;
         row.tarmac *= fraction;
+        if (row.pave) row.pave = row.pave.map(zone => ({...zone, width: zone.width * fraction}));
         row.gravel *= fraction;
         row.grass *= fraction;
         row.depth *= fraction;
@@ -149,20 +153,31 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
       for (let i = 0; i < n; i++) {
         const a = rows[i], b = rows[(i + 1) % n];
         function push(kind, aa, ab, ba, bb, lift, extra = {}, depths = [0, 0]) {
-          if (Math.max(ba - aa, bb - ab) < .055) return;
+          if (Math.max(ba - aa, bb - ab) < (a.pave ? .0001 : .055)) return;
           const polygon = quad(track, i, side, aa, ab, ba, bb, lift, ...depths);
           if (!roadClear(track, polygon)) return;
           const row = {i, side, turn: a.turn, kind, ...extra};
           bands.push(indexShape(grid, polygon, row));
         }
-        push('tarmac', edgeStart, edgeStart, a.tarmac, b.tarmac, .025);
-        const stripeA = Math.min(a.tarmac, a.turn ? .7 : .32), stripeB = Math.min(b.tarmac, b.turn ? .7 : .32);
-        push('paint', .08, .08, stripeA, stripeB, .047, {tone: 'edge'});
-        const label = paintCorners.includes(a.turn) && a.turn === b.turn && Math.min(a.tarmac, b.tarmac) > 5;
-        if (label) {
-          const outerA = a.tarmac * .94, outerB = b.tarmac * .94;
-          push('paint', 1.16, 1.16, outerA, outerB, .049, {tone: 'apron', label: true});
-          push('paint', outerA, outerB, a.tarmac, b.tarmac, .050, {tone: 'ochre'});
+        if (a.pave) {
+          let innerA = edgeStart, innerB = edgeStart;
+          for (const [index, zone] of a.pave.entries()) {
+            const outerA = innerA + zone.width, outerB = innerB + b.pave[index].width;
+            push(zone.kind, innerA, innerB, outerA, outerB, .028,
+              {offsets: [innerA, innerB, outerB, outerA]});
+            innerA = outerA;
+            innerB = outerB;
+          }
+        } else {
+          push('tarmac', edgeStart, edgeStart, a.tarmac, b.tarmac, .025);
+          const stripeA = Math.min(a.tarmac, a.turn ? .7 : .32), stripeB = Math.min(b.tarmac, b.turn ? .7 : .32);
+          push('paint', .08, .08, stripeA, stripeB, .047, {tone: 'edge'});
+          const label = paintCorners.includes(a.turn) && a.turn === b.turn && Math.min(a.tarmac, b.tarmac) > 5;
+          if (label) {
+            const outerA = a.tarmac * .94, outerB = b.tarmac * .94;
+            push('paint', 1.16, 1.16, outerA, outerB, .049, {tone: 'apron', label: true});
+            push('paint', outerA, outerB, a.tarmac, b.tarmac, .050, {tone: 'ochre'});
+          }
         }
         if (a.kerb && b.kerb) push('kerb', .09, .09, Math.min(a.tarmac, 1.09), Math.min(b.tarmac, 1.09),
           a.kerb === 'serrated' ? .065 + .025 * (i % 2) : .056, {kerb: a.kerb});
@@ -184,6 +199,10 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
           if (roadClear(track, polygon)) bands.push(indexShape(grid, polygon, {i, side, turn: a.turn, kind: 'gravel'}));
         }
         push('grass', ga, gb, a.width, b.width, -.025);
+        if (serviceVergeWidth && Math.min(a.width, b.width) > .7) {
+          const innerA = a.width + wallGap + .38, innerB = b.width + wallGap + .38;
+          push('verge', innerA, innerB, innerA + serviceVergeWidth, innerB + serviceVergeWidth, -.055);
+        }
         if (dirtProfile) {
           const dirtEdge = row => row.width - Math.min(row.grass * .28, .85);
           push('dirt', dirtEdge(a), dirtEdge(b), a.width, b.width, -.012);
@@ -204,22 +223,25 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     gravel: [.42, .14, 1.08, .28], grass: [.62, .36, .46, .39], dirt: [.51, .26, .68, .42]
   };
 
-  function surfaceAt(track, station, offset, wet = 0) {
+  function surfaceAt(track, station, offset, wet = 0, position) {
     const half = track.width / 2;
     let kind = 'asphalt';
     if (Math.abs(offset) > half) {
-      const p = sample(track, station, offset);
+      const p = position ?? sample(track, station, offset);
       const local = nearShapes(runoff(track).grid, [p]).filter(row => footprintContains(row.polygon, p));
       if (local.some(row => row.kind === 'paint' || row.kind === 'kerb')) kind = 'paint';
-      else if (local.some(row => row.kind === 'gravel')) kind = 'gravel';
-      else if (local.some(row => row.kind === 'tarmac')) kind = 'tarmac';
-      else if (local.some(row => row.kind === 'dirt')) kind = 'dirt';
-      else if (local.some(row => row.kind === 'grass')) kind = 'grass';
-      else kind = roadClear(track, footprintBox({...p, w: .06, d: .06}), road => road.kind !== 'race') ? 'dirt' : 'tarmac';
+      else if (paintedApron) kind = local.find(row => Object.hasOwn(paintedGrip, row.kind))?.kind ?? kind;
+      if (kind === 'asphalt') {
+        if (local.some(row => row.kind === 'gravel')) kind = 'gravel';
+        else if (local.some(row => row.kind === 'tarmac')) kind = 'tarmac';
+        else if (local.some(row => row.kind === 'dirt')) kind = 'dirt';
+        else if (local.some(row => row.kind === 'grass')) kind = 'grass';
+        else kind = roadClear(track, footprintBox({...p, w: .06, d: .06}), road => road.kind !== 'race') ? 'dirt' : 'tarmac';
+      }
     }
-    const [grip, wetGrip, drag, wetDrag] = (kind === 'dirt' && dirtProfile) || surfaces[kind];
+    const [grip, wetGrip, drag, wetDrag] = (kind === 'dirt' && dirtProfile) || paintedGrip[kind] || surfaces[kind];
     const edge = runoff(track).edges[offset < 0 ? -1 : 1][Math.floor(wrap(station, track.length) / track.step)];
-    return {kind, grip: grip - wetGrip * wet, drag: drag + wetDrag * wet,
+    return {kind, paved: kind === 'tarmac' || Object.hasOwn(paintedGrip, kind), grip: grip - wetGrip * wet, drag: drag + wetDrag * wet,
       boundary: half + Math.max(8, edge.width + 1.2), trackLimit: half + 1};
   }
 
@@ -244,7 +266,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     const close = Math.sqrt(distance), near = nearest.y - .34;
     const alpha = smooth((close - track.width / 2 - cell * 1.42 - 18) / 83);
     let height = near * (1 - alpha) + demHeight(track, x, z) * alpha;
-    if (close < track.width / 2 + 46 + cell * 1.42) {
+    if (close < track.width / 2 + runoffReach + cell * 1.42) {
       const limit = Math.SQRT2 * cell + 8;
       const box = [{x: x - limit, z: z - limit}, {x: x + limit, z: z + limit}];
       for (const row of nearShapes(roads(track).grid, box)) {

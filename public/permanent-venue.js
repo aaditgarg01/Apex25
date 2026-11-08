@@ -85,7 +85,7 @@ export function addPermanentVenue(scene, track, {
   }
 
   const fieldPositions = [], fieldColors = [];
-  const fieldPalette = ['#9a8a4c', '#928351', '#b4a35b', '#887644'];
+  const fieldPalette = prefix === 'ricard' ? ['#87895a','#797d55','#8f829a','#887c58'] : ['#9a8a4c', '#928351', '#b4a35b', '#887644'];
   for (const site of plan.sites) {
     if (site.kind === 'tree') {trees.push(site); continue;}
     if (site.kind === 'palm') {palms.push(site); continue;}
@@ -128,7 +128,7 @@ export function addPermanentVenue(scene, track, {
       label(g, 'PODIUM', 14, 1.25, front * (w / 2 + .21), 6.3, d * .31, front * Math.PI / 2);
     } else if (site.kind === 'stand') {
       const d = site.d - 2, tierWidth = (site.w - 3) / site.rows;
-      const mainStand = site.id === 'main-stand';
+      const mainStand = site.id === 'main-stand' && prefix !== 'ricard';
       const spacing = mainStand ? 1.9 : tropical ? 2.02 : 1.28;
       const cols = Math.floor(d / spacing);
       for (let row = 0; row < site.rows; row++) {
@@ -303,6 +303,10 @@ export function addPermanentVenue(scene, track, {
       const [w, h, d] = [[2.66, 1.03, 2.27], [2.12, 1.64, 2.18], [1.14, 3.25, 1.31], [2.40, 2.15, 2.43]][p.variant % 4];
       o.scale.set(w, h, d);
       if (p.variant === 2) o.position.y += 1.25 + p.index * .34;
+    } else if (prefix === 'ricard') {
+      const shape = [[2.95,.90,2.40],[2.63,1.53,2.15],[1.03,2.79,1.12],[2.29,1.37,2.19]][p.variant];
+      o.scale.set(...shape);
+      o.position.y += p.variant === 0 ? .84 : -.22;
     } else o.scale.set(p.variant === 2 ? 1.38 : 2.25, p.variant === 2 ? 3.3 : 1.49, 2.06);
   });
   batch(new THREE.ConeGeometry(.72, .74, 5), standard('#ffffff'), grass.map(p => ({
@@ -368,24 +372,33 @@ export function addPermanentVenue(scene, track, {
   }
   const fieldMat = new THREE.MeshStandardMaterial({vertexColors: true, side: THREE.DoubleSide, roughness: .95});
   landMesh(fieldPositions, fieldMat, fieldColors);
-  const access = {paved: [], dirt: []};
+  const access = {paved: [], dirt: [], runway: [], runwayMarks: []};
+  let runwaySection = 0;
   const elevatedWays = new Set(plan.bridges?.map(({way}) => way));
   for (const road of roads(track).entries) {
     if (road.kind !== 'access' || elevatedWays.has(road.way) || !roadClear(track, road.polygon, other => other.kind !== 'access')) continue;
-    const positions = access[road.type === 'track' ? 'dirt' : 'paved'];
+    const positions = access[road.type === 'runway' ? 'runway' : road.type === 'track' ? 'dirt' : 'paved'];
     for (const i of [0, 1, 3, 3, 1, 2]) {
       const p = road.polygon[i];
       positions.push(p.x, ground(track, p.x, p.z) + (road.bridge ? .23 : .12), p.z);
     }
+    if (road.type === 'runway' && runwaySection++ % 3 === 1) {
+      const runway = road.polygon;
+      for (const [end, lateral] of [[0,.486],[1,.486],[0,.514],[0,.514],[1,.486],[1,.514]]) {
+        const a=runway[end], b=runway[3-end], x=a.x+(b.x-a.x)*lateral, z=a.z+(b.z-a.z)*lateral;
+        access.runwayMarks.push(x,ground(track,x,z)+.15,z);
+      }
+    }
   }
   for (const [kind, positions] of Object.entries(access)) {
-    landMesh(positions, new THREE.MeshStandardMaterial({color: kind === 'paved' ? '#7d776e' : '#9c896b',
-      side: THREE.DoubleSide, roughness: .9}));
+    if (!positions.length) continue;
+    const tone = {paved:'#7d776e',dirt:prefix==='ricard'?'#a99a81':'#9c896b',runway:'#494e52',runwayMarks:'#e3e3d7'}[kind];
+    landMesh(positions, new THREE.MeshStandardMaterial({color:tone, side:THREE.DoubleSide, roughness:.9}));
   }
 
   const wallBoards = trackBarriers(track).walls.filter(w => w.kind === 'track' && w.inward);
   for (const [index, wall] of wallBoards.entries()) {
-    if (index % 14 !== 0 || wall.length < 1.4) continue;
+    if (index % (prefix === 'ricard' ? 20 : 14) !== 0 || wall.length < 1.4) continue;
     const nearPit = wall.style === 'concrete';
     const {inward} = wall, offset = wall.width / 2 + .016;
     label(root, nearPit ? wallTitle : 'TRACKSIDE', Math.min(2.85, wall.length - .12), .47,

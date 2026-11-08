@@ -383,3 +383,15 @@ N40W004, retrieved through the [AWS Registry](https://registry.opendata.aws/terr
 See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
 The original game artwork, fitted widths and safety layouts follow the
 repository code license. The official maps and photographs are reference links.
+
+
+## Paul Ricard cached venue data (2.54.0)
+
+The road, runway, taxiway, boundary and building outlines in
+`shared/paulricard-map-data.mjs` derive from OpenStreetMap data retrieved
+2026-11-08. © OpenStreetMap contributors, [ODbL 1.0](https://www.openstreetmap.org/copyright).
+The module also includes the local scenery grid sampled from Mapzen Terrain
+Tiles N43E005 via the [AWS Registry](https://registry.opendata.aws/terrain-tiles/).
+See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
+Stripe colours, kerbs, wall dimensions and scenery models are original
+game assets. The official maps and supplied photos are reference material.

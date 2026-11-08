@@ -20,7 +20,7 @@ export function addPitLane(scene,track){
  function label(text,distance){
   const canvas=document.createElement('canvas');canvas.width=512;canvas.height=256;const ink=canvas.getContext('2d');ink.fillStyle='#122c36';ink.fillRect(0,0,512,256);ink.fillStyle='#eafcff';ink.textAlign='center';ink.font='900 62px Arial';ink.fillText(text,256,110);ink.font='bold 39px Arial';ink.fillText(Math.round(pitTransitPlan(track).speed*3.6)+' KM/H',256,190);
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-  const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.2,1.6),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4})),p=pitRoadPose(track,distance);sign.position.set(p.x,p.y+.09,p.z);sign.rotation.set(-Math.PI/2,p.heading+(['es-2026','my-1999','in-2011','qa-2004','sg-2008'].includes(track.id)?Math.PI:0),0,'YXZ');group.add(sign);
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.2,1.6),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4})),p=pitRoadPose(track,distance);sign.position.set(p.x,p.y+.09,p.z);sign.rotation.set(-Math.PI/2,p.heading+(['fr-1969','es-2026','my-1999','in-2011','qa-2004','sg-2008'].includes(track.id)?Math.PI:0),0,'YXZ');group.add(sign);
  }
  label(plan.side>0?'PIT LEFT':'PIT RIGHT',8);label('BOX',plan.box-10);label('PIT OUT',plan.length-12);
  // Low-cost crew animation is visible only while a car is being serviced;

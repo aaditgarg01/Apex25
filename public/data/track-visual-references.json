@@ -10,6 +10,26 @@
       "url": "https://www.circuitpaulricard.com/fr/circuit/technologies-et-innovations"
     },
     {
+      "feature": "Paul Ricard official 2022 French GP turn numbering and Mistral chicane",
+      "url": "https://www.fia.com/sites/default/files/spg2022_0208_f1_mediakit_2022_eng_a4_220708_view.pdf"
+    },
+    {
+      "feature": "Paul Ricard French GP pit, grandstand and access zone locations",
+      "url": "https://www.fia.com/sites/default/files/gpf1_media_kit_2022_en_light.pdf"
+    },
+    {
+      "feature": "Paul Ricard mapped road branches, runway, buildings and fences",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.760,43.239,5.828,43.270"
+    },
+    {
+      "feature": "Le Castellet aerodrome runway 12/30 and airport layout",
+      "url": "https://www.sia.aviation-civile.gouv.fr/media/dvd/eAIP_16_APR_2026/FRANCE/AIRAC-2026-04-16/pdf/FR-AD-2.LFMQ-fr-FR.pdf"
+    },
+    {
+      "feature": "Paul Ricard cached terrain source, tile N43E005",
+      "url": "https://registry.opendata.aws/terrain-tiles/"
+    },
+    {
       "feature": "Circuit surface, kerbs and safety fencing context",
       "url": "https://www.silverstone.co.uk/maintaining-race-track"
     },
