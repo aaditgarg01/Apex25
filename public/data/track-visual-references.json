@@ -736,6 +736,38 @@
     {
       "feature": "Portimão and Monchique DEM · Skadi N37W009",
       "url": "https://registry.opendata.aws/terrain-tiles/"
+    },
+    {
+      "feature": "Istanbul Park 2021 GP circuit layout",
+      "url": "https://www.fia.com/sites/default/files/doc_1_-_2021_turkish_grand_prix_-_circuit_map.pdf"
+    },
+    {
+      "feature": "Istanbul Park double exit kerbs at Turns 1, 5 and 14",
+      "url": "https://www.fia.com/sites/default/files/decision-document/2021%20Turkish%20Grand%20Prix%20-%20Race%20Directors%27%20Event%20Notes%20Version%202.pdf"
+    },
+    {
+      "feature": "Istanbul Park technical dimensions and Turn 8",
+      "url": "https://tosfedistanbulpark.com/en/the-circuit/"
+    },
+    {
+      "feature": "Istanbul Park main stand canopy and pit pavilions",
+      "url": "https://www.tesem.com.tr/project/istanbul-park-main-grandstand-roof/"
+    },
+    {
+      "feature": "Istanbul Park circuit aerial and Turn 1 bridge",
+      "url": "https://www.formula1.com/en/latest/article/trending-topics-the-title-turn-8-tsunoda-and-more-talking-points-ahead-of.5uhcl9R0V9L4HfF8AZ3nOk"
+    },
+    {
+      "feature": "Istanbul Park grandstand and crossing reference photos",
+      "url": "https://above.guide/turkiye-f1/circuit"
+    },
+    {
+      "feature": "Istanbul Park OSM access ways, boundaries and landmarks",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=29.382,40.933,29.439,40.977"
+    },
+    {
+      "feature": "Tuzla hills and Marmara terrain · Skadi N40E029",
+      "url": "https://registry.opendata.aws/terrain-tiles/"
     }
   ],
   "assets": "Original procedural textures and geometry; existing OpenStreetMap footprint credits retained.",

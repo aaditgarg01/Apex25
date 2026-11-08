@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends currently uses the [Railway multiplayer server](https://apex-25-production.up.railway.app/).
 
-Current source version: **2.55.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.56.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2023,3 +2023,21 @@ clearance, runoff, walls, pit entry and exit, track limits and recovery.
 Parked dry, wet and dynamic-weather views ran without console warnings.
 The [Portimão audit and per-corner runoff table](docs/PORTIMAO-ENVIRONMENT-2.55.0.md)
 records measured clearances and fitted details.
+
+## 2.56.0 — Istanbul Park and the Tuzla hills
+
+The Istanbul Park environment adds cached hill terrain, the covered main
+grandstand, the arched pit building with twin end towers, and the crossings
+at Turns 1 and 8. The retained 42.55 m road elevation profile drives the
+first-corner descent and the four-apex Turn 8. Free Practice adds starts at
+the Turn 1 drop, the Turn 8 approach and the final complex.
+
+All 14 corners use shared runoff and collision geometry. Turn 8 gets a
+wide apron and painted shoulder. Turns 1, 5 and 14 get the double exit
+kerbs documented by the FIA. The dry, damp and wet looks add drifting
+clouds, fog, puddles and rain gear in the stands. The centreline, elevation
+anchors, pit lane and multiplayer message format carry over.
+
+Both builds passed. The [Istanbul Park audit and runoff table](docs/ISTANBUL-ENVIRONMENT-2.56.0.md)
+records the source material, fitted dimensions, road and bridge clearances,
+pit and recovery checks, and the parked WebGL results.

@@ -8,9 +8,9 @@ export function addPermanentVenue(scene, track, {
   prefix, plan, ground, roads, roadClear, runoff, sectors, detection, title, crowdColors, crowdLimit,
   paintFlag, drawRoof, drawLandmark, wallTitle = title, tropical = false
 }) {
-  const root = scene.group, algarve = prefix === 'portimao';
+  const root = scene.group, algarve = prefix === 'portimao', tuzla = prefix === 'istanbul';
   const crowd = [], trees = [], palms = [], grass = [], flags = [], tents = [], vehicles = [], panels = [], flareAnchors = [];
-  const dummy = new THREE.Object3D(), color = new THREE.Color();
+  const dummy = new THREE.Object3D(), color = new THREE.Color(), instanceCell = tuzla ? 720 : 560;
   function group(site) {
     const g = new THREE.Group();
     g.position.set(site.x, site.y, site.z);
@@ -28,7 +28,7 @@ export function addPermanentVenue(scene, track, {
   function batch(geometry, mat, records, transform) {
     const cells = new Map(), batches = [];
     for (const record of records) {
-      const key = Math.floor(record.x / 560) + ':' + Math.floor(record.z / 560);
+      const key = Math.floor(record.x / instanceCell) + ':' + Math.floor(record.z / instanceCell);
       if (!cells.has(key)) cells.set(key, []);
       cells.get(key).push(record);
     }
@@ -86,6 +86,14 @@ export function addPermanentVenue(scene, track, {
 
   const fieldPositions = [], fieldColors = [];
   const fieldPalette = prefix === 'ricard' ? ['#87895a','#797d55','#8f829a','#887c58'] : ['#9a8a4c', '#928351', '#b4a35b', '#887644'];
+  const seatSpacing = site => site.id==='main-stand' && prefix!=='ricard' ? 1.9 : tropical ? 2.02 : 1.28;
+  const hasSeat = (row,col) => col%20!==0 && (row*13+col*5)%7!==0;
+  let availableSeats=0, offeredSeats=0;
+  if(tuzla)for(const site of plan.sites){
+    if(site.kind!=='stand')continue;
+    const cols=Math.floor((site.d-2)/seatSpacing(site));
+    for(let row=0;row<site.rows;row++)for(let col=0;col<cols;col++)if(hasSeat(row,col))availableSeats++;
+  }
   for (const site of plan.sites) {
     if (site.kind === 'tree') {trees.push(site); continue;}
     if (site.kind === 'palm') {palms.push(site); continue;}
@@ -129,14 +137,18 @@ export function addPermanentVenue(scene, track, {
     } else if (site.kind === 'stand') {
       const d = site.d - 2, tierWidth = (site.w - 3) / site.rows;
       const mainStand = site.id === 'main-stand' && prefix !== 'ricard';
-      const spacing = mainStand ? 1.9 : tropical ? 2.02 : 1.28;
+      const spacing = seatSpacing(site);
       const cols = Math.floor(d / spacing);
       for (let row = 0; row < site.rows; row++) {
         const x = front * ((site.w - 3) / 2 - (row + .5) * tierWidth), y = 1.3 + row * .50 + (mainStand && row >= 12 ? 2.6 : 0);
         box(tierWidth + .08, .4, d, row % 5 === 0 ? '#b59d74' : '#a69a83', x, y, 0);
         box(tierWidth * .74, .15, d * .98, ['#c78055','#d5d0b3','#557957'][row % 3], x, y + .25, 0);
         for (let col = 0; col < cols && crowd.length < crowdLimit; col++) {
-          if (col % 20 === 0 || (row * 13 + col * 5) % 7 === 0) continue;
+          if(!hasSeat(row,col))continue;
+          if(tuzla&&availableSeats>crowdLimit){
+            offeredSeats++;
+            if(Math.floor(offeredSeats*crowdLimit/availableSeats)===Math.floor((offeredSeats-1)*crowdLimit/availableSeats))continue;
+          }
           const z = (col + .5) * spacing - d / 2;
           crowd.push(local(site, x, y + .34, z, crowdColors[(row * 13 + col * 7 + Math.floor(col / 8)) % crowdColors.length]));
         }
@@ -146,30 +158,33 @@ export function addPermanentVenue(scene, track, {
         const edge = front * ((site.w - 3) / 2 - 12 * tierWidth);
         box(.34, 2.26, d * .992, '#5b716e', edge, 8.18, 0);
         for (let z = -d / 2 + 5; z < d / 2; z += 8) box(.48, 2.37, .18, '#bfb7a5', edge, 8.18, z);
-        const positions = [], indices = [];
-        const span = 64, roofHeight = site.rows * .50 + 6.65;
-        for (let i = 0; i <= span; i++) {
-          const z = (i / span - .5) * d;
-          const wave = Math.cos(i / span * Math.PI * 7);
-          for (const side of [-1, 1]) {
-            const leading = side === front;
-            positions.push(side * (site.w / 2 - 1.05 - (leading ? .55 - wave * .5 : 0)),
-              roofHeight + (leading ? -.75 + wave * .75 : .15), z);
+        if(tuzla)drawRoof(scene,site,g,front);
+        else {
+          const positions = [], indices = [];
+          const span = 64, roofHeight = site.rows * .50 + 6.65;
+          for (let i = 0; i <= span; i++) {
+            const z = (i / span - .5) * d;
+            const wave = Math.cos(i / span * Math.PI * 7);
+            for (const side of [-1, 1]) {
+              const leading = side === front;
+              positions.push(side * (site.w / 2 - 1.05 - (leading ? .55 - wave * .5 : 0)),
+                roofHeight + (leading ? -.75 + wave * .75 : .15), z);
+            }
+            if (i < span) {const a = i * 2; indices.push(a,a+2,a+1,a+1,a+2,a+3);}
           }
-          if (i < span) {const a = i * 2; indices.push(a,a+2,a+1,a+1,a+2,a+3);}
-        }
-        const canopy = new THREE.BufferGeometry();
-        canopy.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        canopy.setIndex(indices);
-        canopy.computeVertexNormals();
-        const roofMesh = new THREE.Mesh(canopy, new THREE.MeshStandardMaterial({
-          color: '#d6d0c1', side: THREE.DoubleSide, roughness: .82
-        }));
-        roofMesh.receiveShadow = true;
-        g.add(roofMesh);
-        for (let z = -d / 2 + 7; z < d / 2; z += 15) {
-          const x = -front * (site.w / 2 - 1.3);
-          box(.43, roofHeight + 1.2, .53, '#afa698', x, (roofHeight - 1.2) / 2, z);
+          const canopy = new THREE.BufferGeometry();
+          canopy.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+          canopy.setIndex(indices);
+          canopy.computeVertexNormals();
+          const roofMesh = new THREE.Mesh(canopy, new THREE.MeshStandardMaterial({
+            color: '#d6d0c1', side: THREE.DoubleSide, roughness: .82
+          }));
+          roofMesh.receiveShadow = true;
+          g.add(roofMesh);
+          for (let z = -d / 2 + 7; z < d / 2; z += 15) {
+            const x = -front * (site.w / 2 - 1.3);
+            box(.43, roofHeight + 1.2, .53, '#afa698', x, (roofHeight - 1.2) / 2, z);
+          }
         }
       } else if (site.roof === 'tensile') {
         drawRoof(scene, site, g, front);
@@ -229,7 +244,7 @@ export function addPermanentVenue(scene, track, {
         const boom = box(.29, .24, 5.3, '#d0994a', 2.3, 7.8, .6);
         boom.rotation.x = -.2;
         box(.55, .51, .55, '#464e50', 2.3, 8.15, -1.85);
-        if (tropical || algarve) {
+        if (tropical || algarve || tuzla) {
           for (let i = 0; i < 3; i++) box(1.1, .22, 1.13, '#323b39', -2.9, .18 + i * .24, 2.4);
           box(.43, .06, 4, '#939383', -3.3, -.015, -2.3);
           box(.53, .19, .63, '#6a7a73', -3.3, .06, -.5);
@@ -258,6 +273,16 @@ export function addPermanentVenue(scene, track, {
   const standard = tint => new THREE.MeshStandardMaterial({color: tint, roughness: .87});
   batch(new THREE.CapsuleGeometry(.155, .30, 2, 4), standard('#ffffff'), crowd, (p, o) => {o.position.y += .32;});
   batch(new THREE.SphereGeometry(.113, 5, 4), standard('#bd987b'), crowd.map(({tint, ...p}) => p), (p, o) => {o.position.y += .65;});
+  const rainGear=[];
+  if(tuzla){
+    const canopy=new THREE.ConeGeometry(.45,.23,7);
+    rainGear.push(...batch(canopy,standard('#ffffff'),crowd.filter((_,i)=>i%26===0).map((p,i)=>({
+      ...p,tint:['#a4494c','#496576','#d6cba5','#576663'][i%4]
+    })),(p,o)=>{o.position.y+=.98;}));
+    rainGear.push(...batch(new THREE.CylinderGeometry(.13,.24,.37,6),standard('#d2d3ba'),
+      crowd.filter((_,i)=>i%7===4),(p,o)=>{o.position.y+=.31;}));
+    for(const mesh of rainGear)mesh.visible=false;
+  }
   if (palms.length) {
     batch(new THREE.CylinderGeometry(.19, .32, 1, 6), standard('#7d7053'), palms, (p, o) => {
       const h = 5 + p.variant * .38;
@@ -290,7 +315,7 @@ export function addPermanentVenue(scene, track, {
   }
   batch(new THREE.CylinderGeometry(.15, .26, 6, 6), standard('#75624d'), trees, (p, o) => {
     const eucalyptus = (prefix === 'buddh' || algarve) && p.variant === 2;
-    const olive = algarve && p.variant === 3;
+    const olive = (algarve || tuzla) && p.variant === 3;
     o.scale.y = eucalyptus ? 1.34 : olive ? .78 : 1;
     o.position.y += eucalyptus ? 3.77 : olive ? 2.12 : 2.75;
   });
@@ -304,6 +329,10 @@ export function addPermanentVenue(scene, track, {
       const [w, h, d] = [[2.66, 1.03, 2.27], [2.12, 1.64, 2.18], [1.14, 3.25, 1.31], [2.40, 2.15, 2.43]][p.variant % 4];
       o.scale.set(w, h, d);
       if (p.variant === 2) o.position.y += 1.25 + p.index * .34;
+    } else if (tuzla) {
+      const shape=[[2.48,1.3,2.18],[2.13,1.77,2.32],[.91,3.22,1.06],[1.8,1.2,1.67]][p.variant];
+      o.scale.set(...shape);
+      o.position.y+=p.variant===2?.64:p.variant===3?-1.0:0;
     } else if (algarve) {
       // Stone pine, cork oak, taller eucalyptus and silvery olive.
       const [w, h, d] = [[2.6,.95,2.35],[2.3,1.8,2.15],[1.12,2.85,1.29],[2.12,1.14,1.83]][p.variant];
@@ -443,6 +472,7 @@ export function addPermanentVenue(scene, track, {
   scene.environmentFx = {
     setConditions(wet) {
       wetness = wet;
+      for(const mesh of rainGear)mesh.visible=wet>.25;
       fieldMat.color.set('#ffffff').lerp(color.set('#82765f'), wet * .58);
     },
     frame(time, cars) {
@@ -469,5 +499,6 @@ export function addPermanentVenue(scene, track, {
   root.userData[prefix + 'Budget'] = {spectators: crowd.length, trees: trees.length, scrub: grass.length, flags: flags.length,
     tents: tents.length, vehicles: vehicles.length, marshals: panels.length, stones: stones.length, flares: flares.length};
   if (tropical) root.userData[prefix + 'Budget'].palms = palms.length;
+  if (tuzla) root.userData[prefix + 'Budget'].rainGear = rainGear.reduce((n,mesh)=>n+mesh.count,0);
   return {crowd, batch};
 }

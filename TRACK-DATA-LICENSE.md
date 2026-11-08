@@ -407,3 +407,15 @@ Mapzen Terrain Tiles N37W009 from the
 See the [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
 Circuit maps and operator photographs informed the original models and
 fitted runoff treatment.
+
+## Istanbul Park cached venue data (2.56.0)
+
+The mapped buildings, bleachers, venue outline and road branches in
+`shared/istanbul-map-data.mjs` derive from OpenStreetMap data retrieved
+2026-11-08. © OpenStreetMap contributors,
+[ODbL 1.0](https://www.openstreetmap.org/copyright). The two terrain grids
+sample Mapzen Terrain Tiles N40E029 from the
+[AWS registry](https://registry.opendata.aws/terrain-tiles/). See
+[Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
+The fitted access scenery, track-dressing assets and crossing
+models are original work. The venue maps and photos are reference material.

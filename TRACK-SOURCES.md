@@ -592,3 +592,22 @@ See the [Sepang audit and corner table](docs/SEPANG-ENVIRONMENT-2.51.0.md) for s
 - [Mapzen Terrain Tiles](https://registry.opendata.aws/terrain-tiles/), Skadi
   tile N37W009, supplies a 100 m scenery grid and an independent cross-check
   of the saved road heights.
+
+## Istanbul Park environment (2.56.0)
+
+- [2021 FIA circuit map](https://www.fia.com/sites/default/files/doc_1_-_2021_turkish_grand_prix_-_circuit_map.pdf)
+  gives the GP configuration, marshal posts, timing, detection lines and
+  corner numbering. [FIA event notes](https://www.fia.com/sites/default/files/decision-document/2021%20Turkish%20Grand%20Prix%20-%20Race%20Directors%27%20Event%20Notes%20Version%202.pdf)
+  confirm the added exit kerbs at Turns 1, 5 and 14.
+- [TOSFED](https://tosfedistanbulpark.com/en/the-circuit/) confirms the layout
+  dimensions, published gradient and four Turn 8 apices. [Mapzen Terrain
+  Tiles](https://registry.opendata.aws/terrain-tiles/) supplies near terrain
+  and the wider Marmara grid from tile N40E029.
+- [OpenStreetMap venue extract](https://api.openstreetmap.org/api/0.6/map?bbox=29.382,40.933,29.439,40.977)
+  provides the pit complex, grandstands, bleachers, access ways, one service
+  bridge and the venue boundary. It also supplies the real pit-road reference.
+- [Grandstand engineer’s photo](https://www.tesem.com.tr/project/istanbul-park-main-grandstand-roof/),
+  [Formula 1 aerial](https://www.formula1.com/en/latest/article/trending-topics-the-title-turn-8-tsunoda-and-more-talking-points-ahead-of.5uhcl9R0V9L4HfF8AZ3nOk)
+  and the [stand and photo guide](https://above.guide/turkiye-f1/circuit)
+  informed the canopy, twin towers, glazed façade, photo-fitted footbridges
+  and viewing areas. No reference images are shipped with the game.

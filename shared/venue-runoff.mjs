@@ -38,7 +38,7 @@ function roadVertex(track, index, offset, height) {
 export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, paintCorners, boundaries = [], pedestrianBridges = false,
   dirtProfile, roadHeight, baseTarmac = 2.2, baseGrass = 4.8, wallStyle = 'armco',
   wallGap = .7, edgeStart = .025, accessDeckClearance = 0, paintedApron, paintedGrip = {},
-  runoffReach = 46, serviceVergeWidth = 0, groundBlend = [18, 83], runoffSlope = .09, wetSlopeGrip = 0}) {
+  runoffReach = 46, serviceVergeWidth = 0, groundBlend = [18, 83], runoffSlope = .09, wetSlopeGrip = 0, tarmacCuts = [], archBridges = [], bridgeTypes = ['footway']}) {
   const roadCache = new WeakMap(), planCache = new WeakMap(), wallCache = new WeakMap();
   function roads(track) {
     if (roadCache.has(track)) return roadCache.get(track);
@@ -77,6 +77,11 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     return polygon.length > 0 && !nearShapes(roads(track).grid, polygon).some(row =>
       filter(row) && footprintsOverlap(row.polygon, polygon));
   }
+
+  // Fitted overhead crossings are raised above the complete runoff and
+  // safety stack below. Their piers still reserve ordinary ground footprints.
+  const groundBranch = row => !row.bridge || !archBridges.includes(row.way);
+  const apronRoadClear = (track, polygon) => roadClear(track, polygon, groundBranch);
 
   function demHeight(track, x, z) {
     const {minX, minZ, spacing, width, height, values} = dem;
@@ -124,15 +129,17 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
         }
         let low = .045;
         const clear = distance => [wrap(i - 1, n), i].every(j =>
-          roadClear(track, quad(track, j, side, .025, .025, distance, distance)));
+          apronRoadClear(track, quad(track, j, side, .025, .025, distance, distance)));
         if (clear(high)) low = high;
         else if (clear(low)) for (let j = 0; j < 7; j++) {
           const probe = (low + high) / 2;
           if (clear(probe)) low = probe;
           else high = probe;
         }
-        return {width: low, total, tarmac, gravel, grass, pave, depth: (corner?.gravelDepth || 0) * strength,
-          turn: apex?.turn || 0, kerb: apex && Math.abs(apex.station - s) < (apex.kerbSpan ?? Math.min(50, apex.span * .64)) ? apex.kerb : null,
+        const kerbDistance = apex?.kerbSpan ?? Math.min(50, (apex?.span ?? 0) * .64);
+        const doubleKerb = apex?.kerb === 'double' && apex.side === side && s >= apex.station - 7 && s < apex.station + kerbDistance + 14;
+        return {width: low, total, tarmac, gravel, grass, pave, doubleKerb, accent:apex?.accent === side, depth: (corner?.gravelDepth || 0) * strength,
+          turn: apex?.turn || 0, kerb: apex && Math.abs(apex.station - s) < kerbDistance ? apex.kerb : null,
           barrier: strength > .52 ? corner.barrier : wallStyle};
       });
       for (let pass = 0; pass < 2; pass++) {
@@ -153,9 +160,9 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
       for (let i = 0; i < n; i++) {
         const a = rows[i], b = rows[(i + 1) % n];
         function push(kind, aa, ab, ba, bb, lift, extra = {}, depths = [0, 0]) {
-          if (Math.max(ba - aa, bb - ab) < (a.pave ? .0001 : .055)) return;
+          if (Math.max(ba - aa, bb - ab) < (a.pave || (tarmacCuts.length && kind==='tarmac') ? .0001 : .055)) return;
           const polygon = quad(track, i, side, aa, ab, ba, bb, lift, ...depths);
-          if (!roadClear(track, polygon)) return;
+          if (!apronRoadClear(track, polygon)) return;
           const row = {i, side, turn: a.turn, kind, ...extra};
           bands.push(indexShape(grid, polygon, row));
         }
@@ -169,7 +176,13 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
             innerB = outerB;
           }
         } else {
-          push('tarmac', edgeStart, edgeStart, a.tarmac, b.tarmac, .025);
+          let startA = edgeStart, startB = edgeStart;
+          for (const cut of [...tarmacCuts, Infinity]) {
+            const endA = Math.min(a.tarmac, cut), endB = Math.min(b.tarmac, cut);
+            push('tarmac', startA, startB, endA, endB, .025);
+            startA = endA;
+            startB = endB;
+          }
           const stripeA = Math.min(a.tarmac, a.turn ? .7 : .32), stripeB = Math.min(b.tarmac, b.turn ? .7 : .32);
           push('paint', .08, .08, stripeA, stripeB, .047, {tone: 'edge'});
           const label = paintCorners.includes(a.turn) && a.turn === b.turn && Math.min(a.tarmac, b.tarmac) > 5;
@@ -181,6 +194,9 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
         }
         if (a.kerb && b.kerb) push('kerb', .09, .09, Math.min(a.tarmac, 1.09), Math.min(b.tarmac, 1.09),
           a.kerb === 'serrated' ? .065 + .025 * (i % 2) : .056, {kerb: a.kerb});
+        if (a.doubleKerb && b.doubleKerb) push('kerb', 1.09, 1.09, Math.min(a.tarmac, 1.98), Math.min(b.tarmac, 1.98),
+          .042, {kerb:'flat'});
+        if (a.accent && b.accent) push('paint', 1.12, 1.12, Math.min(a.tarmac, 3.6), Math.min(b.tarmac, 3.6), .044, {tone:'verge'});
         const ga = a.tarmac + a.gravel, gb = b.tarmac + b.gravel;
         const ma = a.tarmac + a.gravel / 2, mb = b.tarmac + b.gravel / 2;
         for (const [startA, startB, endA, endB, da, db] of [
@@ -196,7 +212,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
             polygon[2].y += b.depth;
             polygon[3].y += a.depth;
           }
-          if (roadClear(track, polygon)) bands.push(indexShape(grid, polygon, {i, side, turn: a.turn, kind: 'gravel'}));
+          if (apronRoadClear(track, polygon)) bands.push(indexShape(grid, polygon, {i, side, turn: a.turn, kind: 'gravel'}));
         }
         push('grass', ga, gb, a.width, b.width, -.025);
         if (serviceVergeWidth && Math.min(a.width, b.width) > .7) {
@@ -285,7 +301,8 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     if (wallCache.has(track)) return wallCache.get(track);
     const {edges} = runoff(track), walls = [], pit = pitLayout(track), supports = [], half = track.width / 2;
     function add(a, b, width, height, kind, style, inward = null) {
-      if (!roadClear(track, footprintStrip(a, b, width / 2 + .13))) return false;
+      const filter = kind === 'track' || kind === 'fence' ? groundBranch : undefined;
+      if (!roadClear(track, footprintStrip(a, b, width / 2 + .13), filter)) return false;
       walls.push({a, b, width, height, kind, style, inward});
       return true;
     }
@@ -338,7 +355,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     }
     const bridges = [];
     if (pedestrianBridges) for (const [way, type, width, elevated, coords] of mappedRoads) {
-      if (!elevated || type !== 'footway' || (Array.isArray(pedestrianBridges) && !pedestrianBridges.includes(way))) continue;
+      if (!elevated || !bridgeTypes.includes(type) || (Array.isArray(pedestrianBridges) && !pedestrianBridges.includes(way))) continue;
       const points = coords.map(coord => venueLocal(track, coord));
       const first = points[0], last = points.at(-1), heading = Math.atan2(last.x - first.x, last.z - first.z);
       const supportSites = [];
@@ -356,10 +373,22 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
       if (supportSites.length !== 2) continue;
       const minimumDeckHeights = points.slice(1).flatMap((p,i) => {
         const deck = footprintStrip(points[i],p,width/2+.3);
-        return nearShapes(roads(track).grid,deck)
+        const heights = nearShapes(roads(track).grid,deck)
           .filter(row => (row.kind !== 'access' || (accessDeckClearance && !row.bridge)) && footprintsOverlap(row.polygon,deck))
           .flatMap(row => row.polygon.map(vertex => row.kind === 'access'
             ? ground(track, vertex.x, vertex.z) + .12 + accessDeckClearance : vertex.y + 7.8));
+        if (archBridges.includes(way)) {
+          for (const band of nearShapes(runoff(track).grid,deck)) if (footprintsOverlap(band.polygon,deck)) {
+            heights.push(Math.max(...band.polygon.map(v=>v.y))+accessDeckClearance);
+          }
+          for (const wall of walls) {
+            if (wall.kind !== 'track' && wall.kind !== 'fence') continue;
+            if (footprintsOverlap(footprintStrip(wall.a,wall.b,wall.width/2),deck)) {
+              heights.push(Math.max(wall.a.y,wall.b.y)+wall.height+.65);
+            }
+          }
+        }
+        return heights;
       });
       const y = Math.max(Math.max(...points.map(p=>ground(track,p.x,p.z)))+4.8, ...minimumDeckHeights);
       for (const {site,footprint} of supportSites) {
@@ -374,6 +403,22 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
         for (const side of [-1,1]) {
           const at = p => ({x:p.x+Math.cos(h)*side*(width/2-.11),y:y+.38,z:p.z-Math.sin(h)*side*(width/2-.11)});
           walls.push({a:at(a),b:at(b),width:.18,height:1.06,kind:prefix+'-bridge-rail',style:'steel'});
+        }
+      }
+      if (archBridges.includes(way)) {
+        const pose = (t, side) => ({
+          x:first.x+(last.x-first.x)*t+Math.cos(heading)*side*(width/2-.13),
+          z:first.z+(last.z-first.z)*t-Math.sin(heading)*side*(width/2-.13),
+          y:y+.42+Math.sin(t*Math.PI)*7.4
+        });
+        for (const side of [-1,1]) for (let i=0;i<20;i++) {
+          const a=pose(i/20,side), b=pose((i+1)/20,side);
+          walls.push({a,b,width:.31,height:.34,kind:prefix+'-arch',style:'steel'});
+          if (i%4===0 && i>0) {
+            const bottom={...a,y:y+.40};
+            walls.push({a:bottom,b:{...bottom,x:bottom.x+.16},width:.15,height:a.y-bottom.y,
+              kind:prefix+'-arch',style:'steel'});
+          }
         }
       }
       bridges.push({way,y});
