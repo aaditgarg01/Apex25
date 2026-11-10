@@ -132,12 +132,33 @@ export class RaceScene{
  const cell=this.profile.istanbul?ISTANBUL_TERRAIN_CELL:this.profile.portimao?PORTIMAO_TERRAIN_CELL:track.id==='fr-1969'?24:['my-1999','in-2011'].includes(track.id)?18:track.id==='qa-2004'?20:track.id==='ae-2009'?24:track.id==='ca-1978'?24:track.id==='es-1991'?18:track.id==='hu-1986'?18:track.id==='it-1953'?18:track.id==='us-2012'?18:track.id==='it-1922'?22:track.id==='mx-1962'?22:track.id==='at-1969'?20:track.id==='gb-1948'?22:track.id==='us-2022'?20:track.id==='nl-1948'?18:track.id==='br-1940'?18:track.id==='es-2026'?18:track.id==='sg-2008'?16:['au-1953','jp-1962','be-1925','sa-2021','az-2016','sg-2008','es-2026','us-2023'].includes(track.id)?12:track.id==='mc-1929'?12:track.campus?8:24;const geo=new THREE.PlaneGeometry(width,depth,Math.ceil(width/cell),Math.ceil(depth/cell));geo.rotateX(-Math.PI/2);const verts=geo.attributes.position;
  for(let i=0;i<verts.count;i++){const x=verts.getX(i)+(minX+maxX)/2,z=verts.getZ(i)+(minZ+maxZ)/2;let y=this.profile.istanbul?istanbulGround(track,x,z,cell):this.profile.portimao?portimaoGround(track,x,z,cell):track.id==='fr-1969'?paulRicardGround(track,x,z,cell):track.id==='my-1999'?sepangGround(track,x,z,cell):track.id==='in-2011'?buddhGround(track,x,z,cell):track.id==='qa-2004'?lusailGround(track,x,z,cell):track.id==='ae-2009'?yasmarinaGround(track,x,z,cell):track.id==='ca-1978'?montrealGround(track,x,z,cell):track.id==='es-1991'?barcelonaGround(track,x,z,cell):track.id==='hu-1986'?hungaroringGround(track,x,z,cell):track.id==='it-1953'?imolaGround(track,x,z,cell):track.id==='us-2012'?cotaGround(track,x,z,cell):track.id==='it-1922'?monzaGround(track,x,z,cell):track.id==='mx-1962'?mexicoGround(track,x,z,cell):track.id==='at-1969'?redbullringGround(track,x,z,cell):track.id==='gb-1948'?silverstoneGround(track,x,z,cell):track.id==='us-2022'?miamiGround(track,x,z,cell):track.id==='nl-1948'?zandvoortGround(track,x,z,cell):track.id==='br-1940'?interlagosGround(track,x,z,cell):track.id==='us-2023'?vegasTerrainHeight(track,x,z,cell):track.id==='es-2026'?madridTerrainHeight(track,x,z,cell):track.id==='sg-2008'?singaporeTerrainHeight(track,x,z,cell):track.id==='az-2016'?bakuTerrainHeight(track,x,z,cell):track.id==='sa-2021'?jeddahTerrainHeight(track,x,z,cell):track.id==='mc-1929'?monacoTerrainHeight(track,x,z,cell):track.id==='be-1925'?spaTerrainHeight(track,x,z,cell):track.id==='bh-2002'?bahrainTerrainHeight(track,x,z,cell):track.id==='jp-1962'?suzukaTerrainHeight(track,x,z,cell):track.id==='cn-2004'?shanghaiTerrainHeight(track,x,z):track.id==='au-1953'?albertTerrainHeight(track,x,z,cell):terrainVertexHeight(track,x,z,cell);if(landmarkSite){const distance=Math.hypot(x-landmarkSite.x,z-landmarkSite.z),blend=Math.max(0,Math.min(1,(landmarkSite.radius+10-distance)/10));y+=(landmarkSite.y-.15-y)*blend;}const pitY=pitGroundHeight(track,x,z,y);y=['tr-2005','pt-2008','fr-1969','es-2026'].includes(track.id)?Math.min(y,pitY):pitY;if(track.id==='qa-2004')y=lusailConstrainGround(track,x,z,y,cell);if(track.id==='ae-2009')y=yasmarinaConstrainGround(track,x,z,y,cell);if(track.id==='ca-1978')y=montrealConstrainGround(track,x,z,y,cell);if(track.id==='es-1991')y=barcelonaConstrainGround(track,x,z,y,cell);if(track.id==='hu-1986')y=hungaroringConstrainGround(track,x,z,y,cell);if(track.id==='it-1953')y=imolaConstrainGround(track,x,z,y,cell);if(track.id==='us-2012')y=cotaConstrainGround(track,x,z,y,cell);verts.setXYZ(i,x,y,z);geo.attributes.uv.setXY(i,x/16+((this.profile.portimao||this.profile.istanbul)?.52*Math.sin(z*.011):0),z/16+((this.profile.portimao||this.profile.istanbul)?.64*Math.sin(x*.013):0));}geo.computeVertexNormals();
  const groundColors=[],baseColor=new THREE.Color(this.profile.ground),groundTint=new THREE.Color(),redEarth=new THREE.Color('#9e6049');for(let i=0;i<verts.count;i++){const factor=.93+.065*Math.sin(verts.getX(i)*.017)*Math.cos(verts.getZ(i)*.021);const groundColor=track.id==='mx-1962'?new THREE.Color(mexicoGroundTint(track,verts.getX(i),verts.getZ(i))||this.profile.ground):(this.profile.portimao||this.profile.istanbul)?groundTint.copy(baseColor).lerp(redEarth,Math.min(.85,Math.max(0,(1-geo.attributes.normal.getY(i))*4))):baseColor;groundColors.push(groundColor.r*factor,groundColor.g*factor,groundColor.b*factor);}geo.setAttribute('color',new THREE.Float32BufferAttribute(groundColors,3));const ground=new THREE.Mesh(geo,this.surfaces.material(['mc-1929','az-2016','sg-2008','us-2023'].includes(track.id)?'concrete':['qa-2004','ae-2009','nl-1948','bh-2002','sa-2021'].includes(track.id)?'sand':'grass','#ffffff',true));ground.receiveShadow=true;this.group.add(ground);const horizon=new THREE.Mesh(new THREE.PlaneGeometry(16000,16000),mat(this.profile.ground));horizon.rotation.x=-Math.PI/2;horizon.position.y=track.id==='fr-1969'?-375:track.id==='at-1969'?-45:['jp-1962','be-1925','mc-1929','az-2016','sg-2008'].includes(track.id)?-24:track.campus?Math.min(...track.points.map(p=>p.y))-2:-3;this.group.add(horizon);this.surfaces.build();this.buildBarriers(track);
- // High-contrast unlit chevrons, aligned with the road slope.
- prepareRacingLine(track);const count=76,shape=new THREE.Shape();shape.moveTo(-.9,1.7);shape.lineTo(0,.8);shape.lineTo(.9,1.7);shape.lineTo(.9,-.4);shape.lineTo(0,-1.4);shape.lineTo(-.9,-.4);shape.closePath();
- const arrowGeo=new THREE.ShapeGeometry(shape);arrowGeo.rotateX(-Math.PI/2);arrowGeo.scale(.45,1,.45);
- const line=new THREE.InstancedMesh(arrowGeo,new THREE.MeshBasicMaterial({color:'#ffffff',toneMapped:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),count),border=new THREE.InstancedMesh(arrowGeo,new THREE.MeshBasicMaterial({color:'#06131a',side:THREE.DoubleSide}),count),dummy=new THREE.Object3D(),color=new THREE.Color();dummy.rotation.order='YXZ';
-
- line.frustumCulled=false;border.frustumCulled=false;this.guide=line;this.guideBorder=border;this.guideAt=-Infinity;this.line=new THREE.Group();this.line.add(border,line);this.group.add(this.line);addVenue(this,track);if(!['tr-2005','pt-2008','fr-1969','my-1999','in-2011','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','at-1969','gb-1948','us-2022','nl-1948','br-1940','mx-1962','au-1953','cn-2004','jp-1962','bh-2002','be-1925','mc-1929','sa-2021','az-2016','sg-2008','es-2026','us-2023'].includes(track.id))addCircuitDetails(this,track);this.sceneryReady=addMappedScenery(this,track);
+ // Different silhouettes keep the driving cues readable without colour.
+ prepareRacingLine(track);
+ const guideShapes=[
+  [[-.9,1.7],[0,.8],[.9,1.7],[.9,-.4],[0,-1.4],[-.9,-.4]],
+  [[0,-1.3],[1.05,0],[0,1.3],[-1.05,0]],
+  [[-1.12,-.52],[1.12,-.52],[1.12,.52],[-1.12,.52]],
+ ];
+ this.guideCount=76;
+ this.guideAt=-Infinity;
+ this.line=new THREE.Group();
+ this.guide=guideShapes.map(vertices=>{
+  const shape=new THREE.Shape();
+  shape.moveTo(...vertices[0]);
+  for(const vertex of vertices.slice(1))shape.lineTo(...vertex);
+  shape.closePath();
+  const geo=new THREE.ShapeGeometry(shape);
+  geo.rotateX(-Math.PI/2);
+  geo.scale(.45,1,.45);
+  const fill=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:'#ffffff',toneMapped:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),this.guideCount);
+  const border=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:'#06131a',toneMapped:false,side:THREE.DoubleSide}),this.guideCount);
+  fill.count=border.count=0;
+  fill.frustumCulled=border.frustumCulled=false;
+  this.line.add(border,fill);
+  return {fill,border};
+ });
+ this.group.add(this.line);
+ addVenue(this,track);if(!['tr-2005','pt-2008','fr-1969','my-1999','in-2011','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','at-1969','gb-1948','us-2022','nl-1948','br-1940','mx-1962','au-1953','cn-2004','jp-1962','bh-2002','be-1925','mc-1929','sa-2021','az-2016','sg-2008','es-2026','us-2023'].includes(track.id))addCircuitDetails(this,track);this.sceneryReady=addMappedScenery(this,track);
  const start=sample(track,0),gantry=new THREE.Group();gantry.position.set(start.x,start.y,start.z);gantry.rotation.y=start.heading;this.group.add(gantry);if(!['tr-2005','pt-2008','fr-1969','es-2026','my-1999','in-2011','qa-2004','sg-2008'].includes(track.id)){for(const x of [-half-2,half+2])this.box(.5,7.5,.5,'#5a6265',x,3.75,0,gantry);this.box(track.width+5,1.5,.6,'#202c35',0,7,0,gantry);
  const tc=document.createElement('canvas');tc.width=1024;tc.height=128;const ctx=tc.getContext('2d');ctx.fillStyle='#202c35';ctx.fillRect(0,0,1024,128);ctx.fillStyle='#ff5936';ctx.font='italic 900 76px Arial';ctx.textAlign='center';ctx.fillText(track.campus?'VIT VELLORE':'APEX 25',512,93);const tex=new THREE.CanvasTexture(tc),sign=new THREE.Mesh(new THREE.PlaneGeometry(track.width+3,1.4),new THREE.MeshBasicMaterial({map:tex}));sign.position.set(0,7,.32);gantry.add(sign);const back=sign.clone();back.rotation.y=Math.PI;back.position.z=-.32;gantry.add(back);}
  for(let row=0;row<2;row++)for(let col=0;col<16;col++)this.box(track.width/16,.035,1,(row+col)%2?'#dce1dc':'#252d33',-half+(col+.5)*track.width/16,.12,row-1,gantry);
@@ -187,15 +208,49 @@ export class RaceScene{
  }
  updateGuide(car,now){
  if(!this.guide||!car||!this.showLine||now-this.guideAt<80)return;
- this.guideAt=now;const track=this.track,dummy=new THREE.Object3D(),color=new THREE.Color(),condition=conditionProfile(this.conditions,car.trackWetness),rubberPace=Math.min(1,Math.sqrt(tyreGrip(car)))*tyreSpeedFactor(car),speed=Math.max(0,car.v);
- for(let i=0;i<this.guide.count;i++){
-  const distance=i*4-8,s=car.s+distance,plan=pitLayout(track),pitDistance=car.pitState!=='none'?car.pitTravel+distance:((car.s-plan.entry+track.length*1.5)%track.length-track.length*.5)+distance,guidePit=(car.pitRequested||car.pitState!=='none')&&pitDistance>=0&&pitDistance<=plan.length,p=guidePit?pitRoadPose(track,pitDistance):sampleGuide(track,s),limit=racingSpeedAt(this.track,s,this.conditions,car.trackWetness)*rubberPace,forecast=Math.min(car.boostActive?BOOST_TOP_SPEED:Math.max(TOP_SPEED,speed),Math.sqrt(speed*speed+2*8*condition.traction*Math.min(70,Math.max(0,distance))));
-  const next=racingSpeedAt(this.track,s+12,this.conditions,car.trackWetness)*rubberPace,overspeed=forecast-limit;
-  const tint=guidePit?'#68e2ef':overspeed>3?'#ff4230':overspeed>-.8&&next<limit-.8?'#ffca00':'#52ff2e';
-  dummy.position.set(p.x,p.y+.16,p.z);dummy.rotation.set(-p.pitch,p.heading,p.roll||0,'YXZ');dummy.scale.set(.9,1,.9);dummy.updateMatrix();this.guide.setMatrixAt(i,dummy.matrix);this.guide.setColorAt(i,color.set(tint));
-  dummy.position.y-=.025;dummy.scale.set(1.1,1,1.08);dummy.updateMatrix();this.guideBorder.setMatrixAt(i,dummy.matrix);
+ this.guideAt=now;
+ const track=this.track,dummy=new THREE.Object3D(),color=new THREE.Color();
+ const condition=conditionProfile(this.conditions,car.trackWetness);
+ const tyreSpeed=tyreSpeedFactor(car),traction=condition.traction*tyreGrip(car);
+ const rubberPace=Math.min(1,Math.sqrt(tyreGrip(car)))*tyreSpeed;
+ const speed=Math.max(0,car.v),top=Math.max(speed,(car.boostActive?BOOST_TOP_SPEED:TOP_SPEED)*tyreSpeed);
+ const plan=pitLayout(track),counts=[0,0,0];
+ let forecast=speed;
+ for(let i=0;i<this.guideCount;i++){
+  const distance=i*4-8,s=car.s+distance;
+  const pitDistance=car.pitState!=='none'?car.pitTravel+distance:((car.s-plan.entry+track.length*1.5)%track.length-track.length*.5)+distance;
+  const guidePit=(car.pitRequested||car.pitState!=='none')&&pitDistance>=0&&pitDistance<=plan.length;
+  const p=guidePit?pitRoadPose(track,pitDistance):sampleGuide(track,s);
+  const limit=racingSpeedAt(track,s,this.conditions,car.trackWetness)*rubberPace;
+  const next=racingSpeedAt(track,s+16,this.conditions,car.trackWetness)*rubberPace;
+  if(distance>0){
+   const power=(car.boostActive&&distance<90?19:14)*traction*Math.max(.15,1-forecast/125);
+   const accel=Math.max(0,power-.55-forecast*forecast*.00032-9.81*Math.sin(p.pitch));
+   forecast=Math.min(top,Math.sqrt(forecast*forecast+2*accel*4));
+  }
+  const falling=next<limit-.7,overspeed=forecast-limit;
+  const braking=overspeed>2.7&&(falling||p.curvature>.0018||limit<84);
+  const state=guidePit?0:braking?2:falling&&overspeed>-4?1:0;
+  const tint=guidePit?'#77d7ff':['#44f4c0','#ff9c36','#ff443f'][state];
+  const {fill,border}=this.guide[state],index=counts[state]++;
+  dummy.position.set(p.x,p.y+.16,p.z);
+  dummy.rotation.set(-p.pitch,p.heading,p.roll||0,'YXZ');
+  dummy.scale.set(.9,1,.9);
+  dummy.updateMatrix();
+  fill.setMatrixAt(index,dummy.matrix);
+  fill.setColorAt(index,color.set(tint));
+  dummy.position.y-=.025;
+  dummy.scale.set(1.1,1,1.12);
+  dummy.updateMatrix();
+  border.setMatrixAt(index,dummy.matrix);
  }
- this.guide.instanceMatrix.needsUpdate=true;this.guide.instanceColor.needsUpdate=true;this.guideBorder.instanceMatrix.needsUpdate=true;
+ for(const [index,{fill,border}] of this.guide.entries()){
+  fill.count=border.count=counts[index];
+  if(!counts[index])continue;
+  fill.instanceMatrix.needsUpdate=true;
+  fill.instanceColor.needsUpdate=true;
+  border.instanceMatrix.needsUpdate=true;
+ }
  }
  makeCar(driver){const paint=liveryProfile(driver.colorId),car=new THREE.Group();car.rotation.order='YXZ';car.userData.liveryId=normalizeLiveryIndex(driver.colorId);const wing=mat(paint.wing,{roughness:.4}),accent=mat(paint.accent,{roughness:.35}),secondary=mat(paint.secondary,{roughness:.35}),black=mat('#11191f',{roughness:.65}),rubber=mat('#171b20'),silver=mat('#626d70',{metalness:.6});const add=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);car.add(o);if(geo.type==='BoxGeometry')o.userData.batchBox=true;return o;};add(new THREE.BoxGeometry(1.8,.1,4.4),black,0,.22,.05);add(new THREE.BoxGeometry(2.05,.13,.55),wing,0,.28,2.4);add(new THREE.BoxGeometry(1.85,.15,.63),wing,0,1.15,-1.8);for(const x of [-.85,.85])add(new THREE.BoxGeometry(.1,.6,.55),black,x,.86,-1.8);const seat=add(new THREE.SphereGeometry(.3,12,8),black,0,.65,-.25);seat.scale.y=.7;const helmet=add(new THREE.SphereGeometry(.23,12,10),mat('#e1e8d9'),0,.95,-.16);const visor=add(new THREE.BoxGeometry(.4,.13,.35),mat('#262a39',{metalness:.65,roughness:.2}),0,.99,.02);visor.userData.batchBox=false;car.userData.driverParts=[helmet,visor];addCarDetail(car,paint);// Separate body panels, pinstripes and lettering make teams identifiable
  // from the chase camera without adding external model or texture downloads.

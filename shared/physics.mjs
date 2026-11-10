@@ -24,7 +24,7 @@ import {stepPit,tryPitEntry,pitAhead,preparePitTraffic,pitLayout,pitRoadPose,isO
 import {clearImpact,dampImpact,velocityOf,setVelocity} from './motion.mjs';
 import {moveWithBarriers,resolveBarrierContacts} from './barriers.mjs';
 import {LIVERIES,normalizeLiveryIndex} from './liveries.mjs';
-import {sampleGuide} from './racing-line.mjs';
+import {guideBounds,sampleGuide} from './racing-line.mjs';
 import {conditionProfile,normalizeConditions,yawRate} from './conditions.mjs';
 import {sample,nearest,wrap,clamp,angleDiff,targetSpeed,terrainHeight} from './tracks.mjs';
 import {resolveCarContacts} from './collisions.mjs';
@@ -50,10 +50,12 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.ai)c.inputLag=0;
  if(c.resetTimer>0)c.resetTimer-=dt;
  const prev=c.s,previousPose={x:c.x,z:c.z,heading:c.heading},conditions=conditionProfile(c.conditions,c.trackWetness);
- let throttle=input.throttle?1:0,brake=input.brake?1:0,steer=clamp(Number(input.steer)||0,-1,1);
+ let throttle=input.throttle?1:0,brake=input.brake?1:0,steer=clamp(Number(input.steer)||0,-1,1),aiBoost=false;
  if(c.ai){
   const distance=Math.max(track.width<15?6:12,c.v*(track.width<15?.32:.5)),station=c.s+distance;
-  let look=sampleGuide(track,station),lane=Math.sin(c.index*2+c.s*.003)*.35;
+  const guide=sampleGuide(track,station),bounds=guideBounds(track,station);
+  const lane=clamp(guide.offset+(c.aiLaneOffset??0),bounds.low,bounds.high);
+  let look=c.aiLaneOffset?sample(track,station,lane):guide;
   if(c.pitRequested){
    const pit=pitLayout(track),ahead=pitAhead(c,track),past=track.length-ahead;
    if(ahead<170||past<pit.taper-12){
@@ -66,19 +68,29 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
      const approach=c.s+pitLookAhead,offset=sampleGuide(track,approach).offset;
      look=sample(track,approach,offset+(pit.entryOffset-offset)*blend);
     }
-    lane=0;
    }
   }
-  look.x+=Math.cos(look.heading)*lane;look.z-=Math.sin(look.heading)*lane;
   const aim=Math.atan2(look.x-c.x,look.z-c.z);
   steer=clamp(angleDiff(aim,c.heading)*3,-1,1);
   const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;
-  const desired=Math.min(targetSpeed(track,c.s,c.conditions,c.trackWetness),targetSpeed(track,c.s+brakingLook,c.conditions,c.trackWetness))*(track.width<15?.65+c.index*.01:.78+c.index*.018)*Math.min(1,Math.sqrt(tyreGrip(c)))*tyreSpeedFactor(c);
-  throttle=c.v<desired?1:.18;brake=c.v>desired+3?.65:0;
+  const pace=Math.min(targetSpeed(track,c.s,c.conditions,c.trackWetness),targetSpeed(track,c.s+brakingLook,c.conditions,c.trackWetness));
+  const skill=track.width<15?.65+c.index*.01:.78+c.index*.018;
+  const straight=pace>53&&[45,90,135].every(ahead=>targetSpeed(track,c.s+ahead,c.conditions,c.trackWetness)>pace-2);
+  const ready=straight&&!c.offtrack&&!c.pitRequested&&!c.outLap&&c.aiTrafficSpeed==null&&c.v>28;
+  if(ready&&elapsed>=(c.aiBoostReadyAt??0)&&c.boost>27){
+   c.aiBoostUntil=elapsed+(c.aiPassTarget?1.9:1.45);
+   c.aiBoostReadyAt=c.aiBoostUntil+(c.aiPassTarget?3.5:7+c.index*.4);
+  }
+  aiBoost=ready&&elapsed<(c.aiBoostUntil??0)&&c.boost>12;
+  const trafficCorner=guide.curvature>.009&&Math.abs(c.aiLaneOffset||0)>1.2;
+  const desired=Math.min(c.aiTrafficSpeed??Infinity,(pace*skill*(trafficCorner?.89:1)+(aiBoost?7:0))*Math.min(1,Math.sqrt(tyreGrip(c)))*tyreSpeedFactor(c));
+  const overspeed=c.v-desired;
+  throttle=overspeed<0?1:0;
+  brake=overspeed>1.5?clamp(overspeed*.12,.16,1):0;
  }
  // Booking a stop never brakes on the racing surface. The limiter starts at the gate.
- if(c.ai&&laps===Infinity&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)&&(laps===Infinity||laps*track.length-c.progress>track.length*.45)){c.pitCompound=availableTyreChoice(c);c.pitRequested=true;}
- const boost=!!input.boost&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
+ if(c.ai&&laps===Infinity&&c.pitState==='none'&&(c.tyreLife<35||tyreGrip(c)<.72)){c.pitCompound=availableTyreChoice(c);c.pitRequested=true;}
+ const boost=(c.ai?aiBoost:!!input.boost)&&c.boost>0&&throttle&&!brake&&!c.offtrack;c.boostActive=!!boost;
  c.boost=clamp(c.boost+dt*(boost?-19:brake?12:4),0,100);
  const venueSurfaceAt=track.id==='tr-2005'?istanbulSurfaceAt:track.id==='pt-2008'?portimaoSurfaceAt:track.id==='fr-1969'?paulRicardSurfaceAt:null;
  const roadOffset=conditions.wetness||['tr-2005','pt-2008','fr-1969','es-2026','my-1999','in-2011','sg-2008','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','nl-1948','us-2022','gb-1948','at-1969','mx-1962','it-1922'].includes(track.id)?nearest(track,c.x,c.z,c.s).offset:0,road=sample(track,c.s,track.id==='nl-1948'?roadOffset:0),duneSurface=venueSurfaceAt&&Math.abs(roadOffset)>track.width/2?venueSurfaceAt(track,c.s,roadOffset,conditions.wetness,c):track.id==='es-2026'&&Math.abs(roadOffset)>track.width/2?madridSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='my-1999'?sepangSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='in-2011'?buddhSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='sg-2008'?singaporeSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='nl-1948'?zandvoortSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2022'?miamiSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='gb-1948'?silverstoneSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='at-1969'?redbullringSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='qa-2004'?lusailSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='ae-2009'?yasmarinaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='ca-1978'?montrealSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='es-1991'?barcelonaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='hu-1986'?hungaroringSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='it-1953'?imolaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='us-2012'?cotaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='it-1922'?monzaSurfaceAt(track,c.s,roadOffset,conditions.wetness):track.id==='mx-1962'?mexicoSurfaceAt(track,c.s,roadOffset,conditions.wetness):null;
