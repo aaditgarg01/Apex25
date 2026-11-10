@@ -1,4 +1,5 @@
 import {damageTyres} from './tyres.mjs';
+import {isInPit} from './race-display.mjs';
 import {carShapes,CONTACT_SLOP} from './car-shape.mjs';
 import {velocityOf,setVelocity,projectMotion} from './motion.mjs';
 import {yawRate,conditionProfile} from './conditions.mjs';
@@ -19,7 +20,7 @@ function shapeContact(A,B){
  return {depth,normal,point:{x:normal.x*across+tangent.x*along,z:normal.z*across+tangent.z*along}};
 }
 export function carContact(a,b){
- if(a.finished||b.finished||a.retired||b.retired||a.contactUncertain||b.contactUncertain)return null;
+ if(a.finished||b.finished||a.retired||b.retired||a.contactUncertain||b.contactUncertain||isInPit(a)||isInPit(b))return null;
  if(Math.abs(a.y-b.y)>1.5||Math.abs(a.x-b.x)>7||Math.abs(a.z-b.z)>7)return null;
  let deepest=null;const shapesA=carShapes(a),shapesB=carShapes(b);
  for(const A of shapesA)for(const B of shapesB){const hit=shapeContact(A,B);if(hit&&(!deepest||hit.depth>deepest.depth))deepest=hit;}
@@ -45,7 +46,7 @@ function collide(a,b,hit,wa,wb,bounce){
 }
 function nearbyPairs(cars,movingId){
  const grid=new Map(),pairs=[];
- for(let i=0;i<cars.length;i++){const c=cars[i];if(c.retired||c.finished)continue;const x=Math.floor(c.x/8),z=Math.floor(c.z/8);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const j of grid.get(`${x+dx},${z+dz}`)||[])if(movingId===null||c.id===movingId||cars[j].id===movingId)pairs.push([j,i]);const key=`${x},${z}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(i);}
+ for(let i=0;i<cars.length;i++){const c=cars[i];if(c.retired||c.finished||isInPit(c))continue;const x=Math.floor(c.x/8),z=Math.floor(c.z/8);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const j of grid.get(`${x+dx},${z+dz}`)||[])if(movingId===null||c.id===movingId||cars[j].id===movingId)pairs.push([j,i]);const key=`${x},${z}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(i);}
  return pairs;
 }
 export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrection=.8,fixedIds=null,time=null}={}){

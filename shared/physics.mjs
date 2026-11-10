@@ -28,13 +28,14 @@ import {guideBounds,sampleGuide} from './racing-line.mjs';
 import {conditionProfile,normalizeConditions,yawRate} from './conditions.mjs';
 import {sample,nearest,wrap,clamp,angleDiff,targetSpeed,terrainHeight} from './tracks.mjs';
 import {resolveCarContacts} from './collisions.mjs';
+import {isInPit} from './race-display.mjs';
 import {roadHalfWidth} from './baku.mjs';
 import {QUALIFYING_LIMIT,finishQualifyingCar} from './qualifying.mjs';
 export const TOP_SPEED=106,BOOST_TOP_SPEED=115;
 export const COLORS=LIVERIES.map(livery=>livery.marker);
 export const GRID_ROW_SPACING=16,GRID_STAGGER=8,GRID_LATERAL_OFFSET=3.6;
 export function gridSlot(index){return {s:-12-Math.floor(index/2)*GRID_ROW_SPACING-(index%2)*GRID_STAGGER,offset:(index%2?1:-1)*GRID_LATERAL_OFFSET};}
-export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);const car={id,name,index,ai,tyreTrackId:track.id,airDensity:track.id==='mx-1962'?.78:1,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,roll:p.roll||0,bankedRoad:track.id==='nl-1948',s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};prepareTyres(car);return car;}
+export function createCar(track,id,name,index,ai=false,colorId=null,conditions='normal'){const {s,offset}=gridSlot(index),p=sample(track,s,offset),paint=normalizeLiveryIndex(colorId,index);const car={id,name,index,pitBoxIndex:index,ai,tyreTrackId:track.id,airDensity:track.id==='mx-1962'?.78:1,conditions:normalizeConditions(conditions),motionHeading:p.heading,motionYawRate:0,impactVX:0,impactVZ:0,impactYaw:0,inputLag:0,surfaceGrip:1,cornerGrip:1,sliding:false,colorId:paint,color:COLORS[paint],x:p.x,z:p.z,y:p.y,heading:p.heading,pitch:p.pitch,roll:p.roll||0,bankedRoad:track.id==='nl-1948',s:wrap(s,track.length),progress:s,v:0,steer:0,lap:1,lastLap:0,bestLap:0,lapStart:0,finished:false,retired:false,finishTime:0,offtrack:false,offtrackPenalty:false,boost:100,penalty:0,resetTimer:0,invalidLap:false,offtrackTime:0,lastLapValid:true,outLap:false,sector:0,sectors:[],bestSectors:[],lastSectors:[],lapHistory:[],lapValidHistory:[],slipstream:0};prepareTyres(car);return car;}
 export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;clearImpact(c);c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
  if(c.finished||isQualifying||c.qualifying||c.pitState!=='none')return false;
@@ -77,26 +78,25 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
   const skill=track.width<15?.65+c.index*.01:.78+c.index*.018;
   const trafficCorner=guide.curvature>.009&&Math.abs(c.aiLaneOffset||0)>1.2;
   const tyrePace=Math.min(1,Math.sqrt(tyreGrip(c)))*tyreSpeedFactor(c);
-  const paceScale=skill*(trafficCorner?.89:1)*tyrePace;
+  const desiredPace=pace*skill*(trafficCorner?.89:1)*tyrePace;
   const trafficLimit=c.aiTrafficSpeed??Infinity;
-  const desiredPace=pace*paceScale;
   const straight=pace>53&&[45,90,135].every(ahead=>targetSpeed(track,c.s+ahead,c.conditions,c.trackWetness)>pace-2);
   const passing=c.aiPassTarget!=null;
-  const passPace=passing?targetSpeed(track,c.s+Math.max(12,c.v*.55),c.conditions,c.trackWetness)*paceScale:0;
-  // A pass can use energy to reach cornering speed sooner. Keep the normal
-  // corner speed ceiling and leave enough room for the next braking point.
-  const passReady=passing&&c.v>16&&!c.sliding&&Math.abs(steer)<.86&&
-   c.v+1.5<Math.min(desiredPace,passPace,trafficLimit);
+  const approach=passing?targetSpeed(track,c.s+Math.max(12,c.v*.55),c.conditions,c.trackWetness):0;
+  // Spend energy above the AI's conservative cruise pace while passing,
+  // bounded by available grip, the next braking zone and any car ahead.
+  const passPace=Math.min(desiredPace+8*tyrePace,Math.min(pace,approach)*tyrePace*(trafficCorner?.95:1),trafficLimit);
+  const passReady=passing&&c.v>16&&!c.sliding&&Math.abs(steer)<.94&&c.v+.35<passPace;
   const ready=!c.offtrack&&!c.pitRequested&&!c.outLap&&
    (passing?passReady:straight&&c.aiTrafficSpeed==null&&c.v>28);
   const newPass=passing&&c.aiBoostPassTarget!==c.aiPassTarget;
-  if(ready&&(newPass||elapsed>=(c.aiBoostReadyAt??0))&&c.boost>27){
+  if(ready&&(newPass||elapsed>=(c.aiBoostReadyAt??0))&&c.boost>(passing?20:32)){
    if(passing)c.aiBoostPassTarget=c.aiPassTarget;
-   c.aiBoostUntil=elapsed+(passing?1.9:1.45);
+   c.aiBoostUntil=elapsed+(passing?2.1:1.45);
    c.aiBoostReadyAt=c.aiBoostUntil+(passing?3.5:7+c.index*.4);
   }
   aiBoost=ready&&elapsed<(c.aiBoostUntil??0)&&c.boost>12;
-  const desired=Math.min(trafficLimit,desiredPace+(aiBoost&&straight?7*tyrePace:0));
+  const desired=Math.min(trafficLimit,aiBoost?(passing?passPace:desiredPace+7*tyrePace):desiredPace);
   const overspeed=c.v-desired;
   throttle=overspeed<0?1:0;
   brake=overspeed>1.5?clamp(overspeed*.12,.16,1):0;
@@ -192,10 +192,10 @@ function updateLap(c,track,elapsed,laps){
  }
 }
 export function draftStrength(c,cars){
- if(c.finished||c.retired)return 0;
+ if(c.finished||c.retired||isInPit(c))return 0;
  let strength=0;
  for(const o of cars){
-  if(c.id===o.id||o.retired||o.finished)continue;
+  if(c.id===o.id||o.retired||o.finished||isInPit(o))continue;
   const delta=o.progress-c.progress,dist=Math.hypot(o.x-c.x,o.z-c.z);
   if(delta>3&&delta<60&&dist<60&&Math.abs(dist-delta)<6)strength=Math.max(strength,1-delta/60);
  }

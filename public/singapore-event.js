@@ -450,7 +450,6 @@ export function addSingaporeEvent(scene, track, plan) {
     roadLabel(label, sample(track, station - 3), 2.6, .75);
   }
   roadLabel(String(Math.round(pitTransitPlan(track).speed * 3.6)), pitRoadPose(track, Math.min(pit.taper + 13, 125)), 2.45, 1.1);
-  for (let i = 0; i < 5; i++) roadLabel('PIT ' + (i + 1), pitRoadPose(track, pit.box - 18 + i * 8, pit.side * 1.5), 1.2, .52);
 
   const manholes = [], drains = [], repairs = [];
   for (let s = 26; s < track.length; s += 59) {

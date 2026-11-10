@@ -3,6 +3,7 @@ import {moveWithBarriers} from './barriers.mjs';
 import {stepCar} from './physics.mjs';
 import {angleDiff} from './tracks.mjs';
 import {pitPose,pitLayout} from './pits.mjs';
+import {pitStopStation} from './pit-layout.mjs';
 
 const active=s=>['race','qualifying','practice'].includes(s.phase)&&s.elapsed>=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -40,7 +41,7 @@ export class MultiplayerTracking {
  }
  project(car,dt){
   if(!active(this.session)||dt<=0||car.finished)return;
-  if(car.pitState&&car.pitState!=='none'){const plan=pitLayout(this.track),end=car.pitState==='lane'?plan.box:car.pitState==='service'?car.pitTravel:plan.length;Object.assign(car,pitPose(car,this.track,Math.min(end,car.pitTravel+car.v*dt)));return;}
+  if(car.pitState&&car.pitState!=='none'){const plan=pitLayout(this.track),end=car.pitState==='lane'?pitStopStation(plan,car):car.pitState==='service'?car.pitTravel:plan.length;Object.assign(car,pitPose(car,this.track,Math.min(end,car.pitTravel+car.v*dt)));return;}
   const before={x:car.x,z:car.z,heading:car.heading};projectMotion(car,dt);moveWithBarriers(car,this.track,before);
  }
  localPose(now){

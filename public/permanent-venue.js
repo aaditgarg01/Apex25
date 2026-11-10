@@ -466,7 +466,6 @@ export function addPermanentVenue(scene, track, {
     const box = scene.box(2.8, .02, .12, '#e9dfcf', p.x, p.y + .11, p.z);
     box.rotation.set(-p.pitch, p.heading, 0, 'YXZ');
   }
-  for (let i = 0; i < 6; i++) groundText('BOX ' + (i + 1), pitRoadPose(track, pit.box - 21 + i * 8, pit.side * 1.5), 1.25, .55);
   atlas.needsUpdate = true;
   let lastFrame = -Infinity, wetness = 0;
   scene.environmentFx = {

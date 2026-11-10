@@ -1,6 +1,21 @@
 import {sample,wrap,angleDiff} from './tracks.mjs';
 const cache=new WeakMap(),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+const BOX_COUNT=8,BOX_SPACING=9;
+
+// Keep the old service anchor for scenery and transit timing. The row sits
+// entirely between the tapers so each numbered stop is on the parallel lane.
+function serviceBoxes(plan){
+ const span=(BOX_COUNT-1)*BOX_SPACING;
+ const first=clamp(plan.box-span/2,plan.taper+5,plan.length-plan.taper-5-span);
+ return Array.from({length:BOX_COUNT},(_,index)=>first+index*BOX_SPACING);
+}
+
+export function pitStopStation(plan,car){
+ // A checkpoint written before numbered boxes can already be in the lane.
+ return plan.boxes[car.pitBoxIndex]??plan.box;
+}
+
 function point(track,plan,d,across=0,entryOffset=plan.entryOffset){
  const road=sample(track,plan.entry+d),frame=plan.frame,rx=Math.cos(frame.heading),rz=-Math.sin(frame.heading),fx=Math.sin(frame.heading),fz=Math.cos(frame.heading);
  const longitudinal=(road.x-frame.x)*fx+(road.z-frame.z)*fz,enter=smooth(d/plan.taper),leave=smooth((plan.length-d)/plan.taper),body=enter*leave;
@@ -41,6 +56,7 @@ export function pitLayout(track){
    if(!best||cost<best.cost)best={...plan,cost};
   }
  }
+ best.boxes=serviceBoxes(best);
  best.samples=[];best.grid=new Map();
  for(let d=0;d<=best.length;d+=3){const p={...point(track,best,d),d};best.samples.push(p);const key=Math.floor(p.x/16)+':'+Math.floor(p.z/16);if(!best.grid.has(key))best.grid.set(key,[]);best.grid.get(key).push(p);}
  cache.set(track,best);return best;

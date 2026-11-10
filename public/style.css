@@ -142,3 +142,5 @@ body.racing #leaderboard .driver-pit{display:block;color:#78dce6;font-size:8px;l
 body.racing #leaderboard .driver-pit-time,#results .result-time .driver-pit-time{display:block;color:#83b6bd;font-size:8px;line-height:1.35;white-space:nowrap;margin-top:2px;font-variant-numeric:tabular-nums}
 body.racing #leaderboard .driver-pit-time.recent,#results .result-time .driver-pit-time.recent{color:#ffd169;font-weight:700}
 #results .result-time .driver-pit-time{font-size:10px}
+
+.driver-boost{font-size:.85em;color:#66dfff;margin-left:3px;vertical-align:baseline}

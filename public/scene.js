@@ -45,7 +45,7 @@ import {trackBarriers} from '/shared/barriers.mjs';
 import {campusTunnelAt} from '/shared/campus.mjs';
 import {liveryProfile,normalizeLiveryIndex} from '/shared/liveries.mjs';
 import {TOP_SPEED,BOOST_TOP_SPEED,gridSlot} from '/shared/physics.mjs';
-import {isOnTrack} from '/shared/race-display.mjs';
+import {isOnTrack,isInPit} from '/shared/race-display.mjs';
 import {sampleGuide,racingSpeedAt,prepareRacingLine} from '/shared/racing-line.mjs';
 import {conditionProfile} from '/shared/conditions.mjs';
 import {WeatherEffects} from './weather.js';
@@ -281,8 +281,30 @@ export class RaceScene{
   car.add(wheel);wheels.push(wheel);
  }
  car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});batchBoxes(car,Infinity);batchMapped(car);car.userData.wheels=wheels;this.group.add(car);return car;}
+ setPitGhost(model,ghost){
+  if(ghost===!!model.userData.pitGhost)return;
+  model.userData.pitGhost=ghost;
+  const materials=new Set();
+  model.traverse(mesh=>{
+   if(!mesh.isMesh)return;
+   mesh.castShadow=!ghost;
+   for(const material of [].concat(mesh.material))materials.add(material);
+  });
+  for(const material of materials){
+   if(ghost){
+    material.userData.pitOpacity={opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite};
+    material.opacity*=.46;
+    material.transparent=true;
+    material.depthWrite=false;
+   }else{
+    Object.assign(material,material.userData.pitOpacity);
+    delete material.userData.pitOpacity;
+   }
+   material.needsUpdate=true;
+  }
+ }
  removeCar(id){const model=this.cars.get(id);if(!model)return;this.group.remove(model);const geometries=new Set(),materials=new Set(),textures=new Set();model.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const material of [].concat(o.material)){materials.add(material);if(material.map)textures.add(material.map);}});for(const geometry of geometries)geometry.dispose();for(const texture of textures)texture.dispose();for(const material of materials)material.dispose();this.cars.delete(id);}
- sync(cars,dt,rolling){const live=new Set(cars.filter(isOnTrack).map(c=>c.id));for(const id of this.cars.keys())if(!live.has(id))this.removeCar(id);for(const c of cars){if(!isOnTrack(c))continue;let model=this.cars.get(c.id);if(model&&model.userData.liveryId!==normalizeLiveryIndex(c.colorId)){this.removeCar(c.id);model=null;}if(!model){model=this.makeCar(c);this.cars.set(c.id,model);model.position.set(c.x,c.y,c.z);model.rotation.y=c.heading;}model.userData.tyreMark.color.set(tyreProfile(c.tyreCompound).color);const blend=c.smoothMotion?1:1-Math.exp(-dt*18);model.position.lerp(new THREE.Vector3(c.x,c.y+.07,c.z),blend);model.rotation.y+=angleDiff(c.heading,model.rotation.y)*blend;model.rotation.x+=(-(c.pitch||0)-model.rotation.x)*blend;if(this.track.id==='nl-1948'){const onRoad=nearest(this.track,c.x,c.z,c.s),slope=sample(this.track,onRoad.s,onRoad.offset),attitude=surfaceAttitude(slope,c.heading);model.position.y=c.y+.07;model.rotation.x+=(-attitude.pitch-model.rotation.x)*blend;model.rotation.z+=(attitude.roll-model.rotation.z)*blend;}else model.rotation.z=0;if(rolling&&!c.finished)model.userData.wheels.forEach(w=>{w.userData.spin.rotation.x=(w.userData.spin.rotation.x+c.v*dt/.39)%(Math.PI*2);if(w.userData.isFront)w.rotation.y=c.steer*.6;});}}
+ sync(cars,dt,rolling){const live=new Set(cars.filter(isOnTrack).map(c=>c.id));for(const id of this.cars.keys())if(!live.has(id))this.removeCar(id);for(const c of cars){if(!isOnTrack(c))continue;let model=this.cars.get(c.id);if(model&&model.userData.liveryId!==normalizeLiveryIndex(c.colorId)){this.removeCar(c.id);model=null;}if(!model){model=this.makeCar(c);this.cars.set(c.id,model);model.position.set(c.x,c.y,c.z);model.rotation.y=c.heading;}this.setPitGhost(model,isInPit(c));model.userData.tyreMark.color.set(tyreProfile(c.tyreCompound).color);const blend=c.smoothMotion?1:1-Math.exp(-dt*18);model.position.lerp(new THREE.Vector3(c.x,c.y+.07,c.z),blend);model.rotation.y+=angleDiff(c.heading,model.rotation.y)*blend;model.rotation.x+=(-(c.pitch||0)-model.rotation.x)*blend;if(this.track.id==='nl-1948'){const onRoad=nearest(this.track,c.x,c.z,c.s),slope=sample(this.track,onRoad.s,onRoad.offset),attitude=surfaceAttitude(slope,c.heading);model.position.y=c.y+.07;model.rotation.x+=(-attitude.pitch-model.rotation.x)*blend;model.rotation.z+=(attitude.roll-model.rotation.z)*blend;}else model.rotation.z=0;if(rolling&&!c.finished)model.userData.wheels.forEach(w=>{w.userData.spin.rotation.x=(w.userData.spin.rotation.x+c.v*dt/.39)%(Math.PI*2);if(w.userData.isFront)w.rotation.y=c.steer*.6;});}}
  frame(cars,player,dt,racing,rolling=false){
  this.pitLane?.update(cars,performance.now());
  // Sustained slow frames lower resolution before input feels sluggish. Do not

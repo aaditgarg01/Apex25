@@ -13,26 +13,76 @@ export function addPitLane(scene,track){
  }
  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));group.add(new THREE.Mesh(geometry,paint));
  const edgePaint=new THREE.MeshBasicMaterial({color:'#45d9ef',side:THREE.DoubleSide,toneMapped:false,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-6});for(const side of [-1,1]){const pts=[];for(let d=0;d<plan.length;d+=3)for(const [at,o]of [[d,side*(plan.width/2-.28)],[Math.min(d+3,plan.length),side*(plan.width/2-.28)],[d,side*(plan.width/2+.02)],[d,side*(plan.width/2+.02)],[Math.min(d+3,plan.length),side*(plan.width/2-.28)],[Math.min(d+3,plan.length),side*(plan.width/2+.02)]]){const p=pitRoadPose(track,at,o);pts.push(p.x,p.y+.08,p.z);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));group.add(new THREE.Mesh(g,edgePaint));}
- const boxAt=pitRoadPose(track,plan.box),box=new THREE.Group();box.position.set(boxAt.x,boxAt.y+.09,boxAt.z);box.rotation.set(-boxAt.pitch,boxAt.heading,0,'YXZ');group.add(box);
- const yellow=new THREE.MeshBasicMaterial({color:'#ffdd58'});
- for(const x of [-1.65,1.65]){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.12,.015,7),yellow);stripe.position.set(x,0,0);box.add(stripe);}
- for(const z of [-3.5,3.5]){const stripe=new THREE.Mesh(new THREE.BoxGeometry(3.4,.015,.15),yellow);stripe.position.set(0,0,z);box.add(stripe);}
- function label(text,distance){
-  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=256;const ink=canvas.getContext('2d');ink.fillStyle='#122c36';ink.fillRect(0,0,512,256);ink.fillStyle='#eafcff';ink.textAlign='center';ink.font='900 62px Arial';ink.fillText(text,256,110);ink.font='bold 39px Arial';ink.fillText(Math.round(pitTransitPlan(track).speed*3.6)+' KM/H',256,190);
+ const dummy=new THREE.Object3D(),paintY=.09;
+ const stripes=new THREE.InstancedMesh(
+  new THREE.BoxGeometry(1,1,1),
+  new THREE.MeshBasicMaterial({color:'#ffdd58'}),
+  plan.boxes.length*4
+ );
+ let stripeIndex=0;
+ for(const station of plan.boxes){
+  for(const [distance,across,w,d] of [
+   [station,-1.65,.12,7],[station,1.65,.12,7],
+   [station-3.5,0,3.4,.15],[station+3.5,0,3.4,.15],
+  ]){
+   const p=pitRoadPose(track,distance,across);
+   dummy.position.set(p.x,p.y+paintY,p.z);
+   dummy.rotation.set(-p.pitch,p.heading,0,'YXZ');
+   dummy.scale.set(w,.015,d);
+   dummy.updateMatrix();
+   stripes.setMatrixAt(stripeIndex++,dummy.matrix);
+  }
+ }
+ stripes.instanceMatrix.needsUpdate=true;
+ group.add(stripes);
+ function label(text,distance,number=false){
+  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=256;
+  const ink=canvas.getContext('2d');ink.fillStyle=number?'#233037':'#122c36';ink.fillRect(0,0,512,256);
+  ink.fillStyle=number?'#ffdd58':'#eafcff';ink.textAlign='center';ink.font=number?'900 172px Arial':'900 62px Arial';
+  ink.fillText(text,256,number?190:110);
+  if(!number){ink.font='bold 39px Arial';ink.fillText(Math.round(pitTransitPlan(track).speed*3.6)+' KM/H',256,190);}
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-  const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.2,1.6),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4})),p=pitRoadPose(track,distance);sign.position.set(p.x,p.y+.09,p.z);sign.rotation.set(-Math.PI/2,p.heading+(['tr-2005','pt-2008','fr-1969','es-2026','my-1999','in-2011','qa-2004','sg-2008'].includes(track.id)?Math.PI:0),0,'YXZ');group.add(sign);
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(number?1.15:3.2,number?.57:1.6),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4}));
+  const p=pitRoadPose(track,distance,number?plan.side*2.33:0);
+  sign.position.set(p.x,p.y+paintY,p.z);
+  const flip=number||['tr-2005','pt-2008','fr-1969','es-2026','my-1999','in-2011','qa-2004','sg-2008'].includes(track.id);
+  sign.rotation.set(-Math.PI/2,p.heading+(flip?Math.PI:0),0,'YXZ');group.add(sign);
  }
- label(plan.side>0?'PIT LEFT':'PIT RIGHT',8);label('BOX',plan.box-10);label('PIT OUT',plan.length-12);
- // Low-cost crew animation is visible only while a car is being serviced;
- // no scenery poles, walls or props are added to the racing path.
- const crew=[];
- for(const x of [-1.4,1.4])for(const z of [-1.2,1.45]){
-  const member=new THREE.Group(),suit=new THREE.MeshStandardMaterial({color:'#e45024',roughness:.8}),helmet=new THREE.MeshStandardMaterial({color:'#f6f4e8'});
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(.16,.22,.62,8),suit);body.position.y=.43;member.add(body);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.18,8,6),helmet);head.position.y=.88;member.add(head);member.position.set(x,0,z);box.add(member);crew.push(member);
- }
+ label(plan.side>0?'PIT LEFT':'PIT RIGHT',8);
+ label('PIT OUT',plan.length-12);
+ plan.boxes.forEach((station,index)=>label(String(index+1).padStart(2,'0'),station,true));
+
+ const crewCount=plan.boxes.length*4;
+ const bodies=new THREE.InstancedMesh(new THREE.CylinderGeometry(.16,.22,.62,8),new THREE.MeshStandardMaterial({color:'#e45024',roughness:.8}),crewCount);
+ const helmets=new THREE.InstancedMesh(new THREE.SphereGeometry(.18,8,6),new THREE.MeshStandardMaterial({color:'#f6f4e8'}),crewCount);
+ bodies.count=helmets.count=0;
+ bodies.frustumCulled=helmets.frustumCulled=false;
+ group.add(bodies,helmets);
  group.traverse(o=>o.userData.pitKeep=true);
- return {update(cars,now){const servicing=cars.some(c=>!c.finished&&c.pitState==='service'&&c.pitTimer<=(c.pitServiceDuration||PIT_SERVICE_SECONDS)+1e-9);for(const [i,member]of crew.entries()){member.visible=servicing;member.rotation.z=servicing?Math.sin(now*.018+i)*.12:0;member.position.y=servicing?Math.sin(now*.022+i)*.025:0;}}};
+ let lastFrame=-Infinity;
+ return {update(cars,now){
+  if(now-lastFrame<75)return;
+  lastFrame=now;
+  let count=0;
+  dummy.scale.set(1,1,1);
+  for(const car of cars){
+   if(car.finished||car.pitState!=='service'||car.pitTimer>(car.pitServiceDuration||PIT_SERVICE_SECONDS)+1e-9)continue;
+   for(const across of [-1.4,1.4])for(const dz of [-1.2,1.45]){
+    const p=pitRoadPose(track,car.pitTravel+dz,across);
+    const bob=Math.sin(now*.022+count)*.025;
+    dummy.position.set(p.x,p.y+.43+bob,p.z);
+    dummy.rotation.set(0,p.heading,Math.sin(now*.018+count)*.12);
+    dummy.updateMatrix();
+    bodies.setMatrixAt(count,dummy.matrix);
+    dummy.position.y+=.45;
+    dummy.updateMatrix();
+    helmets.setMatrixAt(count++,dummy.matrix);
+   }
+  }
+  bodies.count=helmets.count=count;
+  bodies.instanceMatrix.needsUpdate=helmets.instanceMatrix.needsUpdate=true;
+ }};
+
 }
 
 // Reserve the lane before scenery batching; retain terrain, the racing ribbon,
