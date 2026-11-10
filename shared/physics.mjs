@@ -75,15 +75,28 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
   const brakingLook=conditions.wetness?Math.max(0,c.v)*(1-conditions.braking)*2:0;
   const pace=Math.min(targetSpeed(track,c.s,c.conditions,c.trackWetness),targetSpeed(track,c.s+brakingLook,c.conditions,c.trackWetness));
   const skill=track.width<15?.65+c.index*.01:.78+c.index*.018;
+  const trafficCorner=guide.curvature>.009&&Math.abs(c.aiLaneOffset||0)>1.2;
+  const tyrePace=Math.min(1,Math.sqrt(tyreGrip(c)))*tyreSpeedFactor(c);
+  const paceScale=skill*(trafficCorner?.89:1)*tyrePace;
+  const trafficLimit=c.aiTrafficSpeed??Infinity;
+  const desiredPace=pace*paceScale;
   const straight=pace>53&&[45,90,135].every(ahead=>targetSpeed(track,c.s+ahead,c.conditions,c.trackWetness)>pace-2);
-  const ready=straight&&!c.offtrack&&!c.pitRequested&&!c.outLap&&c.aiTrafficSpeed==null&&c.v>28;
-  if(ready&&elapsed>=(c.aiBoostReadyAt??0)&&c.boost>27){
-   c.aiBoostUntil=elapsed+(c.aiPassTarget?1.9:1.45);
-   c.aiBoostReadyAt=c.aiBoostUntil+(c.aiPassTarget?3.5:7+c.index*.4);
+  const passing=c.aiPassTarget!=null;
+  const passPace=passing?targetSpeed(track,c.s+Math.max(12,c.v*.55),c.conditions,c.trackWetness)*paceScale:0;
+  // A pass can use energy to reach cornering speed sooner. Keep the normal
+  // corner speed ceiling and leave enough room for the next braking point.
+  const passReady=passing&&c.v>16&&!c.sliding&&Math.abs(steer)<.86&&
+   c.v+1.5<Math.min(desiredPace,passPace,trafficLimit);
+  const ready=!c.offtrack&&!c.pitRequested&&!c.outLap&&
+   (passing?passReady:straight&&c.aiTrafficSpeed==null&&c.v>28);
+  const newPass=passing&&c.aiBoostPassTarget!==c.aiPassTarget;
+  if(ready&&(newPass||elapsed>=(c.aiBoostReadyAt??0))&&c.boost>27){
+   if(passing)c.aiBoostPassTarget=c.aiPassTarget;
+   c.aiBoostUntil=elapsed+(passing?1.9:1.45);
+   c.aiBoostReadyAt=c.aiBoostUntil+(passing?3.5:7+c.index*.4);
   }
   aiBoost=ready&&elapsed<(c.aiBoostUntil??0)&&c.boost>12;
-  const trafficCorner=guide.curvature>.009&&Math.abs(c.aiLaneOffset||0)>1.2;
-  const desired=Math.min(c.aiTrafficSpeed??Infinity,(pace*skill*(trafficCorner?.89:1)+(aiBoost?7:0))*Math.min(1,Math.sqrt(tyreGrip(c)))*tyreSpeedFactor(c));
+  const desired=Math.min(trafficLimit,desiredPace+(aiBoost&&straight?7*tyrePace:0));
   const overspeed=c.v-desired;
   throttle=overspeed<0?1:0;
   brake=overspeed>1.5?clamp(overspeed*.12,.16,1):0;
