@@ -39,6 +39,8 @@ function planTraffic(session,track,dt){
    traffic.push({car:other,gap,offset:offsets[otherIndex]});
   }
 
+  const nextCar=traffic.filter(other=>other.gap>0).sort((a,b)=>a.gap-b.gap)[0];
+  car.aiGapAhead=nextCar?nextCar.gap/Math.max(20,speed):null;
   const front=traffic.filter(other=>other.gap>=0&&Math.abs(other.offset-offset)<PASS_CLEARANCE)
    .sort((a,b)=>a.gap-b.gap)[0];
   const closing=front?speed-front.car.v:0;

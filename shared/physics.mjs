@@ -81,24 +81,17 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
   const desiredPace=pace*skill*(trafficCorner?.89:1)*tyrePace;
   const trafficLimit=c.aiTrafficSpeed??Infinity;
   const straight=pace>53&&[45,90,135].every(ahead=>targetSpeed(track,c.s+ahead,c.conditions,c.trackWetness)>pace-2);
-  const passing=c.aiPassTarget!=null;
-  const approach=passing?targetSpeed(track,c.s+Math.max(12,c.v*.55),c.conditions,c.trackWetness):0;
-  // Spend energy above the AI's conservative cruise pace while passing,
-  // bounded by available grip, the next braking zone and any car ahead.
-  const passPace=Math.min(desiredPace+8*tyrePace,Math.min(pace,approach)*tyrePace*(trafficCorner?.95:1),trafficLimit);
-  const passReady=passing&&c.v>16&&!c.sliding&&Math.abs(steer)<.94&&c.v+.35<passPace;
-  const ready=!c.offtrack&&!c.pitRequested&&!c.outLap&&
-   (passing?passReady:straight&&c.aiTrafficSpeed==null&&c.v>28);
-  const newPass=passing&&c.aiBoostPassTarget!==c.aiPassTarget;
-  if(ready&&(newPass||elapsed>=(c.aiBoostReadyAt??0))&&c.boost>(passing?20:32)){
-   if(passing)c.aiBoostPassTarget=c.aiPassTarget;
-   c.aiBoostUntil=elapsed+(passing?2.1:1.45);
-   c.aiBoostReadyAt=c.aiBoostUntil+(passing?3.5:7+c.index*.4);
-  }
-  aiBoost=ready&&elapsed<(c.aiBoostUntil??0)&&c.boost>12;
-  const desired=Math.min(trafficLimit,aiBoost?(passing?passPace:desiredPace+7*tyrePace):desiredPace);
+  const chasing=Number.isFinite(c.aiGapAhead)&&c.aiGapAhead<1;
+  const attacking=c.aiPassTarget!=null||chasing;
+  const approach=attacking?targetSpeed(track,c.s+Math.max(12,c.v*.55),c.conditions,c.trackWetness):pace;
+  const attackPace=Math.min(desiredPace+8*tyrePace,Math.min(pace,approach)*tyrePace*(trafficCorner?.95:1),trafficLimit);
+  // Keep deploying while chasing inside one second or accelerating on a
+  // straight. The shared throttle/brake gate cuts power for traffic and turns.
+  aiBoost=(attacking||straight)&&!c.offtrack&&!c.pitRequested&&!c.outLap&&!c.sliding&&
+   c.boost>0&&c.v>16;
+  const desired=Math.min(trafficLimit,aiBoost?(attacking?attackPace:desiredPace+7*tyrePace):desiredPace);
   const overspeed=c.v-desired;
-  throttle=overspeed<0?1:0;
+  throttle=clamp(.28-overspeed*.45,0,1);
   brake=overspeed>1.5?clamp(overspeed*.12,.16,1):0;
  }
  // Booking a stop never brakes on the racing surface. The limiter starts at the gate.

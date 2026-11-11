@@ -42,6 +42,9 @@ export function tryPitEntry(car,track,previousS){
  // Proximity on the racing track cannot activate a stop or grant skipped progress.
  const late=lane.d>.05&&lane.d<layout.length-layout.taper&&lane.distance<=layout.width/2-.65;
  if(!gate&&!late)return false;
+ if(car.lastPitService>0&&!(car.lastPitTyreService>0)){
+  car.lastPitTyreService=Math.max(0,car.lastPitService-(car.pitServicePenalty||0));
+ }
  car.pitBoxIndex??=car.index;
  const box=pitStopStation(layout,car);
  car.pitTravel=gate?Math.max(0,travel-ahead):lane.d;
@@ -100,7 +103,7 @@ export function stepPit(car,track,dt){
   // Serve the captured penalty before tyre work. Elapsed race time already
   // includes this wait, so remove it from the outstanding finish-time penalty.
   if(car.pitPenalty>0&&car.pitTimer<=duration+1e-9){car.penalty=Math.max(0,(car.penalty||0)-car.pitPenalty);car.penaltyServed=(car.penaltyServed||0)+car.pitPenalty;car.pitPenalty=0;}
-  if(car.pitTimer===0){if(!car.pitFitted){fitTyres(car);car.pitFitted=true;car.lastPitService=duration+(car.pitServicePenalty||0);car.lastPitServiceAt=(car.physicsTime||0)-Math.max(0,dt-remainingService);car.lastPitServiceStop=car.pitStops;}car.pitState='exit';}
+  if(car.pitTimer===0){if(!car.pitFitted){fitTyres(car);car.pitFitted=true;car.lastPitService=duration+(car.pitServicePenalty||0);car.lastPitTyreService=duration;car.lastPitServiceAt=(car.physicsTime||0)-Math.max(0,dt-remainingService);car.lastPitServiceStop=car.pitStops;}car.pitState='exit';}
   moveDt=Math.max(0,dt-remainingService);
  }
  if(car.pitState!=='service'&&moveDt>0){
@@ -111,7 +114,9 @@ export function stepPit(car,track,dt){
   if(move<car.v*moveDt/rate-.001)car.v=move*rate/moveDt;
   car.pitTravel+=move;
   if(remaining-move<.03){
-   if(stopAtBox){car.pitTravel=box;car.pitState='service';car.pitServiceDuration=pitServiceFor(car);car.pitPenalty=Number.isFinite(car.tyreRaceLaps)?Math.max(0,car.penalty||0):0;car.pitServicePenalty=car.pitPenalty;car.pitTimer=car.pitServiceDuration+car.pitPenalty;car.v=0;}
+   if(stopAtBox){
+    if(car.lastPitService>0&&!(car.lastPitTyreService>0))car.lastPitTyreService=Math.max(0,car.lastPitService-(car.pitServicePenalty||0));
+    car.pitTravel=box;car.pitState='service';car.pitServiceDuration=pitServiceFor(car);car.pitPenalty=Number.isFinite(car.tyreRaceLaps)?Math.max(0,car.penalty||0):0;car.pitServicePenalty=car.pitPenalty;car.pitTimer=car.pitServiceDuration+car.pitPenalty;car.v=0;}
    else{car.pitTravel=plan.length;car.pitState='none';car.pitEntryOffset=0;}
   }
  }

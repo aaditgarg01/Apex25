@@ -37,4 +37,9 @@ export function raceIntervalLabel(car,ahead,trackLength,elapsed,leader=ahead){
 }
 export const isInPit=car=>isOnTrack(car)&&['lane','service','exit'].includes(car.pitState);
 
-export const pitServiceLabel=car=>Number.isFinite(car.lastPitService)&&car.lastPitService>0?`PIT ${car.lastPitService.toFixed(3)}s`:'';
+export function pitTyreServiceTime(car){
+ if(Number.isFinite(car.lastPitTyreService)&&car.lastPitTyreService>0)return car.lastPitTyreService;
+ if(!Number.isFinite(car.lastPitService)||car.lastPitService<=0)return 0;
+ return Math.max(0,car.lastPitService-(car.pitServicePenalty||0));
+}
+export const pitServiceLabel=car=>pitTyreServiceTime(car)>0?`PIT ${pitTyreServiceTime(car).toFixed(3)}s`:'';

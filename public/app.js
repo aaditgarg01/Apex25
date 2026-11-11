@@ -12,7 +12,7 @@ import {RoomConnection} from './room-connection.js';
 import {parseRoomCode} from '/shared/rooms.mjs';
 import {velocityOf} from '/shared/motion.mjs';
 import {LIVERIES,liveryProfile,normalizeLiveryIndex} from '/shared/liveries.mjs';
-import {isOnTrack,isRaceFinisher,raceIntervalLabel,isInPit,pitServiceLabel} from '/shared/race-display.mjs';
+import {isOnTrack,isRaceFinisher,raceIntervalLabel,isInPit,pitServiceLabel,pitTyreServiceTime} from '/shared/race-display.mjs';
 import {CONDITIONS,conditionProfile,normalizeConditions} from '/shared/conditions.mjs';
 import {NetworkMotion,mergeMotionState} from '/shared/netcode.mjs';
 import {RaceScene} from './scene.js';
@@ -223,12 +223,12 @@ function addDriverTyre(element,car){const compound=TYRES[car.tyreCompound];if(!c
 function addFinishFlag(element){const flag=document.createElement('span');flag.className='finisher-flag';flag.textContent='🏁';flag.title='Finished race';flag.setAttribute('aria-label','Finished race');element.append(flag);}
 function addPitService(element,car){
  const text=pitServiceLabel(car);if(!text)return;
- const badge=document.createElement('small');badge.className='driver-pit-time'+(session.elapsed-(car.lastPitServiceAt||0)<8?' recent':'');badge.textContent=text;badge.title='Last stationary pit service, including any served time penalty';element.append(badge);
+ const badge=document.createElement('small');badge.className='driver-pit-time'+(session.elapsed-(car.lastPitServiceAt||0)<8?' recent':'');badge.textContent=text;badge.title='Tyre service time, excluding time penalties';element.append(badge);
 }
 function notifyPitServices(now){
  for(const c of session.cars){
   const stop=c.lastPitServiceStop||0;if(!pitServiceSeen.has(c.id)){pitServiceSeen.set(c.id,stop);continue;}
-  if(stop>pitServiceSeen.get(c.id)&&pitServiceLabel(c)){pitNotices.push(`${c.name} · PIT SERVICE ${c.lastPitService.toFixed(3)}s`);pitServiceSeen.set(c.id,stop);}
+  if(stop>pitServiceSeen.get(c.id)&&pitServiceLabel(c)){pitNotices.push(`${c.name} · PIT SERVICE ${pitTyreServiceTime(c).toFixed(3)}s`);pitServiceSeen.set(c.id,stop);}
  }
  if(pitNotices.length&&now>=pitNoticeAt){toast(pitNotices.shift());pitNoticeAt=now+3500;}
 }
@@ -238,7 +238,7 @@ function updateRaceResultSummary(ordered){
  $('result-note').textContent=`${track.city} · ${session.laps} laps · Your time ${you.retired?'DNF':format(you.finishTime)}${you.penalty?' (includes '+you.penalty+'s penalties)':''}${pending?' · Provisional: other drivers are still racing.':''}`;
  $('spectate').hidden=!pending;
 }
-function updateResults(){const ordered=sessionStandings(session),signature=JSON.stringify([session.phase,session.phase==='race'&&cars.some(isOnTrack)?Math.floor(session.elapsed):null,ordered.map(c=>[c.id,c.name,c.bestLap,c.lap,c.finished,c.retired,c.finishTime,c.lapHistory,c.lapValidHistory,c.lastPitServiceStop,c.lastPitService])]);if(signature===resultSignature)return;resultSignature=signature;const list=$('results');list.replaceChildren();const timed=session.phase.startsWith('qualifying')||session.phase.startsWith('practice');$('result-gap-key').hidden=timed;if(!timed)updateRaceResultSummary(ordered);for(const [resultIndex,c]of ordered.entries()){const li=document.createElement('li'),name=document.createElement('span'),time=document.createElement('span');name.textContent=c.name+(c.id===playerId?' · YOU':'');addDriverTyre(name,c);if(!timed&&isRaceFinisher(c))addFinishFlag(name);time.className='result-time';if(timed){time.textContent=c.bestLap?format(c.bestLap):'NO VALID LAP';}else{
+function updateResults(){const ordered=sessionStandings(session),signature=JSON.stringify([session.phase,session.phase==='race'&&cars.some(isOnTrack)?Math.floor(session.elapsed):null,ordered.map(c=>[c.id,c.name,c.bestLap,c.lap,c.finished,c.retired,c.finishTime,c.lapHistory,c.lapValidHistory,c.lastPitServiceStop,c.lastPitService,c.lastPitTyreService])]);if(signature===resultSignature)return;resultSignature=signature;const list=$('results');list.replaceChildren();const timed=session.phase.startsWith('qualifying')||session.phase.startsWith('practice');$('result-gap-key').hidden=timed;if(!timed)updateRaceResultSummary(ordered);for(const [resultIndex,c]of ordered.entries()){const li=document.createElement('li'),name=document.createElement('span'),time=document.createElement('span');name.textContent=c.name+(c.id===playerId?' · YOU':'');addDriverTyre(name,c);if(!timed&&isRaceFinisher(c))addFinishFlag(name);time.className='result-time';if(timed){time.textContent=c.bestLap?format(c.bestLap):'NO VALID LAP';}else{
  const gap=document.createElement('span');gap.className='result-gap';gap.textContent=raceIntervalLabel(c,ordered[resultIndex-1],track.length,session.elapsed,ordered[0]);gap.title=/^\+\d+L$/.test(gap.textContent)?'Laps behind the race leader':resultIndex===0?'Race leader':'Interval to the driver directly ahead';time.append(gap);
  if(isRaceFinisher(c)){const total=document.createElement('small');total.textContent=format(c.finishTime)+' total';time.append(total);}
  else if(isOnTrack(c)){const lap=document.createElement('small');lap.textContent='Lap '+c.lap;time.append(lap);}
