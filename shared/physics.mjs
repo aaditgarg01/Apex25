@@ -39,12 +39,13 @@ export function createCar(track,id,name,index,ai=false,colorId=null,conditions='
 export function retireCar(c){if(!c||c.finished)return false;c.retired=true;c.finished=true;c.finishTime=null;c.v=0;clearImpact(c);c.boostActive=false;c.sliding=false;return true;}
 export function resetCar(c,track,isQualifying=false,elapsed=0){
  if(c.finished||isQualifying||c.qualifying||c.pitState!=='none')return false;
- clearImpact(c);const p=sample(track,c.s);Object.assign(c,p,{v:0,motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,penalty:c.penalty+3,resetTimer:1,invalidLap:true});
+ clearImpact(c);const p=sample(track,c.s);Object.assign(c,p,{v:0,motionHeading:p.heading,motionYawRate:0,surfaceGrip:1,cornerGrip:1,sliding:false,penalty:c.practice?0:c.penalty+3,resetTimer:1,invalidLap:!c.practice});
  return true;
 }
 export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(c.finished)return;
  c.physicsTime=elapsed;
+ if(c.practice){c.penalty=0;c.invalidLap=false;c.tyreLife=100;c.tyreBoostHeat=0;}
  if(stepPit(c,track,dt)){updateLap(c,track,elapsed,laps);return;}
  if(c.qualifying&&c.outLap&&elapsed>=QUALIFYING_LIMIT){finishQualifyingCar(c,elapsed);return;}
  dampImpact(c,dt);
@@ -104,9 +105,9 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  c.surfaceGrip=conditions.wetness?(c.offtrack?.48:Math.abs(roadOffset)>roadHalfWidth(track,c.s)-.8?conditions.curbGrip:1):1;
  if(duneSurface)c.surfaceGrip=(['tr-2005','pt-2008','fr-1969','es-2026','my-1999','in-2011','qa-2004','sg-2008'].includes(track.id)&&duneSurface.kind!=='asphalt'?1:c.surfaceGrip)*duneSurface.grip;
  c.cornerGrip=(1-conditions.wetness*(brake*.24+throttle*.10))*(track.id==='mx-1962'?.92:1);
- const rubber=tyreGrip(c),speedLimit=(boost?BOOST_TOP_SPEED:TOP_SPEED)*tyreSpeedFactor(c),density=track.id==='mx-1962'?.78:1;
+ const rubber=tyreGrip(c),speedLimit=(boost?BOOST_TOP_SPEED:TOP_SPEED)*tyreSpeedFactor(c)*(c.mv33?1.03:1),density=track.id==='mx-1962'?.78:1;
  const traction=conditions.traction*c.surfaceGrip*rubber,braking=33*conditions.braking*c.surfaceGrip*rubber;
- const accel=(boost?19:14)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032*density*tyreDragFactor(c))*(1-slip*0.3)+(duneSurface?Math.abs(c.v)*duneSurface.drag:c.offtrack?c.v*.5:0)+Math.max(0,c.v-speedLimit)*1.25;
+ const accel=(boost?19:14)*(c.mv33?1.03:1)*traction*Math.max(.15,1-c.v/125),slip=c.slipstream||0,drag=(.55+c.v*c.v*.00032*density*tyreDragFactor(c))*(1-slip*0.3)+(duneSurface?Math.abs(c.v)*duneSurface.drag:c.offtrack?c.v*.5:0)+Math.max(0,c.v-speedLimit)*1.25;
  c.slipstream=0;
  const travelPitch=track.id==='nl-1948'?surfaceAttitude(road,c.motionHeading??c.heading).pitch:road.pitch,gravity=-9.81*Math.sin(travelPitch);
  if(input.park){if(c.v>0)c.v=Math.max(0,c.v-(braking+drag)*dt);else if(c.v<0)c.v=Math.min(0,c.v+(braking+drag)*dt);}
@@ -141,7 +142,7 @@ export function stepCar(c,input,track,dt,elapsed,laps=3){
  if(Math.abs(delta)<40&&near.distance<Math.max(track.width/2+40,plannedSurface?.boundary??0)){c.s=near.s;c.progress+=delta;}
  if(tryPitEntry(c,track,prev)){updateLap(c,track,elapsed,laps);return;}
  const half=roadHalfWidth(track,near.s);
- if(near.distance>(plannedSurface?.trackLimit??(['my-1999','in-2011','qa-2004','sg-2008'].includes(track.id)?duneSurface.trackLimit:half+1.0))&&!isOnPitRoad(c,track)){if(!c.offtrack)c.offtrackTime=0;c.offtrack=true;c.offtrackTime+=dt;if(c.offtrackTime>.4&&!c.offtrackPenalty){const penaltySurface=plannedSurface??(track.id==='es-2026'?madridSurfaceAt(track,near.s,near.offset,conditions.wetness):track.id==='my-1999'?sepangSurfaceAt(track,near.s,near.offset,conditions.wetness):track.id==='in-2011'?buddhSurfaceAt(track,near.s,near.offset,conditions.wetness):track.id==='sg-2008'?singaporeSurfaceAt(track,near.s,near.offset,conditions.wetness):track.id==='qa-2004'?lusailSurfaceAt(track,near.s,near.offset,conditions.wetness):duneSurface);c.penalty+=penaltySurface?.paved||penaltySurface?.kind==='tarmac'?.5:1;c.offtrackPenalty=true;c.invalidLap=true;}}else{c.offtrack=false;c.offtrackPenalty=false;}
+ if(near.distance>(plannedSurface?.trackLimit??(['my-1999','in-2011','qa-2004','sg-2008'].includes(track.id)?duneSurface.trackLimit:half+1.0))&&!isOnPitRoad(c,track)){if(!c.offtrack)c.offtrackTime=0;c.offtrack=true;c.offtrackTime+=dt;if(!c.practice&&c.offtrackTime>.4&&!c.offtrackPenalty){const penaltySurface=plannedSurface??(track.id==='es-2026'?madridSurfaceAt(track,near.s,near.offset,conditions.wetness):track.id==='my-1999'?sepangSurfaceAt(track,near.s,near.offset,conditions.wetness):track.id==='in-2011'?buddhSurfaceAt(track,near.s,near.offset,conditions.wetness):track.id==='sg-2008'?singaporeSurfaceAt(track,near.s,near.offset,conditions.wetness):track.id==='qa-2004'?lusailSurfaceAt(track,near.s,near.offset,conditions.wetness):duneSurface);c.penalty+=penaltySurface?.paved||penaltySurface?.kind==='tarmac'?.5:1;c.offtrackPenalty=true;c.invalidLap=true;}}else{c.offtrack=false;c.offtrackPenalty=false;}
  if(near.distance>((plannedSurface??duneSurface)?(plannedSurface??duneSurface).boundary+3:half+24)){c.v*=Math.exp(-dt*4);const p=sample(track,c.s);c.x+=(p.x-c.x)*dt*.6;c.z+=(p.z-c.z)*dt*.6;}
  const surface=sample(track,c.s);
  const fall=clamp(near.distance-(half+6.5),0,1);
@@ -165,8 +166,8 @@ function updateLap(c,track,elapsed,laps){
  if(completed>=c.lap){
   c.sectors[2]=elapsed-c.lapStart-(c.sectors[0]||0)-(c.sectors[1]||0);
   const outLap=c.outLap;
-  // The single qualifying outlap never enters lap history or the classification.
-  if(!c.qualifying||!outLap){
+  // Neither the single qualifying outlap nor a partial practice start is timed.
+  if(!outLap){
    c.lastLap=elapsed-c.lapStart;c.lastLapValid=!c.invalidLap&&!outLap;
    if(c.lastLapValid){
     c.bestLap=c.bestLap?Math.min(c.bestLap,c.lastLap):c.lastLap;
@@ -180,7 +181,7 @@ function updateLap(c,track,elapsed,laps){
   else{
    c.invalidLap=false;
    if(c.qualifying){c.penalty=0;c.offtrackPenalty=false;c.offtrackTime=0;}
-   if(!c.qualifying&&completed>=laps){c.finished=true;c.finishTime=elapsed+c.penalty;c.v=0;clearImpact(c);c.boostActive=false;c.sliding=false;c.motionYawRate=0;c.inputLag=0;}
+   if(!c.qualifying&&completed>=laps)finishRaceCar(c,elapsed,completed);
   }
  }
 }
@@ -194,14 +195,44 @@ export function draftStrength(c,cars){
  }
  return strength;
 }
+function finishRaceCar(car,elapsed,completed){
+ car.finished=true;car.finishLaps=completed;car.finishTime=elapsed+(car.penalty||0);car.v=0;
+ clearImpact(car);car.boostActive=false;car.sliding=false;car.motionYawRate=0;car.inputLag=0;
+}
 export function stepRace(cars,inputs,track,dt,elapsed,laps,stepDriver=stepCar){
+ // Record the line crossings before stepping so array order cannot decide
+ // whether a lapped driver crossed before or after the first chequered flag.
+ const racing=Number.isFinite(laps),before=racing?new Map(cars.map(car=>[car.id,{progress:car.progress,finished:car.finished}])):null;
+ let flagAt=racing&&cars.some(car=>car.finished&&!car.retired&&(car.finishLaps??car.lap-1)>=laps)?0:Infinity;
  preparePitTraffic(cars,track);
  for(const c of cars){
   if(c.finished){c.slipstream=0;continue;}
   c.slipstream=draftStrength(c,cars);
   stepDriver(c,inputs[c.id]||{},track,dt,elapsed,laps);
  }
+ if(racing){
+  const crossedAt=(car,line)=>{const old=before.get(car.id).progress;return clamp((line-old)/Math.max(.000001,car.progress-old),0,1);};
+  for(const car of cars)if(!before.get(car.id).finished&&car.finished&&!car.retired&&(car.finishLaps??car.lap-1)>=laps){
+   const fraction=crossedAt(car,laps*track.length);flagAt=Math.min(flagAt,fraction);
+   car.finishTime=elapsed-dt+fraction*dt+(car.penalty||0);
+  }
+  if(flagAt!==Infinity)for(const car of cars){
+   if(car.finished||car.qualifying)continue;
+   const completed=Math.floor(car.progress/track.length),old=before.get(car.id).progress;
+   if(completed<1||completed<=Math.floor(old/track.length))continue;
+   const fraction=crossedAt(car,completed*track.length);
+   if(fraction+1e-9>=flagAt)finishRaceCar(car,elapsed-dt+fraction*dt,completed);
+  }
+ }
  resolveCarContacts(cars,null,{time:elapsed});
  for(const c of cars)resolveBarrierContacts(c,track);
 }
-export function standings(cars){return [...cars].sort((a,b)=>!!a.retired!==!!b.retired?(a.retired?1:-1):a.retired?b.progress-a.progress:a.finished&&b.finished?a.finishTime-b.finishTime:a.finished?-1:b.finished?1:b.progress-a.progress);}
+export function standings(cars){return [...cars].sort((a,b)=>{
+ if(!!a.retired!==!!b.retired)return a.retired?1:-1;
+ if(a.retired)return b.progress-a.progress;
+ const aLaps=a.finishLaps??a.lap-1,bLaps=b.finishLaps??b.lap-1;
+ if(a.finished&&b.finished)return bLaps-aLaps||a.finishTime-b.finishTime;
+ if(a.finished)return b.lap>=aLaps+1?1:-1;
+ if(b.finished)return a.lap>=bLaps+1?-1:1;
+ return b.progress-a.progress;
+});}

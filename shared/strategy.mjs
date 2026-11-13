@@ -65,5 +65,5 @@ export function liveTyreAdvice(track,session,car){
   gain=decision.gain;box=decision.box;best.compound=decision.compound;
  }
  const mismatch=tyreGrip({...car,tyreLife:100})<.75,life=estimatedTyreLaps(raceLaps,best.compound,track,car,car.practice);
- return {compound:best.compound,box,gain,remaining,text:(box?'BOX · ':'BEST SET · ')+tyreProfile(best.compound).name.toUpperCase()+' ('+life+' LAPS)',reason:box?'A change is estimated to recover more time than the pit stop costs.':mismatch?'Your current compound has poor grip for this surface. A stop may still cost more than it saves over the remaining distance.':'Staying out is currently estimated to be faster than stopping.',wetness};
+ return {compound:best.compound,box,gain,remaining,text:(box?'BOX · ':'BEST SET · ')+tyreProfile(best.compound).name.toUpperCase()+(car.practice?' (NO WEAR)':' ('+life+' LAPS)'),reason:box?'A change is estimated to recover more time than the pit stop costs.':mismatch?'Your current compound has poor grip for this surface. A stop may still cost more than it saves over the remaining distance.':'Staying out is currently estimated to be faster than stopping.',wetness};
 }

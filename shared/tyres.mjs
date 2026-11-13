@@ -56,7 +56,7 @@ export function tyreSpeedFactor(car){
 }
 export const tyreWearFactor=(car,compound=car.tyreCompound)=>mixTable(surfaceWetness(car),wearTable[family(compound)]);
 export function expectedTyreWearPerLap(laps,compound,track,car,practice=false){
- return 100*tyreWearFactor(car,compound)/tyreStintLaps(laps,compound,practice,track);
+ return practice?0:100*tyreWearFactor(car,compound)/tyreStintLaps(laps,compound,practice,track)*(car?.mv33 ? .8 : 1);
 }
 const boostLoad=heat=>.25+.55*heat;
 function normalDrivingLoad(track,wetness){
@@ -67,6 +67,7 @@ function normalDrivingLoad(track,wetness){
  return 1+scrub+boostShare*boostLoad(.42)+.035*wetness;
 }
 export function wearTyres(car,track,dt,distance,boosting=false){
+ if(car.practice){car.tyreLife=100;car.tyreBoostHeat=0;return;}
  if(!Number.isFinite(car.tyreLife)||car.finished||car.pitState&&car.pitState!=='none')return;
  car.tyreImpactCooldown=Math.max(0,(car.tyreImpactCooldown||0)-dt);
  const speed=Math.abs(car.v),moving=speed>8;
@@ -78,9 +79,9 @@ export function wearTyres(car,track,dt,distance,boosting=false){
  car.tyreDistance=(car.tyreDistance||0)+distance;car.tyreLife=clamp(car.tyreLife-wear,0,100);
 }
 export function damageTyres(car,closingSpeed){
- if(!Number.isFinite(car.tyreLife)||car.finished||(car.tyreImpactCooldown||0)>0||closingSpeed<2)return;
+ if(car.practice||!Number.isFinite(car.tyreLife)||car.finished||(car.tyreImpactCooldown||0)>0||closingSpeed<2)return;
  // One loss per impact, not once per contact shape or solver iteration.
- car.tyreLife=clamp(car.tyreLife-clamp((closingSpeed-2)*.55,.25,14),0,100);car.tyreImpactCooldown=.4;
+ car.tyreLife=clamp(car.tyreLife-clamp((closingSpeed-2)*.55,.25,14)*(car.mv33 ? .8 : 1),0,100);car.tyreImpactCooldown=.4;
 }
 export function fitTyres(car){
  if(!tyreAvailable(car,car.pitCompound))car.pitCompound=availableTyreChoice(car);

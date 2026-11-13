@@ -90,7 +90,7 @@ export function prepareAiRace(session,track,dt){
    // Recover at the same station, with the usual invalid lap and time penalty.
    // Never reset a serviced car or place an AI into another active driver.
    const pose=sampleGuide(track,car.s),clear=session.cars.every(other=>other===car||other.finished||other.retired||Math.hypot(other.x-pose.x,other.z-pose.z)>9);
-   if(clear){clearImpact(car);Object.assign(car,pose,{s:car.s,progress:car.progress,v:0,motionHeading:pose.heading,motionYawRate:0,resetTimer:.8,invalidLap:true,penalty:(car.penalty||0)+3,aiStuckTime:0,sliding:false});}
+   if(clear){clearImpact(car);Object.assign(car,pose,{s:car.s,progress:car.progress,v:0,motionHeading:pose.heading,motionYawRate:0,resetTimer:.8,invalidLap:!car.practice,penalty:car.practice?0:(car.penalty||0)+3,aiStuckTime:0,sliding:false});}
   }
   if(session.phase!=='race'||session.elapsed<0)continue;
   const remaining=session.laps*track.length-car.progress;

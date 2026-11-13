@@ -2,6 +2,7 @@ export const isOnTrack=car=>!!car&&!car.finished&&!car.retired;
 export const isRaceFinisher=car=>!!car&&car.finished&&!car.retired;
 export function raceLapDeficit(car,leader,trackLength){
  if(!leader||leader.retired||car.id===leader.id||!Number.isFinite(trackLength)||trackLength<=0||!Number.isFinite(car.progress)||!Number.isFinite(leader.progress))return 0;
+ if(isRaceFinisher(car)&&isRaceFinisher(leader))return Math.max(0,(leader.finishLaps??leader.lap-1)-(car.finishLaps??car.lap-1));
  return Math.max(0,Math.floor((leader.progress-car.progress)/trackLength));
 }
 export function finishTimeLabel(seconds){const ms=Math.max(0,Math.round(seconds*1000)),minutes=Math.floor(ms/60000),remainder=(ms%60000/1000).toFixed(3).padStart(6,'0');return `${minutes}:${remainder}`;}

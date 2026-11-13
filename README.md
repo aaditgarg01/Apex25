@@ -4,9 +4,9 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 ## Play online
 
-[Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends currently uses the [Railway multiplayer server](https://apex-25-production.up.railway.app/).
+[Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.56.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.60.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -52,14 +52,14 @@ Do not share the Google Drive folder to invite players. The tunnel exposes the g
 | R | Recover to track; adds 3 seconds |
 | Escape | Pause solo; open menu online |
 
-Gamepad: left stick steers; RT accelerates, LT brakes, A boosts. Touch controls appear on touch devices. Engine sound starts after a browser interaction; use the sound button and volume slider to adjust it. Steering is fully manual. Compact, bright chevrons suggest acceleration (green), lifting (amber) and braking (red). Keyboard, touch and gamepad steering follow the driver’s left/right view. The line is a guide, not an exact optimal racing line. Recovery penalties are included in race results. Sustained track-limit violations invalidate timed laps. Qualifying starts with one untimed outlap, followed by repeated flying laps during the unchanged seven-minute session. R recovery and lap restarts are disabled in qualifying: complete the circuit and cross the line to try again. Current-lap penalties and invalid warnings clear at the next flying lap. The fastest of all valid flying laps sets the grid; a flying lap begun before the timer expires can finish after zero. In practice, recovery invalidates the current lap. Starting practice partway around the circuit produces an out lap; timing starts after you cross the line. Use Finish qualifying to end the session early; drivers without a valid completed lap start behind valid times. In multiplayer only the host can end a session or continue from qualifying to the race.
+Gamepad: left stick steers; RT accelerates, LT brakes, A boosts. Touch controls appear on touch devices. Engine sound starts after a browser interaction; use the sound button and volume slider to adjust it. Steering is fully manual. Compact, bright chevrons suggest acceleration (green), lifting (amber) and braking (red). Keyboard, touch and gamepad steering follow the driver’s left/right view. The line is a guide, not an exact optimal racing line. Recovery penalties are included in race results. Sustained track-limit violations invalidate race and qualifying laps. Qualifying starts with one untimed outlap, followed by repeated flying laps during the unchanged seven-minute session. R recovery and lap restarts are disabled in qualifying: complete the circuit and cross the line to try again. Current-lap penalties and invalid warnings clear at the next flying lap. The fastest of all valid flying laps sets the grid; a flying lap begun before the timer expires can finish after zero. Free Practice locks tyre life at 100%; off-track driving, collisions and recovery do not cause penalties or lap invalidation. Starting practice partway around the circuit produces an out lap; timing starts after you cross the line. Use Finish qualifying to end the session early; drivers without a valid completed lap start behind valid times. In multiplayer only the host can end a session or continue from qualifying to the race.
 
 ## Included
 
 - 41 real geographic circuit layouts: all 24 destinations on the 2025 calendar and 17 extra venues, including the Indian Grand Prix at Buddh International Circuit.
 - 3D open-wheel cars, three camera views, road markings, curbs, scenery and a Suzuka crossover.
 - Free Practice with unlimited timed laps and optional sector starts. Spa includes an Eau Rouge approach start.
-- Race Weekend: seven minutes of ghosted qualifying, one initial outlap and multiple flying laps, classification by the best valid lap, then a race with any positive whole number of laps.
+- Race Weekend: seven minutes of ghosted qualifying, one initial outlap and multiple flying laps, classification by the best valid lap, then a race of at least three whole laps.
 - Quick Race skips qualifying. Solo and online race modes allow zero to seven AI opponents.
 - All circuits have elevation profiles; Spa uses published circuit altitude markers and a shaped Raidillon climb. Car pitch, gradient, gravity, camera and terrain follow the road.
 - Private rooms for up to eight players with shared countdown, live standings, lap times and rematches.
@@ -84,7 +84,7 @@ Third-party software: Three.js (MIT), ws (MIT), and optional cloudflared (Apache
 
 Buddh International Circuit (Indian GP) is the 41st venue, derived from OpenStreetMap under ODbL 1.0; its source and downloadable geometry are documented in TRACK-SOURCES.md.
 
-Race length: type any positive whole number in the lap counter, or use its − / + buttons. The same count is used in solo and online races; practice remains unlimited. Monaco’s start/finish is aligned to Boulevard Albert Ier. Racing-line arrows are smaller, and tyres/hubs rotate together around the axle at road speed.
+Race length: type any whole number of at least three laps in the lap counter, or use its − / + buttons. The same count is used in solo and online races; practice remains unlimited. Monaco’s start/finish is aligned to Boulevard Albert Ier. Racing-line arrows are smaller, and tyres/hubs rotate together around the axle at road speed.
 
 ## Deploy your own server
 
@@ -2041,3 +2041,39 @@ anchors, pit lane and multiplayer message format carry over.
 Both builds passed. The [Istanbul Park audit and runoff table](docs/ISTANBUL-ENVIRONMENT-2.56.0.md)
 records the source material, fitted dimensions, road and bridge clearances,
 pit and recovery checks, and the parked WebGL results.
+
+
+## 2.60.0 — Race finishes, practice and custom grids
+
+Lapped drivers now take the chequered flag at their next forward crossing of
+the line after the race winner, rather than driving the full selected distance.
+Crossings in the same simulation step are ordered by their fraction of that
+step. Classification sorts completed laps before finish times, and lapped
+finishers retain their +1L/+2L labels. Retirements do not trigger the flag.
+
+Free Practice freezes tyres at 100%, including collision wear, and removes
+time penalties and lap invalidation from off-track driving and recovery.
+A partial sector start is an untimed outlap; subsequent complete laps are timed.
+Weather still changes compound grip, and physical collisions still apply.
+
+Quick Race has an editable P1–P8 starting grid. Selecting a driver swaps their
+slot, with each driver appearing once. This works in solo play and in the
+host-controlled friends lobby. Qualifying continues to determine weekend grids.
+Race starts count down from 5; typing `mv33` in order during that countdown
+adds 3% to acceleration and the speed cap and reduces tyre wear and impact
+wear by 20% for that car for this race. The server checks the countdown and
+only applies the code to the sender's own car. It cannot stack, activate in
+qualifying/practice, or carry over to a new race.
+
+The leaderboard boost lightning symbol is removed. The 2.59.1 AI continuous
+boost and tyre-only pit-service time display fixes are included; penalty waits
+still take race time but are excluded from the displayed tyre service duration.
+
+Validation: syntax and module imports, both build commands, focused temporary
+checks for crossing order, lapped classification, grid reconciliation, code
+activation limits, practice wear/recovery and lap timing. A local two-player
+WebSocket smoke check covered shared grid settings, host-only editing, code
+activation and practice recovery. Browser inspection confirmed grid swapping,
+P4 spawning, the visible five-second countdown, code confirmation, practice
+no-wear labels and no captured console errors. The repository test suite was
+not run or edited. Full driving/race-distance testing remains for the user.
