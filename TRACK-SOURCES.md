@@ -611,3 +611,16 @@ See the [Sepang audit and corner table](docs/SEPANG-ENVIRONMENT-2.51.0.md) for s
   and the [stand and photo guide](https://above.guide/turkiye-f1/circuit)
   informed the canopy, twin towers, glazed façade, photo-fitted footbridges
   and viewing areas. No reference images are shipped with the game.
+
+
+## Dynamic-weather history (2.61.0)
+
+The [weather-method document](docs/DYNAMIC-WEATHER-2.61.0.md) and cached
+`public/data/weather-history.json` record 70 OpenF1 race sessions from
+2023–2025, their rainfall samples and majority wet-tyre phases. Session
+identifiers make the source queries reproducible. Older race-report
+examples and missing-data fallbacks are separately labelled, including the
+custom VIT circuit and Madrid layout. Minimum stable periods and the
+one/two-change race caps are conservative game rules for the limited tyre
+allocation, not observed historical weather frequencies. The importer is
+`scripts/update-weather-history.mjs`; it is not run at build time or in play.

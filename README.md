@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.60.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.61.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2089,3 +2089,40 @@ and slow for traffic. Short pit lanes may now cost less than the former
 
 Verification: syntax checks, an all-circuit pit-plan comparison and both builds.
 The repository test suite was not run or edited.
+
+
+## 2.61.0 — Less frequent, history-informed dynamic weather
+
+Dynamic setup now states the starting weather and lets the host choose dry,
+damp or wet. The selected surface drives the preview, automatic starting
+tyres and pre-race strategy. All dynamic races below 15 laps hold their
+starting condition for the whole race, including races following qualifying.
+The race HUD explicitly identifies this fixed weather.
+
+Longer races use circuit-specific minimum stable periods of 10–20 whole
+leader laps and probabilistic fronts, rather than a forced switch every
+1–3 laps. A 15–29-lap race allows at most one change; a race of 30 or more
+laps allows at most two. A race can remain dry throughout. Heavy rain and
+dry conditions transition through the damp preset. The two-set limit for
+each dry compound and unlimited weather tyres remain in place.
+
+The cache analyses rainfall flags and majority wet-tyre use across 70 races
+from the completed 2023–2025 seasons at 24 current venues. Eight older
+venues use verified race-report examples; ten others have explicitly marked
+conservative fallback settings. The probabilities and stability limits are
+gameplay tuning, not claimed long-term climate measurements. See the
+[weather method and per-circuit evidence table](docs/DYNAMIC-WEATHER-2.61.0.md).
+All research is cached; no weather API requests occur during play.
+
+The shared schedule now survives room checkpoints and reconnects without
+rerolling the next front. Starting-weather edits are host-only and shared
+with everyone in the lobby.
+
+Verification: syntax and imports; both builds; 252 short-race configurations
+and 168 forced front-boundary checks across all 42 circuits; saved-schedule
+equality, qualifying-to-race handover, late joining and unchanged tyre stock.
+A local two-player WebSocket check covered shared starting weather and
+matching player/AI tyres. Browser checks confirmed both short/long setup
+messages, wet automatic tyres and the fixed-weather race HUD with no
+captured console errors. The repository test suite was not run or edited.
+Full race-distance driving remains for the user.

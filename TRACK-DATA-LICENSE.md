@@ -419,3 +419,19 @@ sample Mapzen Terrain Tiles N40E029 from the
 [Terrain Tiles source attributions](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
 The fitted access scenery, track-dressing assets and crossing
 models are original work. The venue maps and photos are reference material.
+
+
+## Race-weather research cache (2.61.0)
+
+`public/data/weather-history.json` and the OpenF1-derived records in
+`shared/weather-history-data.mjs` summarise historical race weather and tyre
+stints supplied by [OpenF1](https://openf1.org/docs/), retrieved 2026-11-15.
+The source identifies its data under
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/);
+that attribution, non-commercial and share-alike notice applies to this
+derived research data. It does not replace the licence of the game code.
+The cache transforms the source into per-race tyre-regime runs and fitted
+weather weights; it is not an official Formula 1 or FIA forecast.
+The source session IDs, analysis window and method are retained in the JSON.
+Historical reports linked in `public/data/weather-legacy-references.json`
+are cited for factual reference only; their text or artwork is not included.
