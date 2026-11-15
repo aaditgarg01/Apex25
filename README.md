@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.61.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.61.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2157,3 +2157,30 @@ was 51 KB/s decoded and 16.5 KB/s compressed. These are short diagnostic runs,
 not a guarantee for every ISP/device or a full-distance multiplayer race.
 The repository test suite was not run or edited. See
 [online verification details](docs/ONLINE-PERFORMANCE-2.61.1.md).
+
+
+## 2.61.2 — Smooth acceleration and braking corrections
+
+Online prediction now anchors each update to its race timestamp instead of its
+variable arrival time. A delayed packet no longer shifts the predicted car
+back along the straight. Corrections preserve position and velocity together
+and advance once per real timestamp, avoiding a new speed pulse on each packet.
+High-speed ordinary corrections have a speed-aware snap threshold; recovery,
+pit-stage changes and strong collision impulses still apply immediately.
+Prediction has a 500 ms replay budget and the existing bounded hold on a stalled
+link. The chase camera also eases its speed-based distance and field of view.
+Car acceleration, braking, boost, tyre wear and authoritative contacts are
+unchanged. The low-bandwidth delivery and compression from 2.61.1 remain.
+
+Verification: syntax/imports and both builds; twelve focused Monza prediction
+comparisons covering acceleration/boost, high speed and brake/throttle changes,
+10/20 Hz delivery and 30/60 Hz rendering with 160 ms RTT and delayed bursts.
+All twelve reduced the measured p95 visual jerk by more than 90%, with no
+backward frames or large frame jumps in their short measured windows. These
+are controlled presentation measurements, not real-car telemetry or a guarantee
+for every connection. Additional checks covered duplicate-time correction,
+collision/pit resets, recovery and bounded stale replay. A local online browser
+session exercised boost and braking without captured console errors/warnings.
+The repository test suite was not run or edited; full-distance driving and every
+circuit were not checked. See
+[correction verification details](docs/ONLINE-CORRECTIONS-2.61.2.md).

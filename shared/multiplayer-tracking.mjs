@@ -1,4 +1,5 @@
-import {projectMotion} from './motion.mjs';
+import {projectMotion,velocityOf} from './motion.mjs';
+import {yawRate} from './conditions.mjs';
 import {moveWithBarriers} from './barriers.mjs';
 import {stepCar} from './physics.mjs';
 import {angleDiff} from './tracks.mjs';
@@ -13,11 +14,11 @@ const poseFields=['x','y','z','heading','motionHeading','v','steer','pitch','imp
 const pose=(source,motion)=>Object.assign({...source,smoothMotion:true},Object.fromEntries(poseFields.map(k=>[k,motion[k]??source[k]])));
 
 // Presentation only: the server still owns contacts, timing and classification.
-// Restore the earlier buffered rival tracking and reconciled local simulation,
-// using the shared-clock input protocol rather than its old command queue.
+// Buffered rival tracking and reconciled local simulation use the shared race
+// clock; packet arrival timing must not become part of the car's trajectory.
 export class MultiplayerTracking {
  constructor(track,id,{liveInput=false}={}){
-  Object.assign(this,{track,id,liveInput,frames:[],arrivals:[],interval:50,delay:90,rtt:100,remoteAt:null,session:null,local:null,localAt:0,lastAt:0,error:zero(),controls:[]});
+  Object.assign(this,{track,id,liveInput,frames:[],arrivals:[],interval:50,delay:90,rtt:100,remoteAt:null,session:null,local:null,localAt:0,lastAt:0,error:zero(),errorVelocity:zero(),errorAt:0,controls:[]});
  }
  setPing(ms){if(Number.isFinite(ms)&&ms>=0)this.rtt=this.rtt*.7+Math.min(ms,2000)*.3;}
  record(s,now){
@@ -48,12 +49,30 @@ export class MultiplayerTracking {
  localPose(now){
   const c=copy(this.local);this.project(c,clamp((now-this.localAt)/1000,0,1/60));
   for(const k of ['x','y','z','heading'])c[k]+=this.error[k];
+  const travel=c.motionHeading??c.heading;
+  c.v+=this.errorVelocity.x*Math.sin(travel)+this.errorVelocity.z*Math.cos(travel);
   return c;
+ }
+ localVelocity(now){
+  const c=copy(this.local);this.project(c,clamp((now-this.localAt)/1000,0,1/60));
+  const v=velocityOf(c);
+  return {x:v.x+this.errorVelocity.x,y:Math.sin(c.pitch||0)*c.v+this.errorVelocity.y,z:v.z+this.errorVelocity.z,heading:yawRate(c)+(c.impactYaw||0)+this.errorVelocity.heading};
+ }
+ settle(now){
+  const dt=clamp((now-this.errorAt)/1000,0,.25);this.errorAt=now;
+  // Critically damped correction preserves both position and velocity when a
+  // snapshot arrives. Exponential position-only decay changed speed abruptly
+  // at every update, especially when throttle/brake inputs changed.
+  for(const k of ['x','y','z','heading']){
+   const rate=k==='heading'?12:8,decay=Math.exp(-rate*dt),slope=this.errorVelocity[k]+rate*this.error[k];
+   this.error[k]=(this.error[k]+slope*dt)*decay;
+   this.errorVelocity[k]=(this.errorVelocity[k]-rate*slope*dt)*decay;
+  }
  }
  advance(until){
   if(!this.liveInput||!active(this.session)||this.local.finished)return;
   // Never keep driving a guess through a disconnected or badly stalled link.
-  const end=Math.min(until,this.lastAt+250),dt=1/60;
+  const end=Math.min(until,this.lastAt+250,this.baseAt+500),dt=1/60;
   while(this.localAt+dt*1000<=end+1e-6){
    this.localAt+=dt*1000;
    stepCar(this.local,this.controlAt(this.localAt),this.track,dt,this.session.elapsed+(this.localAt-this.baseAt)/1000,Infinity);
@@ -61,28 +80,32 @@ export class MultiplayerTracking {
  }
  receive(s,now,reset,receivedAt=now){
   const c=s.cars.find(car=>car.id===this.id);if(!c)return;
+  const previous=this.session?.cars.find(car=>car.id===this.id);
+  const discontinuity=reset||previous&&((c.pitState||'none')!==(previous.pitState||'none')||Math.hypot((c.impactVX||0)-(previous.impactVX||0),(c.impactVZ||0)-(previous.impactVZ||0))>4||Math.abs((c.impactYaw||0)-(previous.impactYaw||0))>.6);
   // Compare both poses at the same render time; comparing an older painted
   // position with a newer replay repeatedly adds latency to the correction.
-  if(this.local&&!reset)this.advance(now);
-  const old=this.local&&!reset?this.localPose(now):null;
+  if(this.local&&!discontinuity){this.advance(now);this.settle(now);}
+  const old=this.local&&!discontinuity?this.localPose(now):null;
+  const oldVelocity=old?this.localVelocity(now):null;
   this.record(s,receivedAt);this.session=s;this.lastAt=receivedAt;
-  if(reset){this.controls=[];this.error=zero();}
+  if(reset){this.controls=[];this.error=zero();this.errorVelocity=zero();}
   this.local=copy(c);this.local.conditions=s.conditions||c.conditions||'normal';if(s.weather){this.local.trackWetness=s.weather.wetness;this.local.rainIntensity=s.weather.rain;}
-  this.baseAt=receivedAt-(this.liveInput&&active(s)?clamp(this.rtt,0,250):0);this.localAt=this.baseAt;
+  // Place the snapshot on the shared simulation timeline. Arrival time varies
+  // with packet jitter; treating each late packet as fresh rewinds a fast car.
+  this.baseAt=s.elapsed*1000+this.clockOffset-(this.liveInput&&active(s)?clamp(this.rtt,0,250):0);this.localAt=this.baseAt;
   this.advance(now);
   const next=copy(this.local);this.project(next,clamp((now-this.localAt)/1000,0,1/60));
+  const nextVelocity=velocityOf(next);
   const distance=old?Math.hypot(old.x-next.x,old.z-next.z):Infinity;
-  this.error=old&&distance<12?{x:old.x-next.x,y:old.y-next.y,z:old.z-next.z,heading:angleDiff(old.heading,next.heading)}:zero();
+  const blend=old&&distance<Math.max(12,Math.min(40,Math.abs(c.v)*.35));
+  this.error=blend?{x:old.x-next.x,y:old.y-next.y,z:old.z-next.z,heading:angleDiff(old.heading,next.heading)}:zero();
+  this.errorVelocity=blend?{x:oldVelocity.x-nextVelocity.x,y:oldVelocity.y-Math.sin(next.pitch||0)*next.v,z:oldVelocity.z-nextVelocity.z,heading:oldVelocity.heading-yawRate(next)-(next.impactYaw||0)}:zero();
+  this.errorAt=now;
  }
  frame(now,dt,control){
   const s=this.session;if(!s)return [];
   this.remember(control,now);this.advance(now);
-  const seconds=Math.max(0,dt),decay=1-Math.exp(-seconds*10),distance=Math.hypot(this.error.x,this.error.z);
-  // A delayed burst can leave several metres to reconcile. Bound correction
-  // speed so catching up cannot briefly drive a moving car backwards.
-  const correction=Math.min(decay,distance?Math.max(2,Math.abs(this.local.v)*.35)*seconds/distance:decay);
-  for(const k of ['x','z'])this.error[k]*=1-correction;
-  this.error.y*=1-decay;this.error.heading*=Math.exp(-seconds*16);
+  this.settle(now);
   const own=s.cars.find(c=>c.id===this.id);
   const local=this.liveInput?pose(own,this.localPose(Math.min(now,this.lastAt+250))):{...own,smoothMotion:true};
   const desired=now-this.clockOffset-this.delay;
