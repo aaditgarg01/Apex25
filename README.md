@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.60.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.60.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2077,3 +2077,15 @@ activation and practice recovery. Browser inspection confirmed grid swapping,
 P4 spawning, the visible five-second countdown, code confirmation, practice
 no-wear labels and no captured console errors. The repository test suite was
 not run or edited. Full driving/race-distance testing remains for the user.
+
+
+## 2.60.1 — Minimum pit speed limit
+
+Every circuit now has a pit speed limit of at least 80 km/h. Higher calibrated
+limits stay as they are. The shared pit plan drives both solo and multiplayer
+car movement and the displayed limit. Cars still brake to stop in their box
+and slow for traffic. Short pit lanes may now cost less than the former
+18-second transit-loss target; the speed floor takes priority.
+
+Verification: syntax checks, an all-circuit pit-plan comparison and both builds.
+The repository test suite was not run or edited.

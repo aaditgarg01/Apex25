@@ -1,10 +1,10 @@
-import {pitTransitPlan} from './pit-timing.mjs';
+import {pitTransitPlan,PIT_MIN_SPEED} from './pit-timing.mjs';
 import {wrap,angleDiff} from './tracks.mjs';
 import {clearImpact} from './motion.mjs';
 import {fitTyres,tyreAvailable,availableTyreChoice} from './tyres.mjs';
 import {pitLayout,pitRoadPose,locatePitLane,pitStopStation} from './pit-layout.mjs';
 export {pitLayout,pitRoadPose} from './pit-layout.mjs';
-export const PIT_SPEED=80/3.6,PIT_SERVICE_SECONDS=3;
+export const PIT_SPEED=PIT_MIN_SPEED,PIT_SERVICE_SECONDS=3;
 export const PIT_EXPECTED_SERVICE_SECONDS=2.509;
 export function rollPitService(random=Math.random){
  const chance=random(),[min,max]=chance<.01?[1800,1999]:chance>=.99?[3001,5000]:[2000,3000];
