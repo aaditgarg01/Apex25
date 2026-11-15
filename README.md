@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.61.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.61.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2126,3 +2126,34 @@ matching player/AI tyres. Browser checks confirmed both short/long setup
 messages, wet automatic tyres and the fixed-weather race HUD with no
 captured console errors. The repository test suite was not run or edited.
 Full race-distance driving remains for the user.
+
+
+## 2.61.1 — Smoother, lower-bandwidth online play
+
+Race physics still runs at 60 Hz. Modern clients now receive 20 compact motion
+updates per second and one full session refresh per second, with immediate
+phase/history changes. WebSocket compression reduces larger snapshots without
+compressing tiny controls. A per-driver 10 Hz mode automatically engages for
+reported slow connections, data-saving mode, high latency or sustained jitter;
+healthy connections return to 20 Hz after a stable period. Both modes render
+cars between received samples and keep server-authoritative contacts/results.
+
+Keyboard and touch changes send immediately when possible, with an independent
+control timer for gamepads and held inputs. Local reconciliation compares poses
+at the same paint time, continues bounded prediction between delayed samples,
+and caps correction speed to avoid small backward jolts. Rival playback changes
+speed gradually when the jitter buffer changes instead of freezing to adjust.
+Static collision/runoff and wet AI speed caches prepare before the countdown.
+Authority restore resets instance-local delivery timers; rematches reset them too.
+Hosting stays on Vercel and the existing Singapore room store.
+
+Verification: syntax/import checks, both builds, a two-player browser race with
+six AI and no captured console errors, restore/rematch/delivery-hint checks,
+and focused delay/jitter simulations at 30/60 render frames per second. A local
+128 kbit/s-per-player check with added delay sustained real-time eight-car
+simulation at about 9 KB/s of compressed socket traffic per player. Baseline
+Vercel decoded update traffic was 221 KB/s; local revised normal-mode traffic
+was 51 KB/s decoded and 16.5 KB/s compressed. These are short diagnostic runs,
+not a guarantee for every ISP/device or a full-distance multiplayer race.
+The repository test suite was not run or edited. See
+[online verification details](docs/ONLINE-PERFORMANCE-2.61.1.md).

@@ -6,6 +6,10 @@ import {parseRoomCode,updatedRoomSettings} from '../shared/rooms.mjs';
 import {normalizeLiveryIndex} from '../shared/liveries.mjs';
 import {normalizeConditions} from '../shared/conditions.mjs';
 import {resolveCarContacts} from '../shared/collisions.mjs';
+import {trackBarriers} from '../shared/barriers.mjs';
+import {targetSpeed} from '../shared/tracks.mjs';
+import {pitLayout} from '../shared/pits.mjs';
+import {socketCompression} from './socket-options.mjs';
 import {encodeState,encodeMotion} from '../shared/netcode.mjs';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -24,6 +28,15 @@ const [circuitData,elevationData]=await Promise.all([
 ]);
 const tracks=makeTracks(JSON.parse(circuitData),JSON.parse(elevationData));
 const pkg=JSON.parse(await readFile(path.join(root,'package.json'),'utf8'));
+const readyTracks=new WeakSet();
+function prepareOnlineTrack(track){
+ if(readyTracks.has(track))return;
+ // Build static collision/runoff and AI speed caches before announcing lights
+ // out, rather than blocking the first live physics step for several seconds.
+ trackBarriers(track);pitLayout(track);
+ for(let wet=0;wet<=20;wet++)targetSpeed(track,0,'normal',wet/20);
+ readyTracks.add(track);
+}
 export const raceVersion=pkg.version;
 export const raceFeatures={
  roomSettings:true,qualifyingJoin:true,preciseContacts:true,liveInput:true,compactMotion:true,
@@ -31,12 +44,12 @@ export const raceFeatures={
 };
 
 export function createRaceEngine({server,canStep=()=>true,changed=()=>{}}={}){
-const wss=server?new WebSocketServer({server,maxPayload:2048}):null;
+const wss=server?new WebSocketServer({server,maxPayload:2048,perMessageDeflate:socketCompression}):null;
 const rooms=new Map(),clients=new Map(),peers=new Map();
 const send=(ws,data)=>{if(ws.readyState===WebSocket.OPEN&&ws.bufferedAmount<250000)ws.send(JSON.stringify(data));};
 function broadcast(room,data){for(const p of room.players.values())send(p.ws,data);}
 function inputStreamFor(player,car){return player?.inputVersion===LIVE_INPUT_VERSION?new LiveInputStream(car):player?.inputVersion===INPUT_VERSION?new InputStream(car):null;}
-function prepareInputs(room){room.streams=new Map();for(const car of room.cars){const stream=inputStreamFor(room.players.get(car.id),car);if(stream)room.streams.set(car.id,stream);}}
+function prepareInputs(room){room.motionElapsed=null;room.snapshotPhase=null;room.historySignature=null;room.streams=new Map();for(const player of room.players.values())delete player.motionElapsed;for(const car of room.cars){const stream=inputStreamFor(room.players.get(car.id),car);if(stream)room.streams.set(car.id,stream);}}
 function lobby(room){broadcast(room,{type:'lobby',code:room.code,host:room.host,trackId:room.track.id,laps:room.laps,mode:room.mode,conditions:room.conditions,dynamicStart:room.dynamicStart||'normal',aiCount:room.aiCount,gridOrder:room.gridOrder||[],practiceStart:room.practiceStart,joinable:room.players.size<8&&(room.state==='lobby'||canJoinQualifying(room.session)),players:[...room.players.values()].map(p=>({id:p.id,name:p.name,colorId:p.colorId,startTyre:p.startTyre})),state:room.state});}
 function leave(ws){const c=clients.get(ws);if(!c?.room)return;const r=rooms.get(c.room);c.room=null;if(!r)return;r.players.delete(c.id);if(r.cars){r.streams?.delete(c.id);delete r.inputs[c.id];const car=r.cars.find(p=>p.id===c.id);if(car){car.inputLag=0;car.ai=true;car.name+=' · AI';}}if(!r.players.size)rooms.delete(r.code);else{if(r.host===c.id)r.host=r.players.keys().next().value;lobby(r);}}
 function attachPeer(ws,{id=randomBytes(6).toString('hex'),key=null,resume=false}={}){
@@ -66,9 +79,10 @@ function attachPeer(ws,{id=randomBytes(6).toString('hex'),key=null,resume=false}
  }else if(m.type==='leave'){leave(ws);changed();}
  else if(m.type==='ping')send(ws,{type:'pong',time:m.time});
  else{const r=rooms.get(c.room);if(!r)return;
+ if(m.type==='delivery'){const player=r.players.get(id);if(player&&[10,20].includes(m.hz))player.snapshotHz=m.hz;return;}
  if(m.type==='settings'){if(r.host!==id)return error('Only the host can change room settings.');if(r.state!=='lobby')return error('Return to the lobby before changing settings.');try{Object.assign(r,updatedRoomSettings(r,m,tracks));lobby(r);changed();}catch(e){error(e.message);}return;}
  if(m.type==='tyre-choice'){const player=r.players.get(id),car=r.cars?.find(p=>p.id===id);if(m.starting!==undefined){if(!validTyreChoice(m.starting))return error('Choose valid starting tyres.');if(r.state==='racing'&&(!car||!chooseStartingTyres(r.session,car,m.starting)))return error('Starting tyres are locked once the session begins.');player.startTyre=m.starting;}if(m.pit!==undefined&&(!car||!choosePitTyres(car,m.pit)))return error('Choose an available set before service: each dry compound has two sets per race, including the starting set.');if(r.state==='lobby')lobby(r);changed();return;}
- if(m.type==='start'&&r.host===id&&r.state==='lobby'){const aiNames=['NOVA','REEVES','SILVA','KIM','ROSSI','MARTIN','BLAKE'];const aiDrivers=r.mode==='practice'?[]:aiNames.slice(0,Math.min(r.aiCount,8-r.players.size)).map((name,i)=>({id:'ai'+i,name,ai:true}));r.session=createSession(r.track,[...r.players.values(),...aiDrivers],{mode:r.mode,laps:r.laps,practiceStart:r.practiceStart,conditions:r.conditions,gridOrder:r.gridOrder,dynamicStart:r.dynamicStart});r.cars=r.session.cars;r.inputs={};prepareInputs(r);r.state='racing';broadcast(r,{type:'start',trackId:r.track.id,...r.session});changed();}
+ if(m.type==='start'&&r.host===id&&r.state==='lobby'){prepareOnlineTrack(r.track);const aiNames=['NOVA','REEVES','SILVA','KIM','ROSSI','MARTIN','BLAKE'];const aiDrivers=r.mode==='practice'?[]:aiNames.slice(0,Math.min(r.aiCount,8-r.players.size)).map((name,i)=>({id:'ai'+i,name,ai:true}));r.session=createSession(r.track,[...r.players.values(),...aiDrivers],{mode:r.mode,laps:r.laps,practiceStart:r.practiceStart,conditions:r.conditions,gridOrder:r.gridOrder,dynamicStart:r.dynamicStart});r.cars=r.session.cars;r.inputs={};prepareInputs(r);r.state='racing';broadcast(r,{type:'start',trackId:r.track.id,...r.session});changed();}
  if(m.type==='countdown-key'&&r.state==='racing'){const car=r.cars.find(driver=>driver.id===id);if(enterRaceCode(r.session,car,m.key)){send(ws,{type:'race-code',active:true});changed();}return;}
  if(m.type==='commands'&&r.state==='racing'){const car=r.cars.find(p=>p.id===id),stream=r.streams?.get(id);if(car&&!car.finished&&stream&&stream.accept(car,m.epoch,m.commands,r.session.elapsed))c.lastInput=now;}
  if(m.type==='input'&&r.state==='racing'&&!r.streams?.has(id)){r.inputs[id]={throttle:!!m.throttle,brake:!!m.brake,boost:!!m.boost,park:!!m.park,steer:Number.isFinite(m.steer)?Math.max(-1,Math.min(1,m.steer)):0};c.lastInput=now;}
@@ -102,15 +116,23 @@ function publishState(r,now){
  const signature=r.session.cars.map(c=>`${c.id}:${c.lapHistory.length}`).join('|');
  const history=signature!==r.historySignature||now-(r.historyAt||0)>2000;
  if(history){r.historySignature=signature;r.historyAt=now;}
- const complete=history||r.snapshotPhase!==r.session.phase||now-(r.snapshotAt||0)>=100;
- if(complete){r.snapshotPhase=r.session.phase;r.snapshotAt=now;}
  const legacy=[...r.players.values()].some(p=>p.stateVersion!==3);
+ // Physics remains 60 Hz. Interpolated clients need 20 motion samples/second,
+ // not ten large session objects plus fifty telemetry packets each second.
+ const phaseChanged=r.snapshotPhase!==r.session.phase;
+ if(!legacy&&!history&&!phaseChanged&&r.session.elapsed-(r.motionElapsed??-Infinity)<1/20-1e-6)return;
+ r.motionElapsed=r.session.elapsed;
+ const complete=history||phaseChanged||now-(r.snapshotAt||0)>=(legacy?100:1000);
+ if(complete){r.snapshotPhase=r.session.phase;r.snapshotAt=now;}
  const data=complete||legacy?encodeState(r.session,history):null,motion=complete?null:encodeMotion(r.session);
  let full=history?data:null;
  for(const p of r.players.values()){
   // An unsent snapshot is obsolete once the next physics step completes.
   if(p.ws.readyState!==WebSocket.OPEN||p.ws.bufferedAmount!==0)continue;
-  if(p.stateVersion===3)p.ws.send(complete?data:motion);
+  if(p.stateVersion===3){
+   if(!complete&&r.session.elapsed-(p.motionElapsed??-Infinity)<1/(p.snapshotHz||20)-1e-6)continue;
+   p.motionElapsed=r.session.elapsed;p.ws.send(complete?data:motion);
+  }
   else if(p.stateVersion===2)p.ws.send(data);
   else{full??=encodeState(r.session);p.ws.send(full);}
  }
@@ -161,8 +183,13 @@ function restore(savedRooms){
   const {trackId,players,streams,...state}=saved;
   const track=tracks.find(candidate=>candidate.id===trackId);
   if(!track)continue;
+  if(state.state==='racing')prepareOnlineTrack(track);
+  // performance.now() belongs to this function instance, not the old owner.
+  delete state.snapshotAt;delete state.historyAt;delete state.motionElapsed;
+  state.snapshotPhase=null;
   const room={...state,track,players:new Map(),streams:new Map(),cars:state.state==='racing'?state.session?.cars:null};
   for(const {key,lastSeen,...player} of players){
+   delete player.motionElapsed;
    const ws=new EventEmitter();
    ws.readyState=WebSocket.CLOSED;ws.close=()=>{};
    const c={id:player.id,key,ws,room:room.code,lastInput:0,lastSeen,requests:0,window:Date.now()};
@@ -178,6 +205,7 @@ function restore(savedRooms){
   }
   rooms.set(room.code,room);
  }
+ last=performance.now();accum=0;
 }
 
 return {

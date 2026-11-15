@@ -7,7 +7,7 @@ export class NetworkMotion {
  constructor(track,id,{liveInput=false}={}){this.tracking=new MultiplayerTracking(track,id,{liveInput});this.liveInput=liveInput;this.control=null;this.sentKey=null;this.sentAt=-Infinity;this.id=id;this.session=null;this.visual=null;this.acc=0;this.lastAt=-Infinity;this.pending=[];this.outgoing=[];this.sequence=0;this.epoch=0;}
  record(s,now){this.tracking.record(s,now);}
  setPing(ms){this.tracking.setPing(ms);}
- receive(s,now){
+ receive(s,now,receivedAt=now){
   const car=s.cars.find(c=>c.id===this.id);if(!car)return;
   const previous=this.session,old=previous?.cars.find(c=>c.id===this.id);
   const reset=!previous||previous.phase!==s.phase||s.elapsed<previous.elapsed||car.inputEpoch!==old?.inputEpoch||car.finished!==old?.finished||car.restarts!==old?.restarts||car.resetTimer>(old?.resetTimer||0)+.3;
@@ -16,8 +16,14 @@ export class NetworkMotion {
   const ack=car.inputAck||0;
   this.pending=this.pending.filter(command=>command[0]>ack);
   this.outgoing=this.outgoing.filter(command=>command[0]>ack);
-  this.session=s;this.lastAt=now;this.visual={...car,smoothMotion:true};
-  this.tracking.receive(s,now,reset);
+  this.session=s;this.lastAt=receivedAt;this.visual={...car,smoothMotion:true};
+  this.tracking.receive(s,now,reset,receivedAt);
+ }
+ updateControl(control,now){
+  if(!this.liveInput||!this.session)return;
+  const s=this.session,car=s.cars.find(c=>c.id===this.id);
+  this.control=['race','qualifying','practice'].includes(s.phase)&&car&&!car.finished&&now-this.lastAt<=1000?encodeInput(0,control):null;
+  this.tracking.remember(control,now);
  }
  takeCommands(now=0){
   if(this.liveInput){
@@ -32,7 +38,7 @@ export class NetworkMotion {
   if(!this.session)return [];
   const s=this.session,car=s.cars.find(c=>c.id===this.id),stale=now-this.lastAt>1000;
   if(this.liveInput){
-   this.control=['race','qualifying','practice'].includes(s.phase)&&!car.finished&&!stale?encodeInput(0,control):null;
+   this.updateControl(control,now);
   }else if(active(s)&&!car.finished&&!stale&&this.pending.length<120){
    this.acc+=Math.min(Math.max(0,dt),.1);
    while(this.acc+1e-9>=INPUT_DT&&this.pending.length<120){

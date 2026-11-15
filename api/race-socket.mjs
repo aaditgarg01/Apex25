@@ -2,14 +2,16 @@ import { createServer } from 'node:http';
 import { WebSocketServer } from 'ws';
 import { createRoomGateway } from '../backend/redis-rooms.mjs';
 import { hasRoomStorage } from '../backend/room-storage.mjs';
+import { socketCompression } from '../backend/socket-options.mjs';
 
 const server = createServer((_req, res) => {
  res.writeHead(hasRoomStorage() ? 426 : 503, {'Cache-Control': 'no-store'});
  res.end('APEX 25 multiplayer WebSocket endpoint');
 });
-const wss = new WebSocketServer({ noServer: true, maxPayload: 2048 });
+const wss = new WebSocketServer({ noServer: true, maxPayload: 2048, perMessageDeflate: socketCompression });
 let gateway;
 server.on('upgrade', (req, socket, head) => {
+ socket.setNoDelay(true);
  const origin = req.headers.origin;
  let allowed = !origin;
  try { allowed ||= new URL(origin).host === req.headers.host; } catch {}
