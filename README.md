@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.61.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.62.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2184,3 +2184,35 @@ session exercised boost and braking without captured console errors/warnings.
 The repository test suite was not run or edited; full-distance driving and every
 circuit were not checked. See
 [correction verification details](docs/ONLINE-CORRECTIONS-2.61.2.md).
+
+
+## 2.62.0 — Separate Photon multiplayer comparison
+
+A development-only [network lab](https://apex25-eight.vercel.app/network-lab.html)
+compares the current APEX server with a Photon Realtime prototype. It reuses
+Monza, the actual car/tyre/session physics, eight-car field, prediction and 3D
+renderer. Both target 20 updates per second. It includes private test rooms,
+Singapore/Mumbai region choices, a repeatable guided drive, guest/host labels,
+input acknowledgement and update-gap measurements, saved runs and JSON export.
+The Photon SDK is pinned to 6.0.2 and served locally with its license notices;
+the normal game does not load it or change multiplayer providers.
+
+Photon runs the experimental race authority in a separate browser worker while
+a second worker services networking. The creator must stay connected. This
+prototype has no host migration and is not a replacement for the production
+server. The free Photon development app allows 20 connected users total.
+
+The initial one-minute headless guest checks measured input acknowledgement
+p95 of 126 ms on the current server, 144 ms on Photon Singapore and 173 ms on
+Photon Mumbai. All maintained real-time simulation with no reconnects. Both
+clients ran on the same machine; Photon authority ran there too while the
+current server stayed in Singapore, so these are architecture trials rather
+than an isolated transport benchmark. Photon did not demonstrate a reason to
+switch the live game. A two-device trial on the user's own connections remains
+necessary before considering migration.
+
+Verification: official SDK two-client cloud join/message checks; two-client
+browser driving and saved/exported reports; targeted real-physics/input/metrics
+checks; syntax/import validation and both builds. The repository test suite
+was not run or edited. Method, raw reports, limitations and reproduction steps
+are in [the prototype report](docs/PHOTON-PROTOTYPE-2.62.0.md).

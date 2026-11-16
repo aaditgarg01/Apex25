@@ -13,4 +13,5 @@ CLOUD-LINK.txt
 
 .vercel/
 dist/
+public/vendor/photon/
 .vercel
