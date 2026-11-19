@@ -1,7 +1,7 @@
 import {footprintBox as singaporeBox, footprintStrip as singaporeStrip, footprintContains as singaporeContains, footprintsOverlap as singaporePolygonsOverlap, footprintBounds as bounds, footprintCells, boxesOverlap} from './venue-footprints.mjs';
 import {sample, wrap} from './tracks.mjs';
 import {ribbonOffset} from './surface.mjs';
-import {pitLayout, pitRoadPose} from './pit-layout.mjs';
+import {pitLayout, pitRoadPose, pitOuterOffset} from './pit-layout.mjs';
 import {SINGAPORE_ROADS} from './singapore-roads.mjs';
 import {SINGAPORE_APRONS, SINGAPORE_CORNERS} from './singapore-runoff-data.mjs';
 
@@ -326,8 +326,8 @@ export function singaporeWalls(track) {
   for (const side of [-1, 1]) {
     const outer = side === pit.side;
     for (let d = 6; d < pit.length - 6; d += 3) {
-      const a = pitRoadPose(track, d, side * (pit.width / 2 + .46));
-      const b = pitRoadPose(track, d + 3, side * (pit.width / 2 + .46));
+      const a = pitRoadPose(track, d, side * (outer ? pitOuterOffset(track, d) : pit.width / 2 + .46));
+      const b = pitRoadPose(track, d + 3, side * (outer ? pitOuterOffset(track, d + 3) : pit.width / 2 + .46));
       add(a, b, .38, 1.02, outer ? 'pit-wall' : 'pit-divider', 'concrete');
     }
   }

@@ -1,3 +1,4 @@
+import {pitGaragePlans} from './pit-layout.mjs';
 import {nearest, sample} from './tracks.mjs';
 import {SINGAPORE_ROADS} from './singapore-roads.mjs';
 import {SINGAPORE_ARCHITECTURE} from './singapore-architecture-data.mjs';
@@ -161,7 +162,7 @@ export function singaporeStructures(track) {
     for (const extra of [2.8, 4.5, 7, 10, 14, 18, 24, 31]) {
       const end = sample(track, 0, side * (half + extra));
       const site = {...end, id: 'gantry-' + side, w: .78, d: .78};
-      if (singaporeFootprintClear(track, singaporeBox(site), 1.05)) {
+      if (singaporeFootprintClear(track, singaporeBox(site), 1.05) && !pitGaragePlans(track).some(garage => singaporePolygonsOverlap(garage.footprint, singaporeBox(site, .5)))) {
         ends.push(site);
         break;
       }

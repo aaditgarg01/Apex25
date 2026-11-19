@@ -1,3 +1,5 @@
+import {pitGaragePlans} from './pit-layout.mjs';
+import {footprintBox,footprintsOverlap} from './venue-footprints.mjs';
 import {LUSAIL_ACCESS} from './lusail-access.mjs';
 import {sample} from './tracks.mjs';
 import {interlagosFootprintClear,interlagosEnvelopeOverlap} from './interlagos-scenery.mjs';
@@ -13,7 +15,7 @@ export function lusailStructures(track){
    let pier;
    for(const shift of [0,2,4,6,9,13,18,25,32,42]){
     const x=end.x+tx*dir*shift,z=end.z+tz*dir*shift,spec={id:id+'-pier-'+dir,x,z,w:1.2,d:1.2,heading,kind:'pier',margin:1.5};
-    if(interlagosFootprintClear(track,spec,spec.margin)&&![...sites,...piers].some(other=>interlagosEnvelopeOverlap(spec,other))){pier={...spec,y:lusailTerrainHeight(track,x,z)};break;}
+    if(interlagosFootprintClear(track,spec,spec.margin)&&!pitGaragePlans(track).some(garage=>footprintsOverlap(garage.footprint,footprintBox(spec,.5)))&&![...sites,...piers].some(other=>interlagosEnvelopeOverlap(spec,other))){pier={...spec,y:lusailTerrainHeight(track,x,z)};break;}
    }
    if(!pier)return;piers.push(pier);
   }

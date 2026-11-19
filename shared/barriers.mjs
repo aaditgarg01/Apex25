@@ -30,7 +30,7 @@ import {zandvoortBoundaryOffset} from './zandvoort.mjs';
 import {bankedHeight} from './banked-road.mjs';
 import {interlagosBoundaryOffset} from './interlagos-boundary.mjs';
 import {damageTyres} from './tyres.mjs';
-import {pitBoundary,pitReserved} from './pit-layout.mjs';
+import {pitBoundary,pitReserved,pitGarageSolids} from './pit-layout.mjs';
 import {velocityOf,setVelocity} from './motion.mjs';
 import {madridSafety,madridTunnelSolids} from './madrid-scenery.mjs';
 import {jeddahBoundaryOffset,jeddahTecproBlocks} from './jeddah.mjs';
@@ -126,6 +126,7 @@ export function trackBarriers(track){
   for(const island of track.campus.roundabouts){const p=campusLocal(track,island.location);let closest=track.points[0],distance=Infinity;for(const point of track.points){const d=Math.hypot(point.x-p.x,point.z-p.z);if(d<distance){distance=d;closest=point;}}const y=closest.groundY-.975;for(let i=0;i<32;i++){const a=i*Math.PI/16,b=(i+1)*Math.PI/16;add({x:p.x+Math.cos(a)*island.radius,z:p.z+Math.sin(a)*island.radius,y},{x:p.x+Math.cos(b)*island.radius,z:p.z+Math.sin(b)*island.radius,y},.12,1.4,'island');}}
  }
  if(track.id==='mc-1929'){const p=campusLocal(track,[7.4293,43.7382]);let center=0,best=Infinity;track.points.forEach((q,i)=>{const d=Math.hypot(p.x-q.x,p.z-q.z);if(d<best){best=d;center=i*track.step;}});for(let s=center-90;s<center+90;s+=8)wallPair(s,8.4,half+1,.5,5.5,'tunnel');}
+ for(const wall of pitGarageSolids(track))add(wall.a,wall.b,wall.width,wall.height,wall.kind);
  const data={walls,grid};cache.set(track,data);return data;
 }
 function candidates(car,data){const ids=new Set();for(let x=Math.floor((car.x-4)/CELL);x<=Math.floor((car.x+4)/CELL);x++)for(let z=Math.floor((car.z-4)/CELL);z<=Math.floor((car.z+4)/CELL);z++)for(const id of data.grid.get(x+':'+z)||[])ids.add(id);return [...ids].map(id=>data.walls[id]);}

@@ -1,0 +1,383 @@
+{
+  "description": "Complete modular garage footprints against every racing-ribbon segment and local generated pit corridor; render/collision segment equality. Mapped access roads and circuit-wide original architecture are not exhaustively re-audited.",
+  "circuits": [
+    {
+      "track": "au-1953",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.199998688425842,
+      "minimumGaragePitClearanceMetres": 1.1999999999993396,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "cn-2004",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.471599128271393,
+      "minimumGaragePitClearanceMetres": 1.1999999999995854,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "jp-1962",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.4425090680675,
+      "minimumGaragePitClearanceMetres": 1.1999999999993527,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "bh-2002",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.20030381068338,
+      "minimumGaragePitClearanceMetres": 1.199999999999779,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "sa-2021",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 23.82651126966068,
+      "minimumGaragePitClearanceMetres": 1.1999999999991073,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "us-2022",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.246874021060947,
+      "minimumGaragePitClearanceMetres": 1.1999999999999116,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "it-1953",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.235670597742143,
+      "minimumGaragePitClearanceMetres": 1.1999999999997035,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "mc-1929",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 16.595081045204118,
+      "minimumGaragePitClearanceMetres": 1.199999999999648,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "es-1991",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.199731895058042,
+      "minimumGaragePitClearanceMetres": 1.1999999999998832,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "ca-1978",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.706498893102419,
+      "minimumGaragePitClearanceMetres": 1.1999999999995639,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "at-1969",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.807623070136758,
+      "minimumGaragePitClearanceMetres": 1.19999999999954,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "gb-1948",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.37418726903052,
+      "minimumGaragePitClearanceMetres": 1.1999999999990922,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "be-1925",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.46773009281161,
+      "minimumGaragePitClearanceMetres": 1.1999999999989759,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "hu-1986",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.706725611594194,
+      "minimumGaragePitClearanceMetres": 1.1999999999996862,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "nl-1948",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 1.399023941315106,
+      "minimumGaragePitClearanceMetres": 1.1999999999996842,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "it-1922",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.200070545160784,
+      "minimumGaragePitClearanceMetres": 1.1999999999994702,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "az-2016",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.581472915462639,
+      "minimumGaragePitClearanceMetres": 1.199999999999275,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "sg-2008",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 17.64881406095547,
+      "minimumGaragePitClearanceMetres": 1.199999999999297,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "us-2012",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.212956929605758,
+      "minimumGaragePitClearanceMetres": 1.1999999999995108,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "mx-1962",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.982167030859722,
+      "minimumGaragePitClearanceMetres": 1.1999999999995539,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "br-1940",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 16.20002686765257,
+      "minimumGaragePitClearanceMetres": 1.199999999999691,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "us-2023",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.222821715703121,
+      "minimumGaragePitClearanceMetres": 1.199999999999199,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "qa-2004",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.520184003872304,
+      "minimumGaragePitClearanceMetres": 1.1999999999995363,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "ae-2009",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.65060955155539,
+      "minimumGaragePitClearanceMetres": 1.1999999999999267,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "fr-1969",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 16.20041658102515,
+      "minimumGaragePitClearanceMetres": 1.199999999999871,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "de-1932",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.425438205790957,
+      "minimumGaragePitClearanceMetres": 1.199999999999452,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "ru-2014",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.248432789816517,
+      "minimumGaragePitClearanceMetres": 1.199999999999314,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "de-1927",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.420631582950907,
+      "minimumGaragePitClearanceMetres": 1.199999999999661,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "pt-2008",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.200001218692446,
+      "minimumGaragePitClearanceMetres": 1.1999999999997266,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "it-1914",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 21.88052964368823,
+      "minimumGaragePitClearanceMetres": 1.199999999999903,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "my-1999",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.363512523959532,
+      "minimumGaragePitClearanceMetres": 1.1999999999999689,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "tr-2005",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 17.039704684965194,
+      "minimumGaragePitClearanceMetres": 1.1999999999981974,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "fr-1960",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.199505218882678,
+      "minimumGaragePitClearanceMetres": 1.1999999999998718,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "pt-1972",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.253634184454969,
+      "minimumGaragePitClearanceMetres": 1.1999999999998068,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "br-1977",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.76949275816453,
+      "minimumGaragePitClearanceMetres": 1.1999999999998006,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "es-2026",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.208300271227374,
+      "minimumGaragePitClearanceMetres": 1.1999999999993596,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "us-1909",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.680249903307702,
+      "minimumGaragePitClearanceMetres": 1.1999999999994704,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "ar-1952",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 17.16966015554308,
+      "minimumGaragePitClearanceMetres": 1.19999999999968,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "za-1961",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.228982167635284,
+      "minimumGaragePitClearanceMetres": 1.1999999999997732,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "us-1956",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.19844195744918,
+      "minimumGaragePitClearanceMetres": 1.1999999999995352,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "in-2011",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.291639370575448,
+      "minimumGaragePitClearanceMetres": 1.199999999999753,
+      "identicalRenderedCollisionWallSegments": 32
+    },
+    {
+      "track": "in-vit-vellore",
+      "laneWidthMetres": 12,
+      "serviceApronMetres": 5.76,
+      "garages": 8,
+      "minimumGarageRoadClearanceMetres": 15.200825955067408,
+      "minimumGaragePitClearanceMetres": 1.1999999999997888,
+      "identicalRenderedCollisionWallSegments": 32
+    }
+  ]
+}

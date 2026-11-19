@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.63.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.64.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2248,3 +2248,25 @@ larger improvement in its 120 fps case. These are simulated presentation
 measurements, not internet latency claims. See the
 [implementation and verification report](docs/SMOOTH-DRIVING-PITS-2.63.0.md).
 The repository test suite was not run or edited.
+
+## 2.64.0 — Rear-view mirror, paired contacts and open pit garages
+
+A live rear-view mirror now sits above the race HUD; toggle it with **V** or
+**Mirror**. Narrow portrait layouts move the timing panels below it. The rear
+camera has a small reusable target and throttled refresh.
+
+Nearby rivals share the local prediction reference instead of staying on the
+distant-car smoothing timeline. Sequenced server contact markers reconcile both
+affected cars together, including lighter impacts. Collision authority and
+impulse calculations remain on the server.
+
+Pits now have a separate through lane and service apron, eight green numbered
+bays with white outlines, open workshop fronts, garage-mounted **YOUR BOX**
+boards and neutral upper glazing. Shared wall segments drive rendering and
+collision; outer boundaries sit behind the garages. The focused car stays opaque
+during service. These are original procedural assets informed by the reference
+pit's organisation.
+
+The centreline, car model, multiplayer provider and tyre-service/penalty rules
+are unchanged. Verification and remaining limits are in the
+[release report](docs/MIRROR-CONTACTS-PITS-2.64.0.md).

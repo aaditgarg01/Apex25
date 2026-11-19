@@ -17,20 +17,21 @@ export function pitStopStation(plan,car){
  return plan.boxes[car.pitBoxIndex]??plan.box;
 }
 
-// Two zones inside the existing six-metre corridor: an inner through lane and
+// Two zones inside the shared pit corridor: an inner through lane and
 // an outer service apron. Numbered stops never wrap onto another driver's bay.
-export const pitBayOffset=plan=>plan.side*1.4;
+export const pitBayOffset=plan=>plan.side*(plan.width-plan.apronWidth)/2;
+export const pitFastOffset=plan=>-plan.side*plan.apronWidth/2;
 export function pitDrivingOffset(plan,car,distance){
  const body=smooth(distance/plan.taper)*smooth((plan.length-distance)/plan.taper),box=pitStopStation(plan,car);
  const approach=smooth((distance-box+20)/20),depart=car.pitState==='exit'?1-smooth((distance-box)/24):1;
- return (-plan.side*1.3+(pitBayOffset(plan)+plan.side*1.3)*approach*depart)*body;
+ return (pitFastOffset(plan)+(pitBayOffset(plan)-pitFastOffset(plan))*approach*depart)*body;
 }
 const garageCache=new WeakMap();
 export function pitGaragePlans(track){
  if(garageCache.has(track))return garageCache.get(track);
  const plan=pitLayout(track),sites=[];
  for(const [index,station] of plan.boxes.entries()){
-  const p=pitRoadPose(track,station,plan.side*(plan.width/2+4)),site={...p,index,station,w:5,d:7.6,h:4.5},footprint=footprintBox(site,.4);
+  const p=pitRoadPose(track,station,plan.side*(plan.width/2+1.2+plan.garageDepth/2)),site={...p,index,station,w:plan.garageDepth,d:8.4,h:4.8},footprint=footprintBox(site,.4);
   let clear=true;
   for(let i=0;i<track.points.length;i++){
    const a=track.points[i],b=track.points[(i+1)%track.points.length];
@@ -74,12 +75,12 @@ export function pitLayout(track){
  const startFrame=sample(track,0),centroid=track.points.reduce((v,p)=>({x:v.x+p.x/track.points.length,z:v.z+p.z/track.points.length}),{x:0,z:0}),preferred=PIT_SIDES[track.id]||Math.sign((centroid.x-startFrame.x)*Math.cos(startFrame.heading)-(centroid.z-startFrame.z)*Math.sin(startFrame.heading))||1;
  for(const length of lengths){
   const anchor=PIT_BOXES[track.id]??0,center=clamp(anchor,straight.start+12+length/2,straight.end-12-length/2),entry=center-length/2,a=sample(track,entry),b=sample(track,entry+length),frame={...sample(track,center),heading:Math.atan2(b.x-a.x,b.z-a.z)},rx=Math.cos(frame.heading),rz=-Math.sin(frame.heading),taper=Math.min(95,length*.22);
-  for(const side of [preferred,-preferred]){
+  for(const side of [preferred,-preferred])for(const width of [12,10,8]){
    let edge=track.width/2;
    for(let d=taper;d<=length-taper;d+=6){const p=sample(track,entry+d),extent=side*((p.x-frame.x)*rx+(p.z-frame.z)*rz)+track.width/2;edge=Math.max(edge,extent);}
-   const plan={entry:wrap(entry,track.length),length,box:PIT_BOXES[track.id]===undefined?length*.52:clamp(anchor-entry,taper+16,length-taper-16),offset:side*(edge+5),entryOffset:side*(track.width/2-1.8),side,width:6,taper,frame,straight};
-   let cost=(650-length)*.002+(side===preferred?0:2);
-   for(let d=taper;d<=length-taper;d+=12){const p=point(track,plan,d),s=wrap(plan.entry+d,track.length);for(let j=0;j<track.points.length;j+=4){const arc=Math.abs(j*track.step-s);if(Math.min(arc,track.length-arc)<80)continue;const q=track.points[j],distance=Math.hypot(p.x-q.x,p.z-q.z);if(Math.abs(p.y-q.y)<5&&distance<track.width/2+5)cost+=(track.width/2+5-distance)*1000;}}
+   const plan={entry:wrap(entry,track.length),length,box:PIT_BOXES[track.id]===undefined?length*.52:clamp(anchor-entry,taper+16,length-taper-16),offset:side*(edge+width/2+2),entryOffset:side*(track.width/2-1.8),side,width,apronWidth:width*.48,garageDepth:7.5,taper,frame,straight};
+   let cost=(650-length)*.002+(side===preferred?0:2)+(12-width)*.3;
+   for(let d=taper;d<=length-taper;d+=12){const p=point(track,plan,d),s=wrap(plan.entry+d,track.length);for(let j=0;j<track.points.length;j+=4){const arc=Math.abs(j*track.step-s);if(Math.min(arc,track.length-arc)<80)continue;const q=track.points[j],distance=Math.hypot(p.x-q.x,p.z-q.z);if(Math.abs(p.y-q.y)<5&&distance<track.width/2+width/2+2)cost+=(track.width/2+width/2+2-distance)*1000;}}
    if(!best||cost<best.cost)best={...plan,cost};
   }
  }
@@ -111,13 +112,28 @@ export function pitGroundHeight(track,x,z,height){
  const blend=1-smooth((best-plan.width/2-10)/10);
  return height+(closest.y-.08-height)*blend;
 }
+export function pitOuterOffset(track,d){
+ const plan=pitLayout(track),extra=pitGaragePlans(track).reduce((v,site)=>Math.max(v,1-smooth((Math.abs(d-site.station)-6)/16)),0)*(plan.garageDepth+1.5);
+ return plan.width/2+.45+extra;
+}
 export function pitBoundary(track,s){
  const plan=pitLayout(track),d=wrap(s-plan.entry,track.length);if(d>plan.length)return null;
  const p=point(track,plan,d),road=sample(track,s),lateral=(p.x-road.x)*Math.cos(road.heading)-(p.z-road.z)*Math.sin(road.heading);
- return {side:plan.side,d,outer:Math.max(track.width/2+.8,Math.abs(lateral)+plan.width/2+.45),divider:d>plan.taper+6&&d<plan.length-plan.taper-6};
+ return {side:plan.side,d,outer:Math.max(track.width/2+.8,Math.abs(lateral)+pitOuterOffset(track,d)),divider:d>plan.taper+6&&d<plan.length-plan.taper-6};
 }
 export function pitReserved(track,x,z,padding=5){
  const plan=pitLayout(track);
- for(let gx=Math.floor(x/16)-1;gx<=Math.floor(x/16)+1;gx++)for(let gz=Math.floor(z/16)-1;gz<=Math.floor(z/16)+1;gz++)for(const p of plan.grid.get(gx+':'+gz)||[])if(Math.hypot(x-p.x,z-p.z)<padding)return true;
+ for(let gx=Math.floor(x/16)-1;gx<=Math.floor(x/16)+1;gx++)for(let gz=Math.floor(z/16)-1;gz<=Math.floor(z/16)+1;gz++)for(const p of plan.grid.get(gx+':'+gz)||[])if(Math.hypot(x-p.x,z-p.z)<Math.max(padding,plan.width/2+1))return true;
  return false;
+}
+
+// These exact wall segments are used by rendering and physical collision. The
+// garage front is open; sides/rear and the raised lintel are solid.
+export function pitGarageSolids(track){
+ const plan=pitLayout(track),out=[];
+ for(const site of pitGaragePlans(track)){
+  const c=Math.cos(site.heading),s=Math.sin(site.heading),at=(x,z,y=0)=>({x:site.x+c*x+s*z,z:site.z-s*x+c*z,y:site.y+y}),front=-plan.side*site.w/2,back=plan.side*site.w/2;
+  for(const [a,b,y,height,part]of [[at(back,-site.d/2),at(back,site.d/2),0,4.8,'back'],[at(front,-site.d/2),at(back,-site.d/2),0,4.8,'side'],[at(front,site.d/2),at(back,site.d/2),0,4.8,'side'],[at(front,-site.d/2),at(front,site.d/2),3.8,1,'lintel']])out.push({a:{...a,y:a.y+y},b:{...b,y:b.y+y},width:.22,height,kind:'pit-garage',part,index:site.index});
+ }
+ return out;
 }

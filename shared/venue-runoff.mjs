@@ -1,4 +1,4 @@
-import {pitLayout, pitRoadPose} from './pit-layout.mjs';
+import {pitLayout, pitRoadPose, pitOuterOffset, pitGaragePlans} from './pit-layout.mjs';
 import {sample, wrap, clamp, angleDiff} from './tracks.mjs';
 import {ribbonOffset} from './surface.mjs';
 import {footprintBox, footprintStrip, footprintBounds, footprintCells, footprintContains,
@@ -301,8 +301,10 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
     if (wallCache.has(track)) return wallCache.get(track);
     const {edges} = runoff(track), walls = [], pit = pitLayout(track), supports = [], half = track.width / 2;
     function add(a, b, width, height, kind, style, inward = null) {
-      const filter = kind === 'track' || kind === 'fence' ? groundBranch : undefined;
-      if (!roadClear(track, footprintStrip(a, b, width / 2 + .13), filter)) return false;
+      const filter = kind === 'track' || kind === 'fence' ? groundBranch : undefined, footprint = footprintStrip(a, b, width / 2 + .13);
+      // The new shared garage shell replaces an older boundary through its footprint.
+      if (filter && pitGaragePlans(track).some(garage => footprintsOverlap(garage.footprint, footprint))) return false;
+      if (!roadClear(track, footprint, filter)) return false;
       walls.push({a, b, width, height, kind, style, inward});
       return true;
     }
@@ -320,8 +322,8 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
       }
     }
     for (const side of [-1, 1]) for (let d = 12; d < pit.length - 15; d += 3) {
-      const offset = side * (pit.width / 2 + .64);
-      add(pitRoadPose(track, d, offset), pitRoadPose(track, d + 3, offset), .40, 1.02,
+      const offset = side * (side === pit.side ? pitOuterOffset(track, d) : pit.width / 2 + .64), nextOffset = side * (side === pit.side ? pitOuterOffset(track, d + 3) : pit.width / 2 + .64);
+      add(pitRoadPose(track, d, offset), pitRoadPose(track, d + 3, nextOffset), .40, 1.02,
         side === pit.side ? 'pit-wall' : 'pit-divider', 'concrete');
     }
 
@@ -332,7 +334,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
         for (let extra = 8; extra < 40; extra += 2) {
           const p = sample(track, station, side * (half + extra));
           const footprint = footprintBox({...p, w: 1.6, d: 1.6}, .8);
-          if (roadClear(track, footprint) && runoffClear(track, footprint)) return p;
+          if (roadClear(track, footprint) && runoffClear(track, footprint) && !pitGaragePlans(track).some(garage => footprintsOverlap(garage.footprint, footprint))) return p;
         }
         return null;
       });
@@ -364,7 +366,7 @@ export function createVenueRunoff({prefix, roads: mappedRoads, dem, corners, pai
           const site = {x:end.x + Math.cos(heading) * offset, z:end.z - Math.sin(heading) * offset,
             heading, w:.85, d:.85};
           const footprint = footprintBox(site,.25);
-          if (roadClear(track,footprint) && runoffClear(track,footprint)) {
+          if (roadClear(track,footprint) && runoffClear(track,footprint) && !pitGaragePlans(track).some(garage => footprintsOverlap(garage.footprint,footprint))) {
             supportSites.push({site,footprint});
             break;
           }

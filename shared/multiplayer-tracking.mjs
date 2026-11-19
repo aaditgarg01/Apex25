@@ -18,7 +18,7 @@ const zero=()=>({x:0,y:0,z:0,heading:0});
 // Only the server decides contacts, timing, penalties, tyres and classification.
 export class MultiplayerTracking {
  constructor(track,id,{liveInput=false}={}){
-  Object.assign(this,{track,id,liveInput,frames:[],arrivals:[],interval:50,delay:110,rtt:100,remoteAt:null,session:null,local:null,reference:null,localAt:0,lastAt:0,correction:zero(),controls:[]});
+  Object.assign(this,{track,id,liveInput,frames:[],arrivals:[],interval:50,delay:110,rtt:100,remoteAt:null,session:null,local:null,reference:null,localAt:0,lastAt:0,correction:zero(),controls:[],contactSequences:new Map(),contactLocks:new Map()});
  }
  setPing(ms){if(Number.isFinite(ms)&&ms>=0)this.rtt=this.rtt*.7+Math.min(ms,2000)*.3;}
  record(s,now){
@@ -26,6 +26,7 @@ export class MultiplayerTracking {
   if(this.phase===s.phase&&last&&at<last.at)return;
   if(this.phase!==s.phase){this.frames=[];this.arrivals=[];this.interval=50;this.delay=110;this.remoteAt=null;}
   this.phase=s.phase;
+  for(const car of s.cars){if((car.contactSequence||0)>(this.contactSequences.get(car.id)||0)){this.contactSequences.set(car.id,car.contactSequence);this.contactLocks.set(car.id,now+300);if(car.lastContactWith)this.contactLocks.set(car.lastContactWith,now+300);}}
   if(this.frames.at(-1)?.at===at){this.frames[this.frames.length-1]={at,cars:s.cars};return;}
   if(last&&at>last.at)this.interval+=(clamp(at-last.at,16,150)-this.interval)*.15;
   this.arrivals.push(now-at);if(this.arrivals.length>90)this.arrivals.shift();
@@ -85,7 +86,7 @@ export class MultiplayerTracking {
   const c=s.cars.find(car=>car.id===this.id);if(!c)return;
   if(this.session?.phase===s.phase&&s.elapsed<this.session.elapsed)return;
   const previous=this.session?.cars.find(car=>car.id===this.id);
-  const discontinuity=reset||previous&&((c.pitState||'none')!==(previous.pitState||'none')||Math.hypot((c.impactVX||0)-(previous.impactVX||0),(c.impactVZ||0)-(previous.impactVZ||0))>4||Math.abs((c.impactYaw||0)-(previous.impactYaw||0))>.6);
+  const discontinuity=reset||previous&&((c.contactSequence||0)>(previous.contactSequence||0)||(c.pitState||'none')!==(previous.pitState||'none')||Math.hypot((c.impactVX||0)-(previous.impactVX||0),(c.impactVZ||0)-(previous.impactVZ||0))>4||Math.abs((c.impactYaw||0)-(previous.impactYaw||0))>.6);
   if(this.local&&!discontinuity)this.advance(now);
   this.record(s,receivedAt);this.session=s;this.lastAt=receivedAt;
   this.snapshotAt=s.elapsed*1000+this.clockOffset;
@@ -104,6 +105,14 @@ export class MultiplayerTracking {
   }
   this.reference=target;
  }
+ contactPose(car,now,local,near){
+  const out={...car,smoothMotion:true},age=clamp((now-this.snapshotAt)/1000,0,.25);
+  // A close car is advanced to the same reference clock as the local prediction.
+  // A distant contact is shown as a pair on the fresh server timeline instead.
+  this.project(out,Math.min(.5,age+(near?clamp(this.rtt/1000,0,.25):0)));
+  if(near&&this.reference){const dx=local.x-this.reference.x,dz=local.z-this.reference.z,n=Math.hypot(dx,dz),scale=Math.min(1,4/Math.max(n,.001));out.x+=dx*scale;out.z+=dz*scale;out.y+=clamp(local.y-this.reference.y,-.5,.5);}
+  return out;
+ }
  frame(now,dt,control){
   const s=this.session;if(!s)return [];
   this.remember(control,now);this.advance(now);
@@ -114,6 +123,9 @@ export class MultiplayerTracking {
   return s.cars.map(c=>{
    if(c.id===this.id)return local;
    if(c.finished||!active(s))return {...c,smoothMotion:true};
+   const distance=Math.hypot(c.x-own.x,c.z-own.z),near=distance<60&&Math.abs(c.y-own.y)<3&&c.pitState==='none'&&own.pitState==='none';
+   const locked=(this.contactLocks.get(c.id)||0)>now;
+   const smoothPose=()=>{
    const samples=[];
    for(const f of this.frames){const car=f.cars.find(x=>x.id===c.id);if(!car)continue;const at=car.ai?f.at:Math.min(f.at,(car.inputTime??f.at/1000)*1000),sample={at,car};if(samples.at(-1)?.at===at)samples[samples.length-1]=sample;else samples.push(sample);}
    if(samples.length<2)return {...c,smoothMotion:true};
@@ -132,6 +144,13 @@ export class MultiplayerTracking {
    }
    if(target>b.at)this.project(out,Math.min((target-b.at)/1000,.15));
    return out;
+   };
+   const buffered=smoothPose();
+   if(locked)return this.contactPose(c,now,local,near);
+   if(!near)return buffered;
+   const current=this.contactPose(c,now,local,true),blend=clamp((60-distance)/30,0,1);
+   for(const field of poseFields){const from=buffered[field]??0,to=current[field]??from;buffered[field]=from+(field==='heading'||field==='motionHeading'?angleDiff(to,from):to-from)*blend;}
+   return buffered;
   });
  }
 }

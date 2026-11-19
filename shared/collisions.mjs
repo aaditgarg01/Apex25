@@ -31,11 +31,21 @@ function impulse(car,r,p,weight){
  if(!weight)return;const v=velocityOf(car);setVelocity(car,v.x+p.x*INV_MASS,v.z+p.z*INV_MASS);
  car.impactYaw=Math.max(-3,Math.min(3,(car.impactYaw||0)+lever(r,p)*INV_INERTIA));
 }
+function markContact(a,b,closing){
+ if(closing<.6)return;
+ const time=Math.max(a.physicsTime??a.inputTime??0,b.physicsTime??b.inputTime??0);
+ for(const [car,other]of [[a,b],[b,a]]){
+  if(car.lastContactWith===other.id&&time-(car.lastContactAt??-Infinity)<.12)continue;
+  car.contactSequence=(car.contactSequence||0)+1;car.lastContactAt=time;car.lastContactWith=other.id;car.lastContactSeverity=closing;
+ }
+}
+
 function collide(a,b,hit,wa,wb,bounce){
  const A=body(a),B=body(b),ra={x:hit.point.x-A.x,z:hit.point.z-A.z},rb={x:hit.point.x-B.x,z:hit.point.z-B.z},n=hit.normal,t={x:-n.z,z:n.x};
  const relative=()=>{const av=contactVelocity(a,ra),bv=contactVelocity(b,rb);return {x:bv.x-av.x,z:bv.z-av.z};};
  const effective=axis=>(wa+wb)*INV_MASS+(wa*lever(ra,axis)**2+wb*lever(rb,axis)**2)*INV_INERTIA;
  const closing=-dot(relative(),n);if(closing<=.001)return;
+ if(bounce)markContact(a,b,closing);
  if(bounce){if(wa)damageTyres(a,closing);if(wb)damageTyres(b,closing);}
  // Equal finite masses transfer momentum in the contact direction. The small
  // restitution is applied once; solver passes never add repeated bounce energy.
@@ -72,6 +82,6 @@ export function resolveCarContacts(cars,movingId=null,{impulses=true,maxCorrecti
 function timedContacts(cars,movingId,options,time){
  const views=cars.map(car=>{const view={...car},stamp=car.physicsTime??car.inputTime??time,dt=time-stamp;const moving=Math.abs(car.v)>2||Math.hypot(car.impactVX||0,car.impactVZ||0)>.5;view.contactUncertain=Math.abs(dt)>.25&&moving;if(Math.abs(dt)<=.25)projectMotion(view,dt);return view;}),before=views.map(c=>({x:c.x,z:c.z,velocity:velocityOf(c),spin:c.impactYaw||0}));
  const contacts=resolveCarContacts(views,movingId,options);if(!contacts)return 0;
- for(let i=0;i<cars.length;i++){const c=cars[i],view=views[i],base=before[i];c.x+=view.x-base.x;c.z+=view.z-base.z;if(options.impulses){const old=velocityOf(c),after=velocityOf(view);setVelocity(c,old.x+after.x-base.velocity.x,old.z+after.z-base.velocity.z);c.impactYaw=Math.max(-3,Math.min(3,(c.impactYaw||0)+(view.impactYaw||0)-base.spin));if(Number.isFinite(view.tyreLife)){c.tyreLife=view.tyreLife;c.tyreImpactCooldown=view.tyreImpactCooldown;}}}
+ for(let i=0;i<cars.length;i++){const c=cars[i],view=views[i],base=before[i];c.x+=view.x-base.x;c.z+=view.z-base.z;if(options.impulses){const old=velocityOf(c),after=velocityOf(view);setVelocity(c,old.x+after.x-base.velocity.x,old.z+after.z-base.velocity.z);c.impactYaw=Math.max(-3,Math.min(3,(c.impactYaw||0)+(view.impactYaw||0)-base.spin));if(Number.isFinite(view.tyreLife)){c.tyreLife=view.tyreLife;c.tyreImpactCooldown=view.tyreImpactCooldown;}}if((view.contactSequence||0)>(c.contactSequence||0)){for(const field of ['contactSequence','lastContactAt','lastContactWith','lastContactSeverity'])c[field]=view[field];}}
  return contacts;
 }
