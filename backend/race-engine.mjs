@@ -64,7 +64,7 @@ function attachPeer(ws,{id=randomBytes(6).toString('hex'),key=null,resume=false}
  clients.set(ws,c);peers.set(id,c);
  ws._socket?.setNoDelay(true);
  if(!key)send(ws,{type:'welcome',id});
- ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);
+ ws.lastPongAt=Date.now();ws.on('pong',()=>ws.lastPongAt=Date.now());
  ws.on('message',raw=>{try{const m=JSON.parse(raw),c=clients.get(ws),now=Date.now();if(!c)return;c.lastSeen=now;if(now-c.window>1000){c.window=now;c.requests=0;}if(++c.requests>100)return;
  const error=message=>send(ws,{type:'error',message});
  if(m.type==='create'||m.type==='join'){
@@ -157,7 +157,9 @@ const loop=setInterval(()=>{
  if(tick>0){tick=0;for(const r of rooms.values())if(r.state==='racing')publishState(r,now);}
 },1000/60);
 const heartbeat=setInterval(()=>{
- for(const ws of wss?.clients||[]){if(!ws.isAlive)ws.terminate();else{ws.isAlive=false;ws.ping();}}
+ // Driving controls still time out independently. A late transport keepalive
+ // should not end a race after one congested or background interval.
+ for(const ws of wss?.clients||[]){if(Date.now()-ws.lastPongAt>45000)ws.terminate();else ws.ping();}
  for(const c of peers.values()){
   if(c.key&&Date.now()-c.lastSeen>30000){
    leave(c.ws);clients.delete(c.ws);peers.delete(c.id);c.ws.close(1012,'Connection expired');

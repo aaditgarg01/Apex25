@@ -29,6 +29,7 @@ import {tyreGrip,tyreSpeedFactor} from '/shared/tyres.mjs';
 import {addPitLane,clearPitScenery} from './pit-lane.js';
 import {pitGroundHeight,pitRoadPose,pitLayout} from '/shared/pit-layout.mjs';
 import {tyreProfile} from '/shared/tyres.mjs';
+import {pitPose} from '/shared/pits.mjs';
 import {vegasTerrainHeight} from './las-vegas.js';
 import {madridTerrainHeight} from './madrid.js';
 import {madridTunnelAt} from '/shared/madrid.mjs';
@@ -147,11 +148,11 @@ export class RaceScene{
   shape.moveTo(...vertices[0]);
   for(const vertex of vertices.slice(1))shape.lineTo(...vertex);
   shape.closePath();
-  const geo=new THREE.ShapeGeometry(shape);
-  geo.rotateX(-Math.PI/2);
-  geo.scale(.45,1,.45);
-  const fill=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:'#ffffff',toneMapped:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),this.guideCount);
-  const border=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:'#06131a',toneMapped:false,side:THREE.DoubleSide}),this.guideCount);
+  const guideGeometry=new THREE.ShapeGeometry(shape);
+  guideGeometry.rotateX(-Math.PI/2);
+  guideGeometry.scale(.45,1,.45);
+  const fill=new THREE.InstancedMesh(guideGeometry,new THREE.MeshBasicMaterial({color:'#ffffff',toneMapped:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),this.guideCount);
+  const border=new THREE.InstancedMesh(guideGeometry,new THREE.MeshBasicMaterial({color:'#06131a',toneMapped:false,side:THREE.DoubleSide}),this.guideCount);
   fill.count=border.count=0;
   fill.frustumCulled=border.frustumCulled=false;
   this.line.add(border,fill);
@@ -220,7 +221,7 @@ export class RaceScene{
   const distance=i*4-8,s=car.s+distance;
   const pitDistance=car.pitState!=='none'?car.pitTravel+distance:((car.s-plan.entry+track.length*1.5)%track.length-track.length*.5)+distance;
   const guidePit=(car.pitRequested||car.pitState!=='none')&&pitDistance>=0&&pitDistance<=plan.length;
-  const p=guidePit?pitRoadPose(track,pitDistance):sampleGuide(track,s);
+  const p=guidePit?pitPose({...car,pitState:car.pitState==='none'?'lane':car.pitState,pitEntryOffset:car.pitState==='none'?plan.entryOffset:car.pitEntryOffset},track,pitDistance):sampleGuide(track,s);
   const limit=racingSpeedAt(track,s,this.conditions,car.trackWetness)*rubberPace;
   const next=racingSpeedAt(track,s+16,this.conditions,car.trackWetness)*rubberPace;
   if(distance>0){
@@ -306,7 +307,7 @@ export class RaceScene{
  removeCar(id){const model=this.cars.get(id);if(!model)return;this.group.remove(model);const geometries=new Set(),materials=new Set(),textures=new Set();model.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const material of [].concat(o.material)){materials.add(material);if(material.map)textures.add(material.map);}});for(const geometry of geometries)geometry.dispose();for(const texture of textures)texture.dispose();for(const material of materials)material.dispose();this.cars.delete(id);}
  sync(cars,dt,rolling){const live=new Set(cars.filter(isOnTrack).map(c=>c.id));for(const id of this.cars.keys())if(!live.has(id))this.removeCar(id);for(const c of cars){if(!isOnTrack(c))continue;let model=this.cars.get(c.id);if(model&&model.userData.liveryId!==normalizeLiveryIndex(c.colorId)){this.removeCar(c.id);model=null;}if(!model){model=this.makeCar(c);this.cars.set(c.id,model);model.position.set(c.x,c.y,c.z);model.rotation.y=c.heading;}this.setPitGhost(model,isInPit(c));model.userData.tyreMark.color.set(tyreProfile(c.tyreCompound).color);const blend=c.smoothMotion?1:1-Math.exp(-dt*18);model.position.lerp(new THREE.Vector3(c.x,c.y+.07,c.z),blend);model.rotation.y+=angleDiff(c.heading,model.rotation.y)*blend;model.rotation.x+=(-(c.pitch||0)-model.rotation.x)*blend;if(this.track.id==='nl-1948'){const onRoad=nearest(this.track,c.x,c.z,c.s),slope=sample(this.track,onRoad.s,onRoad.offset),attitude=surfaceAttitude(slope,c.heading);model.position.y=c.y+.07;model.rotation.x+=(-attitude.pitch-model.rotation.x)*blend;model.rotation.z+=(attitude.roll-model.rotation.z)*blend;}else model.rotation.z=0;if(rolling&&!c.finished)model.userData.wheels.forEach(w=>{w.userData.spin.rotation.x=(w.userData.spin.rotation.x+c.v*dt/.39)%(Math.PI*2);if(w.userData.isFront)w.rotation.y=c.steer*.6;});}}
  frame(cars,player,dt,racing,rolling=false){
- this.pitLane?.update(cars,performance.now());
+ this.pitLane?.update(cars,performance.now(),player);
  // Sustained slow frames lower resolution before input feels sluggish. Do not
  // count background-tab throttling or loading spikes as graphics pressure.
  if(!document.hidden&&dt>.032&&dt<.095)this.slowFrames++;else this.slowFrames=Math.max(0,this.slowFrames-1);

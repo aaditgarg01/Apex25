@@ -1,6 +1,7 @@
 // Focused live diagnostic, separate from the game's test suite. Node 22+.
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
+import {resolve as resolvePath} from 'node:path';
 import {performance} from 'node:perf_hooks';
 import {makeTracks,targetSpeed} from '../shared/tracks.mjs';
 import {trackBarriers} from '../shared/barriers.mjs';
@@ -14,6 +15,7 @@ const args=Object.fromEntries(process.argv.slice(2).map(arg=>arg.replace(/^--/,'
 if(!['current','photon'].includes(transport))throw Error('Use --transport=current or --transport=photon');
 const tracks=makeTracks(JSON.parse(await readFile(new URL('../public/data/circuits.geojson',import.meta.url))),JSON.parse(await readFile(new URL('../public/data/elevations.json',import.meta.url)))),track=tracks.find(t=>t.id===PHOTON_LAB_TRACK);
 trackBarriers(track);pitLayout(track);for(let w=0;w<=20;w++)targetSpeed(track,0,'normal',w/20);
+const localEndpoint=args.url&&['localhost','127.0.0.1','[::1]'].includes(new URL(args.url).hostname),currentRegion=localEndpoint?'localhost':'Singapore';
 const peers=[],cleanup=[];let frameTimer,pingTimer,authorityTimer;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(predicate,timeout=45000){const end=performance.now()+timeout;while(!predicate()){if(performance.now()>end)throw Error('The comparison did not become ready before its timeout.');await sleep(20);}}
@@ -63,7 +65,7 @@ try{
   });
   authority.setPlayers(host.client.room.players);
   host.client.onEvent(EVENT.request,({senderNumber,data})=>authority.receive(senderNumber,JSON.parse(data)));
-  for(const code of [EVENT.reliable,EVENT.motion])guest.client.onEvent(code,({senderNumber,data})=>{if(senderNumber===host.client.localPlayer.number)receive(guest,data,new TextEncoder().encode(data).length);});
+  for(const eventCode of [EVENT.reliable,EVENT.motion])guest.client.onEvent(eventCode,({senderNumber,data})=>{if(senderNumber===host.client.localPlayer.number)receive(guest,data,new TextEncoder().encode(data).length);});
   host.send=message=>authority.receive(host.client.localPlayer.number,message);
   guest.send=message=>guest.client.sendEvent(EVENT.request,JSON.stringify(message),{receivers:'masterClient',reliable:message.type!=='commands',channel:message.type==='commands'?1:0});
   authority.start();authorityTimer=setInterval(()=>authority.tick(performance.now()),1000/60);
@@ -77,6 +79,6 @@ try{
  },1000/60);
  pingTimer=setInterval(()=>{for(const p of peers){p.send({type:'ping',time:performance.now()});if(p.client)p.metrics.ping(p.client.stats.roundTripTimeMs);}},1000);
  await until(()=>peers.every(p=>p.metrics.start!==null));await sleep(seconds*1000);
- const now=performance.now(),report={schema:'apex25-network-lab-v1',transport,durationRequested:seconds,authority:transport==='photon'?'Node-hosted emulation of browser-worker prototype':'current Vercel APEX server',limitation:'Both diagnostic clients ran on one machine. Photon simulation host is on that machine; current server is in Singapore. These are not equivalent hosting placements or a two-device weak-link trial.',runs:peers.map(p=>p.metrics.report(now,{transport,role:p.role,region:transport==='photon'?region:'Singapore',track:track.id,cars:p.state.cars.length,repeatableDrive:true,snapshotTargetHz:20,renderer:'headless 60 Hz presentation loop; no GPU rendering'}))};
- const json=JSON.stringify(report,null,2);if(args.out){const path=pathToFileURL(process.cwd()+'/'+args.out);await mkdir(new URL('.',path),{recursive:true});await writeFile(path,json+'\n');}console.log(json);
+ const now=performance.now(),report={schema:'apex25-network-lab-v1',transport,durationRequested:seconds,authority:transport==='photon'?'Node-hosted emulation of browser-worker prototype':(localEndpoint?'local Node APEX server':'current Vercel APEX server'),limitation:localEndpoint?'Both diagnostic clients and server ran on this machine. This checks integration, not internet latency.':'Both diagnostic clients ran on one machine. Photon simulation host is on that machine; current server is in Singapore. These are not equivalent hosting placements or a two-device weak-link trial.',runs:peers.map(p=>p.metrics.report(now,{transport,role:p.role,region:transport==='photon'?region:currentRegion,track:track.id,cars:p.state.cars.length,repeatableDrive:true,snapshotTargetHz:20,renderer:'headless 60 Hz presentation loop; no GPU rendering'}))};
+ const json=JSON.stringify(report,null,2);if(args.out){const path=pathToFileURL(resolvePath(args.out));await mkdir(new URL('.',path),{recursive:true});await writeFile(path,json+'\n');}console.log(json);
 }finally{clearInterval(frameTimer);clearInterval(pingTimer);clearInterval(authorityTimer);for(const close of cleanup.reverse())close();}

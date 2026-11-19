@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.62.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.63.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2216,3 +2216,35 @@ browser driving and saved/exported reports; targeted real-physics/input/metrics
 checks; syntax/import validation and both builds. The repository test suite
 was not run or edited. Method, raw reports, limitations and reproduction steps
 are in [the prototype report](docs/PHOTON-PROTOTYPE-2.62.0.md).
+
+## 2.63.0 — Continuous online driving and clearer pit bays
+
+Online driving now keeps a continuous local physics simulation alongside a
+separate server reference. Position and speed corrections settle gradually
+instead of rebuilding the displayed car from every received snapshot. Fixed-step
+render interpolation removes alternating movement lengths between physics ticks
+on high-refresh displays. Rival cars use velocity-aware curves and a gently
+adjusted jitter buffer. Race contacts, tyres, penalties, pit service and results
+remain server-controlled. This is an original APEX implementation of the useful
+local-response and presentation ideas observed in Apex Drawn; its code and art
+are not bundled.
+
+Pit lanes now distinguish the through lane from the service apron inside the
+existing corridor. Cars blend into their own numbered, offset bay and back out;
+eight stable assignments remain. The assigned bay has a blue highlight and a
+readable board, with yellow outlines, directional arrows, white lane markings,
+mechanics and jacks. Neutral modular garage fronts fill clear sites only; mapped
+architecture is retained. The shared pit path drives simulation, prediction and
+racing-line guidance. Random tyre-service durations, penalty waits, tyre-only
+service notices, the minimum 80 km/h limit and existing transit-loss calibration
+are retained.
+
+Verification: both builds; syntax and module checks; 336 real assisted pit-stop
+runs across 42 circuits with service/penalty/exit checks; recovery/finish and
+snapshot-immutability checks; two local browser clients driving an eight-car
+race; and a separate deterministic packet impairment diagnostic. The latter
+reduced p95 motion jerk by 61% at 20 Hz / 60 fps and 68% at 10 Hz / 60 fps, with
+larger improvement in its 120 fps case. These are simulated presentation
+measurements, not internet latency claims. See the
+[implementation and verification report](docs/SMOOTH-DRIVING-PITS-2.63.0.md).
+The repository test suite was not run or edited.

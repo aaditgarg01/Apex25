@@ -260,11 +260,11 @@ export function createRoomGateway() {
   send(ws, JSON.stringify({ type: 'welcome', id: entry.id, resumeToken: token }));
   let requests = 0;
   let windowStart = Date.now();
-  let alive = true;
-  ws.on('pong', () => { alive = true; });
+  let lastPongAt = Date.now();
+  ws.on('pong', () => { lastPongAt = Date.now(); });
   const heartbeat = setInterval(() => {
-   if (!alive) ws.terminate();
-   else { alive = false; ws.ping(); }
+   if (Date.now() - lastPongAt > 45000) ws.terminate();
+   else ws.ping();
   }, 15000);
   heartbeat.unref();
   ws.on('error', () => {});

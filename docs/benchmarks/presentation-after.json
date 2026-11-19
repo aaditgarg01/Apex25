@@ -1,0 +1,60 @@
+{
+  "description": "Synthetic deterministic packet-delay/jitter/drop diagnostic on actual shared car physics; not an internet benchmark or a substitute for two-device play.",
+  "runs": [
+    {
+      "snapshotsHz": 20,
+      "renderFps": 60,
+      "impaired": false,
+      "seconds": 18,
+      "absoluteAccelerationP95": 33.24721163189679,
+      "jerkP95": 128.18615710784798,
+      "jerkMax": 2745.4457563171673,
+      "instantInputReferenceErrorP95": 7.180842639780394,
+      "maxReferenceError": 7.2809049822758425
+    },
+    {
+      "snapshotsHz": 20,
+      "renderFps": 60,
+      "impaired": true,
+      "seconds": 18,
+      "absoluteAccelerationP95": 35.094660425829716,
+      "jerkP95": 131.64867258819868,
+      "jerkMax": 2755.543751582991,
+      "instantInputReferenceErrorP95": 7.794937319016526,
+      "maxReferenceError": 7.958450704097231
+    },
+    {
+      "snapshotsHz": 10,
+      "renderFps": 60,
+      "impaired": true,
+      "seconds": 18,
+      "absoluteAccelerationP95": 36.62121518391359,
+      "jerkP95": 132.6638145810648,
+      "jerkMax": 2756.159376283904,
+      "instantInputReferenceErrorP95": 9.051549579551306,
+      "maxReferenceError": 9.351586153968356
+    },
+    {
+      "snapshotsHz": 20,
+      "renderFps": 30,
+      "impaired": true,
+      "seconds": 18,
+      "absoluteAccelerationP95": 34.85140948779417,
+      "jerkP95": 62.542815707956834,
+      "jerkMax": 1035.0903532420261,
+      "instantInputReferenceErrorP95": 7.801865908480295,
+      "maxReferenceError": 7.97282825162938
+    },
+    {
+      "snapshotsHz": 20,
+      "renderFps": 120,
+      "impaired": true,
+      "seconds": 18,
+      "absoluteAccelerationP95": 35.05040782056312,
+      "jerkP95": 139.3714679797995,
+      "jerkMax": 8263.181829010136,
+      "instantInputReferenceErrorP95": 7.950807234411968,
+      "maxReferenceError": 8.404497017512881
+    }
+  ]
+}

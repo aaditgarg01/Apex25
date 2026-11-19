@@ -1,4 +1,5 @@
 import {sample,wrap,angleDiff} from './tracks.mjs';
+import {footprintBox,footprintStrip,footprintsOverlap} from './venue-footprints.mjs';
 const cache=new WeakMap(),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
 const BOX_COUNT=8,BOX_SPACING=9;
@@ -14,6 +15,32 @@ function serviceBoxes(plan){
 export function pitStopStation(plan,car){
  // A checkpoint written before numbered boxes can already be in the lane.
  return plan.boxes[car.pitBoxIndex]??plan.box;
+}
+
+// Two zones inside the existing six-metre corridor: an inner through lane and
+// an outer service apron. Numbered stops never wrap onto another driver's bay.
+export const pitBayOffset=plan=>plan.side*1.4;
+export function pitDrivingOffset(plan,car,distance){
+ const body=smooth(distance/plan.taper)*smooth((plan.length-distance)/plan.taper),box=pitStopStation(plan,car);
+ const approach=smooth((distance-box+20)/20),depart=car.pitState==='exit'?1-smooth((distance-box)/24):1;
+ return (-plan.side*1.3+(pitBayOffset(plan)+plan.side*1.3)*approach*depart)*body;
+}
+const garageCache=new WeakMap();
+export function pitGaragePlans(track){
+ if(garageCache.has(track))return garageCache.get(track);
+ const plan=pitLayout(track),sites=[];
+ for(const [index,station] of plan.boxes.entries()){
+  const p=pitRoadPose(track,station,plan.side*(plan.width/2+4)),site={...p,index,station,w:5,d:7.6,h:4.5},footprint=footprintBox(site,.4);
+  let clear=true;
+  for(let i=0;i<track.points.length;i++){
+   const a=track.points[i],b=track.points[(i+1)%track.points.length];
+   if(Math.abs(a.y-site.y)>5||Math.hypot(a.x-site.x,a.z-site.z)>site.d+track.width+track.step)continue;
+   if(footprintsOverlap(footprint,footprintStrip(a,b,track.width/2+1))){clear=false;break;}
+  }
+  if(clear)for(let d=Math.max(0,station-20);d<Math.min(plan.length,station+20);d+=2){const a=pitRoadPose(track,d),b=pitRoadPose(track,d+2);if(footprintsOverlap(footprint,footprintStrip(a,b,plan.width/2+.5))){clear=false;break;}}
+  if(clear)sites.push({...site,footprint});
+ }
+ garageCache.set(track,sites);return sites;
 }
 
 function point(track,plan,d,across=0,entryOffset=plan.entryOffset){

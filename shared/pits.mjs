@@ -2,7 +2,7 @@ import {pitTransitPlan,PIT_MIN_SPEED} from './pit-timing.mjs';
 import {wrap,angleDiff} from './tracks.mjs';
 import {clearImpact} from './motion.mjs';
 import {fitTyres,tyreAvailable,availableTyreChoice} from './tyres.mjs';
-import {pitLayout,pitRoadPose,locatePitLane,pitStopStation} from './pit-layout.mjs';
+import {pitLayout,pitRoadPose,locatePitLane,pitStopStation,pitDrivingOffset} from './pit-layout.mjs';
 export {pitLayout,pitRoadPose} from './pit-layout.mjs';
 export const PIT_SPEED=PIT_MIN_SPEED,PIT_SERVICE_SECONDS=3;
 export const PIT_EXPECTED_SERVICE_SECONDS=2.509;
@@ -51,18 +51,23 @@ export function tryPitEntry(car,track,previousS){
  car.pitState=car.pitTravel<box-.03?'lane':'exit';car.pitRequested=false;
  car.pitEntryOffset=gate?(car.lateral||0):layout.entryOffset;
  car.pitMerge=null;
- if(!gate){const p=pitRoadPose(track,car.pitTravel);car.pitMerge={start:car.pitTravel,length:Math.min(24,(car.pitState==='lane'?box:layout.length)-car.pitTravel),x:car.x-p.x,y:car.y-p.y,z:car.z-p.z};}
+ if(!gate){const p=pitRoadPose(track,car.pitTravel,pitDrivingOffset(layout,car,car.pitTravel));car.pitMerge={start:car.pitTravel,length:Math.min(24,(car.pitState==='lane'?box:layout.length)-car.pitTravel),x:car.x-p.x,y:car.y-p.y,z:car.z-p.z};}
  car.pitEntryProgress=car.progress-car.pitTravel;car.pitTimer=0;car.pitPenalty=0;car.pitFitted=false;car.v=Math.min(pitTransitPlan(track).speed,Math.max(0,car.v));clearImpact(car);
  car.offtrack=false;car.offtrackTime=0;car.offtrackPenalty=false;car.boostActive=false;
  return true;
 }
 export function pitPose(car,track,distance=car.pitTravel){
- const p=pitRoadPose(track,distance,0,car.pitEntryOffset),merge=car.pitMerge;if(!merge)return p;
- const weight=d=>{const t=Math.max(0,Math.min(1,(d-merge.start)/Math.max(.1,merge.length)));return 1-t*t*(3-2*t);};
- const shifted=d=>{const base=pitRoadPose(track,d,0,car.pitEntryOffset),blend=weight(d);return {...base,x:base.x+merge.x*blend,y:base.y+merge.y*blend,z:base.z+merge.z*blend};};
- const w=weight(distance),a=shifted(distance-.2),b=shifted(distance+.2),current={...p,x:p.x+merge.x*w,y:p.y+merge.y*w,z:p.z+merge.z*w},dx=b.x-a.x,dz=b.z-a.z;
+ const plan=pitLayout(track),merge=car.pitMerge;
+ const shifted=d=>{
+  const base=pitRoadPose(track,d,pitDrivingOffset(plan,car,d),car.pitEntryOffset);
+  if(!merge)return base;
+  const t=Math.max(0,Math.min(1,(d-merge.start)/Math.max(.1,merge.length))),blend=1-t*t*(3-2*t);
+  return {...base,x:base.x+merge.x*blend,y:base.y+merge.y*blend,z:base.z+merge.z*blend};
+ };
+ const current=shifted(distance),a=shifted(distance-.2),b=shifted(distance+.2),dx=b.x-a.x,dz=b.z-a.z;
  return {...current,heading:Math.atan2(dx,dz),pitch:Math.atan2(b.y-a.y,Math.hypot(dx,dz))};
 }
+
 export function preparePitTraffic(cars,track){
  for(const car of cars)car.pitClearance=Infinity;
  if(!track||!cars.some(car=>car.pitState==='exit'&&!car.finished))return;
