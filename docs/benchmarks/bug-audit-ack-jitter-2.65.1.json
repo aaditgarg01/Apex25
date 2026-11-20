@@ -1,0 +1,19 @@
+{
+  "description": "Actual shared physics and live-input stream, 20 Hz rounded motion snapshots; input route slows to 650/1000ms while snapshot/ping route remains fast, then recovers. Zero steering, acceleration, boost and braking. Synthetic diagnostic.",
+  "runs": [
+    {
+      "inputRouteDelayMs": 650,
+      "gatewayRttMs": 100,
+      "maximumFrameMove": 1.56933253477564,
+      "maximumReplay": 500,
+      "maximumDisplayOffset": 28.86476195415106
+    },
+    {
+      "inputRouteDelayMs": 1000,
+      "gatewayRttMs": 100,
+      "maximumFrameMove": 1.3679719623356732,
+      "maximumReplay": 500,
+      "maximumDisplayOffset": 27.932688406822194
+    }
+  ]
+}

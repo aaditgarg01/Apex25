@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.65.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.65.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2323,3 +2323,20 @@ locally for investigating a remaining problem. It excludes driver names, IDs,
 room codes and credentials. Physics rules, circuit geometry, pit collisions and
 the Vercel backend are unchanged. See the [verification report](docs/SHARED-DRIVING-2.65.0.md)
 for the evidence and remaining limits.
+
+
+## 2.65.1 — Control handoff, reconnect cancellation and lapped AI pit calls
+
+Keyboard/touch driving keeps priority until a fresh controller button press;
+releasing a keyboard key no longer lets an already-held controller trigger take
+over. Losing window focus, hiding the tab or opening a menu sends neutral
+steering with braking, and held controller input does not reactivate on return.
+Leaving a room cancels queued reconnect attempts immediately; stale socket events
+cannot reset a replacement connection. Lapped AI cancels queued pit calls after
+the chequered flag while preserving critical-tyre stops before the flag and
+service already underway.
+
+Each issue has a standalone reproduction and verification, separate from the
+game test suite. The shared drift, countdown and contact diagnostics, both builds
+and a live two-client check are recorded in the [bug audit](docs/BUG-AUDIT-2.65.1.md).
+Circuit geometry, car handling rules and the multiplayer provider are unchanged.

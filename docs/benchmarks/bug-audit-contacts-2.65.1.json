@@ -1,0 +1,54 @@
+{
+  "delayed": [
+    {
+      "oneWayDelayMs": 90,
+      "driver": "a",
+      "receivedContactSequence": 1,
+      "pairedFreshTimeline": true
+    },
+    {
+      "oneWayDelayMs": 90,
+      "driver": "b",
+      "receivedContactSequence": 1,
+      "pairedFreshTimeline": true
+    },
+    {
+      "oneWayDelayMs": 180,
+      "driver": "a",
+      "receivedContactSequence": 1,
+      "pairedFreshTimeline": true
+    },
+    {
+      "oneWayDelayMs": 180,
+      "driver": "b",
+      "receivedContactSequence": 1,
+      "pairedFreshTimeline": true
+    }
+  ],
+  "description": "Actual shared collision solver + compact motion replication + two client presentation views at the same receipt clock. Does not measure two-device internet collision latency.",
+  "cases": [
+    {
+      "scenario": "rear contact",
+      "solverContacts": 2,
+      "pairedMarkers": true,
+      "compactPacketRoundTrip": true,
+      "peerPresentationDifferenceMetres": 0
+    },
+    {
+      "scenario": "head on",
+      "solverContacts": 2,
+      "pairedMarkers": true,
+      "compactPacketRoundTrip": true,
+      "peerPresentationDifferenceMetres": 0
+    },
+    {
+      "scenario": "side contact",
+      "solverContacts": 2,
+      "pairedMarkers": true,
+      "compactPacketRoundTrip": true,
+      "peerPresentationDifferenceMetres": 0
+    }
+  ],
+  "pitGhostExcluded": true,
+  "snapshotImmutability": true
+}

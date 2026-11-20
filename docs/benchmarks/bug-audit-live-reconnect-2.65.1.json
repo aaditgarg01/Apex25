@@ -1,0 +1,9 @@
+{
+  "description": "Two diagnostic clients from one computer against the actual room gateway; host transport deliberately interrupted and resumed. Does not simulate a prolonged weak connection.",
+  "driverPreserved": true,
+  "rosterCount": 2,
+  "resumeEvents": 1,
+  "sessionContinued": true,
+  "updatesAfterResume": 3,
+  "recoveryMilliseconds": 756
+}

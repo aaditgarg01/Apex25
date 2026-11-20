@@ -81,6 +81,7 @@ function planTraffic(session,track,dt){
 
 export function prepareAiRace(session,track,dt){
  if((session.phase==='race'||session.phase==='practice')&&session.cars.some(car=>car.ai&&!car.finished))planTraffic(session,track,dt);
+ const chequered=session.phase==='race'&&session.cars.some(car=>car.finished&&!car.retired&&(car.finishLaps??car.lap-1)>=session.laps);
  for(const car of session.cars){
   if(!car.ai||car.finished||car.retired)continue;
   if(car.pitState!=='none'){car.aiStuckTime=0;car.aiLastProgress=car.progress;continue;}
@@ -96,7 +97,7 @@ export function prepareAiRace(session,track,dt){
   const remaining=session.laps*track.length-car.progress;
   // A stop cannot help on the final lap or if the finish lies in the pit
   // corridor. Clear a queued call too if the AI missed its previous entry.
-  if(remaining<=track.length||pitAhead(car,track)+pitLayout(track).length>=remaining){
+  if(chequered||remaining<=track.length||pitAhead(car,track)+pitLayout(track).length>=remaining){
    car.pitRequested=false;
    continue;
   }

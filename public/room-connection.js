@@ -9,6 +9,10 @@ export class RoomConnection extends EventTarget {
   this.credentials = null;
   this.inRoom = false;
   this.reconnecting = false;
+  this.generation = 0;
+  this.retryTimer = null;
+  this.resumeTimer = null;
+  this.finished = false;
   this.open(false);
  }
 
@@ -26,7 +30,15 @@ export class RoomConnection extends EventTarget {
 
  forgetRoom() {
   this.inRoom = false;
-  if (this.reconnecting) this.socket.close();
+  clearTimeout(this.retryTimer);
+  this.retryTimer = null;
+  if (this.reconnecting) {
+   this.reconnecting = false;
+   clearTimeout(this.resumeTimer);
+   this.resumeTimer = null;
+   this.generation++;
+   this.socket.close();
+  }
  }
 
  emit(type, event) {
@@ -35,17 +47,21 @@ export class RoomConnection extends EventTarget {
  }
 
  open(resume) {
+  const generation = ++this.generation;
+  this.finished = false;
   const socket = new WebSocket(this.url);
   this.socket = socket;
-  let timeout;
-  if (resume) timeout = setTimeout(() => socket.close(), 6500);
+  const current = () => generation === this.generation && socket === this.socket;
+  if (resume) this.resumeTimer = setTimeout(() => { if (current()) socket.close(); }, 6500);
 
   socket.onopen = event => {
+   if (!current()) return;
    if (resume) socket.send(JSON.stringify({type: 'resume', ...this.credentials}));
    else this.emit('open', event);
   };
 
   socket.onmessage = event => {
+   if (!current()) return;
    let message;
    try { message = JSON.parse(event.data); } catch { return; }
    if (message.type === 'welcome') {
@@ -58,7 +74,8 @@ export class RoomConnection extends EventTarget {
     return;
    }
    if (message.type === 'resumed') {
-    clearTimeout(timeout);
+    clearTimeout(this.resumeTimer);
+    this.resumeTimer = null;
     this.reconnecting = false;
     this.emit('resume', event);
     return;
@@ -67,9 +84,11 @@ export class RoomConnection extends EventTarget {
    this.onmessage?.(event);
   };
 
-  socket.onerror = event => { if (!this.reconnecting) this.emit('error', event); };
+  socket.onerror = event => { if (current() && !this.reconnecting) this.emit('error', event); };
   socket.onclose = event => {
-   clearTimeout(timeout);
+   if (!current()) return;
+   clearTimeout(this.resumeTimer);
+   this.resumeTimer = null;
    if (this.inRoom && this.credentials?.token && event.code !== 4001) {
     if (!this.reconnecting) {
      this.reconnecting = true;
@@ -78,7 +97,9 @@ export class RoomConnection extends EventTarget {
      this.emit('reconnecting', event);
     }
     if (performance.now() < this.retryUntil) {
-     setTimeout(() => {
+     this.retryTimer = setTimeout(() => {
+      this.retryTimer = null;
+      if (!current()) return;
       if (this.inRoom) this.open(true);
       else this.finish(event);
      }, this.retryDelay);
@@ -91,6 +112,13 @@ export class RoomConnection extends EventTarget {
  }
 
  finish(event) {
+  if (this.finished) return;
+  this.finished = true;
+  clearTimeout(this.retryTimer);
+  clearTimeout(this.resumeTimer);
+  this.retryTimer = null;
+  this.resumeTimer = null;
+  this.generation++;
   this.inRoom = false;
   this.reconnecting = false;
   this.emit('close', event);

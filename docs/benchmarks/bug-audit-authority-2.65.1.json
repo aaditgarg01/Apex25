@@ -1,0 +1,71 @@
+{
+  "description": "Actual shared circuit physics, source driver following the guide; a 250ms locally predicted steering tap is superseded before transmission, followed by delayed/jittered authoritative updates. This isolates reconciliation from a permanent physical course change. Not a two-device race.",
+  "runs": [
+    {
+      "canonicalOfftrackFrames": 0,
+      "maximumCanonicalHeadingErrorDegrees": 0.02886213406814252,
+      "track": "it-1922",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 0,
+      "maximumError": 1.8836787545848448,
+      "maximumPostTapError": 1.1838671465972042,
+      "maximumPostTapHeadingErrorDegrees": 0.04736323162402431,
+      "maximumFrameMove": 1.1301746073487697
+    },
+    {
+      "canonicalOfftrackFrames": 0,
+      "maximumCanonicalHeadingErrorDegrees": 0.07445775304111413,
+      "track": "gb-1948",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 0,
+      "maximumError": 1.8832781664165883,
+      "maximumPostTapError": 1.184912549133181,
+      "maximumPostTapHeadingErrorDegrees": 0.5305628859947017,
+      "maximumFrameMove": 0.9229872982553257
+    },
+    {
+      "canonicalOfftrackFrames": 0,
+      "maximumCanonicalHeadingErrorDegrees": 0.030430360897940396,
+      "track": "bh-2002",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 0,
+      "maximumError": 1.8835673103961796,
+      "maximumPostTapError": 1.1595222223862403,
+      "maximumPostTapHeadingErrorDegrees": 0.05821921360236526,
+      "maximumFrameMove": 1.1061343660289675
+    },
+    {
+      "canonicalOfftrackFrames": 0,
+      "maximumCanonicalHeadingErrorDegrees": 0.029479076118000623,
+      "track": "es-1991",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 0,
+      "maximumError": 1.8833028175250852,
+      "maximumPostTapError": 1.1739968568863595,
+      "maximumPostTapHeadingErrorDegrees": 0.05696368646980767,
+      "maximumFrameMove": 1.082575944784657
+    },
+    {
+      "canonicalOfftrackFrames": 0,
+      "maximumCanonicalHeadingErrorDegrees": 0.039860808602140176,
+      "track": "be-1925",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 0,
+      "maximumError": 1.883188971903732,
+      "maximumPostTapError": 1.1831519920457254,
+      "maximumPostTapHeadingErrorDegrees": 0.834334309968907,
+      "maximumFrameMove": 0.9011140092793029
+    },
+    {
+      "canonicalOfftrackFrames": 0,
+      "maximumCanonicalHeadingErrorDegrees": 0.03231381144981074,
+      "track": "sg-2008",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 0,
+      "maximumError": 1.882448581692047,
+      "maximumPostTapError": 1.163448155098496,
+      "maximumPostTapHeadingErrorDegrees": 0.6745801945247111,
+      "maximumFrameMove": 0.9763407823522172
+    }
+  ]
+}
