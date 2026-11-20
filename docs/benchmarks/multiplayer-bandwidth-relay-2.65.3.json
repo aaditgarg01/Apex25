@@ -1,0 +1,26 @@
+{
+  "description": "Actual outbox with a deterministic model: 20Hz controls, 120ms publication acknowledgement and 60ms subscriber delivery. Compares previous serial policy to bounded two-publication pipeline; not measured internet latency.",
+  "serial": {
+    "inFlightLimit": 1,
+    "modelRedisRoundTripMs": 120,
+    "deliveredInputStates": 18,
+    "maximumInFlight": 1,
+    "maximumUnsentInputStates": 1,
+    "stateAgeP50Ms": 140,
+    "stateAgeP95Ms": 190,
+    "reliableOrderPreserved": true
+  },
+  "pipeline": {
+    "inFlightLimit": 2,
+    "modelRedisRoundTripMs": 120,
+    "deliveredInputStates": 34,
+    "maximumInFlight": 2,
+    "maximumUnsentInputStates": 1,
+    "stateAgeP50Ms": 110,
+    "stateAgeP95Ms": 140,
+    "reliableOrderPreserved": true
+  },
+  "publishFailureHandled": true,
+  "congestedCriticalPacketReconnects": true,
+  "congestedMotionDropped": true
+}

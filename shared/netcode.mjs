@@ -62,7 +62,20 @@ export const STRATEGY_FIELDS=['id','tyreLife','tyreCompound','tyreBoostHeat','pi
 export const PIT_SERVICE_FIELDS=['id','pitServiceDuration','lastPitService','lastPitServiceAt','lastPitServiceStop'];
 const wireNumber=value=>typeof value==='number'&&!Number.isInteger(value)?Math.round(value*1000)/1000:value;
 // Optional parallel rows keep old motion rows compatible with existing clients.
-export const encodeMotion=session=>JSON.stringify({type:'motion',inputTiming:session.cars.filter(c=>Number.isFinite(c.inputAppliedAt)&&c.inputAppliedSequence===c.inputAck).map(c=>[c.id,c.inputAck,wireNumber(c.inputAppliedAt)]),contacts:session.cars.filter(c=>c.contactSequence>0).map(c=>[c.id,c.contactSequence,wireNumber(c.lastContactAt),c.lastContactWith,wireNumber(c.lastContactSeverity)]),phase:session.phase,conditions:session.conditions,weatherMode:session.weatherMode,weather:session.weather,pitMerges:session.cars.filter(c=>c.pitMerge).map(c=>[c.id,c.pitMerge]),pitServices:session.cars.map(c=>PIT_SERVICE_FIELDS.map(k=>wireNumber(c[k]))),raceFinishes:session.cars.filter(c=>c.finished&&!c.retired).map(c=>[c.id,c.finishLaps,c.finishTime,c.lap]),pitTyreServices:session.cars.filter(c=>c.lastPitTyreService>0).map(c=>[c.id,wireNumber(c.lastPitTyreService)]),elapsed:Math.round(session.elapsed*1000)/1000,cars:session.cars.map(c=>MOTION_FIELDS.map(k=>wireNumber(c[k]))),strategy:session.cars.map(c=>STRATEGY_FIELDS.map(k=>wireNumber(c[k])))});
+const motionRow=(car,fields)=>{const row=new Array(fields.length);for(let i=0;i<fields.length;i++)row[i]=wireNumber(car[fields[i]]);return row;};
+export const encodeMotion=session=>{
+ const packet={type:'motion',inputTiming:[],contacts:[],phase:session.phase,conditions:session.conditions,weatherMode:session.weatherMode,weather:session.weather,pitMerges:[],pitServices:[],raceFinishes:[],pitTyreServices:[],elapsed:Math.round(session.elapsed*1000)/1000,cars:[],strategy:[]};
+ for(const car of session.cars){
+  if(Number.isFinite(car.inputAppliedAt)&&car.inputAppliedSequence===car.inputAck)packet.inputTiming.push([car.id,car.inputAck,wireNumber(car.inputAppliedAt)]);
+  if(car.contactSequence>0)packet.contacts.push([car.id,car.contactSequence,wireNumber(car.lastContactAt),car.lastContactWith,wireNumber(car.lastContactSeverity)]);
+  if(car.pitMerge)packet.pitMerges.push([car.id,car.pitMerge]);
+  packet.pitServices.push(motionRow(car,PIT_SERVICE_FIELDS));
+  if(car.finished&&!car.retired)packet.raceFinishes.push([car.id,car.finishLaps,car.finishTime,car.lap]);
+  if(car.lastPitTyreService>0)packet.pitTyreServices.push([car.id,wireNumber(car.lastPitTyreService)]);
+  packet.cars.push(motionRow(car,MOTION_FIELDS));packet.strategy.push(motionRow(car,STRATEGY_FIELDS));
+ }
+ return JSON.stringify(packet);
+};
 export function mergeMotionState(base,packet){
  if(!base||base.phase!==packet.phase||!Number.isFinite(packet.elapsed)||packet.elapsed<base.elapsed||!Array.isArray(packet.cars))return base;
  const poses=new Map(packet.cars.filter(row=>Array.isArray(row)&&row.length===MOTION_FIELDS.length).map(row=>[row[0],row]));

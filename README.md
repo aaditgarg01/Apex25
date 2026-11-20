@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.65.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.65.3**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2355,3 +2355,13 @@ acknowledgements while preserving ordered actions and replacing unsent live
 controls. Congested critical messages reconnect rather than silently disappearing.
 The car physics, wire formats and Vercel/Upstash provider remain unchanged.
 See the [measurements and verification limits](docs/MULTIPLAYER-OPTIMIZATION-2.65.2.md).
+
+
+## 2.65.3 — Smaller multiplayer packets and less unused server work
+
+- Motion packets now collect driver data in one pass, retaining byte-identical messages and all input acknowledgments, contacts, pit service/penalty and finish fields.
+- The server serializes a snapshot only when an eligible, writable connection will receive it. The existing update schedule, mixed client rates, legacy compatibility and immediate history/phase keyframes are preserved.
+- Stronger WebSocket compression reduced captured packet bodies by about 5% in the controlled eight-car snapshot benchmark. Fresh compression contexts, the small-message threshold and concurrency cap are unchanged.
+- The network diagnostic now distinguishes decoded JSON traffic from received WebSocket bytes and reports compression negotiation.
+
+Both build targets, focused syntax/name/import checks, six-circuit authority checks, contact replication, countdown, peer presentation, relay and a local eight-car connection check passed. The game's test suite was neither run nor edited. These checks do not establish real-world improvement on two separate weak connections or GPU frame rate. See the [measurements, reproduction steps and limits](docs/MULTIPLAYER-BANDWIDTH-2.65.3.md).

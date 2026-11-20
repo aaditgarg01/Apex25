@@ -1,0 +1,96 @@
+{
+  "schema": "apex25-network-lab-v1",
+  "transport": "current",
+  "durationRequested": 15,
+  "webSocketByteNotes": "Node socket receive bytes include WebSocket framing/control after TLS decryption; exclude TLS/TCP overhead. A resumed session starts a new measurement segment.",
+  "authority": "local Node APEX server",
+  "limitation": "Both diagnostic clients and server ran on this machine. This checks integration, not internet latency.",
+  "runs": [
+    {
+      "transport": "current",
+      "role": "server-client",
+      "inputTimingPackets": 305,
+      "webSocketReceivedKBps": 16.16,
+      "compressionNegotiated": true,
+      "region": "localhost",
+      "track": "it-1922",
+      "cars": 8,
+      "repeatableDrive": true,
+      "snapshotTargetHz": 20,
+      "renderer": "headless 60 Hz presentation loop; no GPU rendering",
+      "measuredAt": "2026-11-20T15:22:39.619Z",
+      "durationSeconds": 15.01,
+      "updates": 301,
+      "updatesPerSecond": 20.05,
+      "simulationRatio": 1,
+      "decodedKBps": 54.66,
+      "connectionPingMs": {
+        "p50": 0.58,
+        "p95": 1.26
+      },
+      "latestInputAckMs": {
+        "p50": 18.93,
+        "p95": 24.12
+      },
+      "updateGapMs": {
+        "p50": 50.53,
+        "p95": 54.21,
+        "max": 67.4
+      },
+      "frameMs": {
+        "p50": 16.96,
+        "p95": 17.75
+      },
+      "visualJerkP95": 12744.73,
+      "resumes": 0,
+      "measurementNotes": [
+        "Decoded JSON payload is not compressed wire traffic.",
+        "Latest acknowledged command latency is not the latency of every input.",
+        "Visual jerk includes driving actions, collisions and frame-time variation."
+      ]
+    },
+    {
+      "transport": "current",
+      "role": "server-client",
+      "inputTimingPackets": 305,
+      "webSocketReceivedKBps": 16.16,
+      "compressionNegotiated": true,
+      "region": "localhost",
+      "track": "it-1922",
+      "cars": 8,
+      "repeatableDrive": true,
+      "snapshotTargetHz": 20,
+      "renderer": "headless 60 Hz presentation loop; no GPU rendering",
+      "measuredAt": "2026-11-20T15:22:39.644Z",
+      "durationSeconds": 15.01,
+      "updates": 301,
+      "updatesPerSecond": 20.05,
+      "simulationRatio": 1,
+      "decodedKBps": 54.67,
+      "connectionPingMs": {
+        "p50": 0.53,
+        "p95": 2.22
+      },
+      "latestInputAckMs": {
+        "p50": 19.38,
+        "p95": 21.74
+      },
+      "updateGapMs": {
+        "p50": 50.62,
+        "p95": 54.06,
+        "max": 67.28
+      },
+      "frameMs": {
+        "p50": 16.96,
+        "p95": 17.75
+      },
+      "visualJerkP95": 45934.36,
+      "resumes": 0,
+      "measurementNotes": [
+        "Decoded JSON payload is not compressed wire traffic.",
+        "Latest acknowledged command latency is not the latency of every input.",
+        "Visual jerk includes driving actions, collisions and frame-time variation."
+      ]
+    }
+  ]
+}

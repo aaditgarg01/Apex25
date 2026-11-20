@@ -1,0 +1,49 @@
+{
+  "description": "Packets from actual shared eight-car Monza session; fresh deflate context per message, matching current context-takeover policy. Compression body estimates exclude WS/TLS framing. CPU figures are codec-only, not FPS or ping.",
+  "identicalMotionPackets": true,
+  "rawBytes": 272879,
+  "compression": [
+    {
+      "level": 1,
+      "packets": 84,
+      "bodyBytes": 81108,
+      "medianMilliseconds": 2.6000410000001466,
+      "microsecondsPerPacket": 30.952869047620794
+    },
+    {
+      "level": 3,
+      "packets": 84,
+      "bodyBytes": 80114,
+      "medianMilliseconds": 2.520332999999937,
+      "microsecondsPerPacket": 30.003964285713533
+    },
+    {
+      "level": 6,
+      "packets": 84,
+      "bodyBytes": 77047,
+      "medianMilliseconds": 3.066291999999976,
+      "microsecondsPerPacket": 36.5034761904759
+    }
+  ],
+  "encoding": {
+    "encodesPerRun": 4000,
+    "beforeMedianMs": 46.78962499999943,
+    "afterMedianMs": 43.628625000000284,
+    "runs": {
+      "before": [
+        44.68329100000028,
+        45.03929199999993,
+        46.98370900000009,
+        47.770750000000135,
+        46.78962499999943
+      ],
+      "after": [
+        43.6225000000004,
+        43.628625000000284,
+        45.96412499999997,
+        43.319916999999805,
+        43.894209000000046
+      ]
+    }
+  }
+}

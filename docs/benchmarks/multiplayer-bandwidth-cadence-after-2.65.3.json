@@ -1,0 +1,63 @@
+{
+  "description": "Actual Node race engine, two simulated seconds in countdown with 60 Hz physics clock; a counted position getter measures serialization only. Compares delivered timestamps/types, mixed rates, legacy compatibility and immediate keyframes. Not a network-latency test.",
+  "runs": [
+    {
+      "name": "all modern 20 Hz",
+      "beforeSerializedPackets": 40,
+      "afterSerializedPackets": 40,
+      "deliveredPackets": [
+        40,
+        40
+      ],
+      "identicalDelivery": true,
+      "historyKeyframeImmediate": true,
+      "phaseKeyframeImmediate": true
+    },
+    {
+      "name": "all modern 10 Hz",
+      "beforeSerializedPackets": 40,
+      "afterSerializedPackets": 21,
+      "deliveredPackets": [
+        21,
+        21
+      ],
+      "identicalDelivery": true,
+      "historyKeyframeImmediate": true,
+      "phaseKeyframeImmediate": true
+    },
+    {
+      "name": "mixed 10/20 Hz",
+      "beforeSerializedPackets": 40,
+      "afterSerializedPackets": 40,
+      "deliveredPackets": [
+        21,
+        40
+      ],
+      "identicalDelivery": true,
+      "historyKeyframeImmediate": true,
+      "phaseKeyframeImmediate": true
+    },
+    {
+      "name": "legacy unchanged",
+      "beforeSerializedPackets": 220,
+      "afterSerializedPackets": 120,
+      "deliveredPackets": [
+        120
+      ],
+      "identicalDelivery": true,
+      "historyKeyframeImmediate": true,
+      "phaseKeyframeImmediate": true
+    },
+    {
+      "name": "blocked modern sockets",
+      "beforeSerializedPackets": 40,
+      "afterSerializedPackets": 0,
+      "deliveredPackets": [
+        0
+      ],
+      "identicalDelivery": true,
+      "historyKeyframeImmediate": true,
+      "phaseKeyframeImmediate": true
+    }
+  ]
+}

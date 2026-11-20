@@ -124,17 +124,17 @@ function publishState(r,now){
  r.motionElapsed=r.session.elapsed;
  const complete=history||phaseChanged||now-(r.snapshotAt||0)>=(legacy?100:1000);
  if(complete){r.snapshotPhase=r.session.phase;r.snapshotAt=now;}
- const data=complete||legacy?encodeState(r.session,history):null,motion=complete?null:encodeMotion(r.session);
- let full=history?data:null;
+ let data=null,motion=null,full=null;
+ const statePacket=withHistory=>withHistory?(full??=encodeState(r.session)):(data??=encodeState(r.session,false));
  for(const p of r.players.values()){
   // An unsent snapshot is obsolete once the next physics step completes.
   if(p.ws.readyState!==WebSocket.OPEN||p.ws.bufferedAmount!==0)continue;
   if(p.stateVersion===3){
    if(!complete&&r.session.elapsed-(p.motionElapsed??-Infinity)<1/(p.snapshotHz||20)-1e-6)continue;
-   p.motionElapsed=r.session.elapsed;p.ws.send(complete?data:motion);
+   p.motionElapsed=r.session.elapsed;p.ws.send(complete?statePacket(history):(motion??=encodeMotion(r.session)));
   }
-  else if(p.stateVersion===2)p.ws.send(data);
-  else{full??=encodeState(r.session);p.ws.send(full);}
+  else if(p.stateVersion===2)p.ws.send(statePacket(history));
+  else p.ws.send(statePacket(true));
  }
 }
 let tick=0,last=performance.now(),accum=0;
