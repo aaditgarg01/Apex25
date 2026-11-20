@@ -1,0 +1,45 @@
+{
+  "description": "Actual live-input server and local prediction with deliberately misleading gateway ping, delayed/reordered controls and snapshots, steering released after two opposite turns. Synthetic, not two-device internet proof.",
+  "runs": [
+    {
+      "uplinkMs": 40,
+      "downlinkMs": 40,
+      "jitter": false,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 0.3226771848519556,
+      "postReleaseSideErrorP95Metres": 0.08083744709494134,
+      "maxHeadingErrorDegrees": 0.7064713684063163,
+      "neutralSteeringExtraYawDegrees": 0.22880056325847364
+    },
+    {
+      "uplinkMs": 180,
+      "downlinkMs": 70,
+      "jitter": false,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 0.957116487506517,
+      "postReleaseSideErrorP95Metres": 0.34895286011595417,
+      "maxHeadingErrorDegrees": 1.0053523442106465,
+      "neutralSteeringExtraYawDegrees": 0.5539277975516437
+    },
+    {
+      "uplinkMs": 180,
+      "downlinkMs": 70,
+      "jitter": true,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 2.600281811289392,
+      "postReleaseSideErrorP95Metres": 2.5287110883449113,
+      "maxHeadingErrorDegrees": 1.7886780288958977,
+      "neutralSteeringExtraYawDegrees": 0.3803643200371994
+    },
+    {
+      "uplinkMs": 300,
+      "downlinkMs": 90,
+      "jitter": true,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 3.0965745250238075,
+      "postReleaseSideErrorP95Metres": 2.7083465353262035,
+      "maxHeadingErrorDegrees": 2.711524708177482,
+      "neutralSteeringExtraYawDegrees": 1.1428745715908293
+    }
+  ]
+}

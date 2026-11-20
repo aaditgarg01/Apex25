@@ -1,0 +1,25 @@
+// Focused deterministic steering/relay diagnostic; not the game test suite.
+import assert from 'node:assert/strict';import {encodeMotion,mergeMotionState} from '../shared/netcode.mjs';
+import {pathToFileURL} from 'node:url';import {writeFile} from 'node:fs/promises';import {createCar,stepCar} from '../shared/physics.mjs';import {sample,angleDiff} from '../shared/tracks.mjs';import {LiveInputStream,encodeInput} from '../shared/input-stream.mjs';
+const args=Object.fromEntries(process.argv.slice(2).map(v=>v.replace(/^--/,'').split('='))),{MultiplayerTracking}=await import(args.module?pathToFileURL(args.module):new URL('../shared/multiplayer-tracking.mjs',import.meta.url));
+const points=[];for(let edge=0;edge<4;edge++)for(let d=0;d<4000;d+=4){const p=edge===0?{x:0,z:d,heading:0}:edge===1?{x:d,z:4000,heading:Math.PI/2}:edge===2?{x:4000,z:4000-d,heading:Math.PI}:{x:4000-d,z:0,heading:-Math.PI/2};points.push({...p,y:0,pitch:0,grade:0,groundY:0});}const track={id:'steering-diagnostic',points,length:16000,step:4,width:40,urban:false,arid:false};
+const rotation=Number(args.heading)||0;for(const p of points){const x=p.x,z=p.z;p.x=x*Math.cos(rotation)+z*Math.sin(rotation);p.z=z*Math.cos(rotation)-x*Math.sin(rotation);p.heading+=rotation;}
+const make=id=>Object.assign(createCar(track,id,id,0),sample(track,400),{s:400,progress:400,motionHeading:sample(track,400).heading,v:35,inputEpoch:0,inputTime:1,physicsTime:1,pitState:'none'});
+const drive=t=>({throttle:true,steer:t>=2&&t<2.3?.5:t>=3&&t<3.3?-.5:0,boost:t>=5&&t<7,brake:false});
+function scenario(uplink,downlink,jitter,straight=false){
+ const controls=t=>straight?{throttle:true,steer:0,boost:t>2&&t<8,brake:t>=8&&t<9}:drive(t);
+ const server=make('p'),ideal=make('ideal'),stream=new LiveInputStream(server),tracker=new MultiplayerTracking(track,'p',{liveInput:true});tracker.rtt=80;let tick=0,sequence=0,lastSnapshot=-Infinity,commands=[],packets=[],lastElapsed=-Infinity,previous=null,maxSideError=0,maxHeadingError=0,neutralYaw=0,oldHeading=null;const errors=[],right={x:Math.cos(server.heading),z:-Math.sin(server.heading)};
+ const state=()=>({phase:'race',elapsed:1+tick/60,conditions:'normal',cars:[structuredClone(server)]});tracker.receive(state(),0,true);stream.accept(server,0,[encodeInput(++sequence,controls(0))],1);tracker.sent?.(sequence,0);
+ for(let frame=1;frame<=60*14;frame++){
+  const now=frame*1000/60,t=now/1000,control=controls(t);tracker.remember(control,now);
+  const changed=JSON.stringify(control)!==JSON.stringify(previous);if(changed||frame%3===0){const command=encodeInput(++sequence,control);tracker.sent?.(sequence,now);commands.push({at:now+uplink+(jitter?[0,10,90,5,45][sequence%5]:0),command});previous=control;}
+  while((tick+1)/60<=t+1e-8){tick++;const ms=tick*1000/60;commands.sort((a,b)=>a.at-b.at);while(commands[0]?.at<=ms){const c=commands.shift();stream.accept(server,0,[c.command],1+tick/60);}stream.step(server,{},track,1/60,1+tick/60,Infinity);stepCar(ideal,controls(tick/60),track,1/60,1+tick/60,Infinity);if(ms-lastSnapshot>=49.99){lastSnapshot=ms;const original=state(),decoded=mergeMotionState(original,JSON.parse(encodeMotion(original)));assert.equal(decoded.cars[0].inputAppliedAt,Math.round(server.inputAppliedAt*1000)/1000);packets.push({at:ms+downlink+(jitter?[0,65,5,20,110][tick%5]:0),state:decoded});}}
+  packets.sort((a,b)=>a.at-b.at);while(packets[0]?.at<=now){const p=packets.shift();if(p.state.elapsed<=lastElapsed)continue;lastElapsed=p.state.elapsed;tracker.receive(p.state,now,false,p.at);}
+  const c=tracker.frame(now,1/60,control)[0];if(![c.x,c.z,c.heading,c.v].every(Number.isFinite))throw Error('Non-finite pose');
+  if(t>1){maxSideError=Math.max(maxSideError,Math.abs((c.x-ideal.x)*right.x+(c.z-ideal.z)*right.z));maxHeadingError=Math.max(maxHeadingError,Math.abs(angleDiff(c.heading,ideal.heading)));}
+  if(t>4){errors.push(Math.abs((c.x-ideal.x)*right.x+(c.z-ideal.z)*right.z));if(oldHeading!==null)neutralYaw+=Math.abs(angleDiff(c.heading,oldHeading));}oldHeading=c.heading;
+ }
+ if(straight){assert(maxSideError<.05,'Straight zero-input side error '+maxSideError+'m, heading '+maxHeadingError+'rad');assert(maxHeadingError<.00001,'Straight zero-input car turned');}
+ const sorted=errors.sort((a,b)=>a-b);return {straight,trackHeadingRadians:rotation,uplinkMs:uplink,downlinkMs:downlink,jitter,gatewayPingMs:80,maxSideErrorMetres:maxSideError,postReleaseSideErrorP95Metres:sorted[Math.floor(sorted.length*.95)],maxHeadingErrorDegrees:maxHeadingError*180/Math.PI,neutralSteeringExtraYawDegrees:neutralYaw*180/Math.PI};
+}
+const report={description:'Actual live-input server and local prediction with deliberately misleading gateway ping, delayed/reordered controls and snapshots, steering released after two opposite turns. Synthetic, not two-device internet proof.',runs:[[40,40,false],[180,70,false],[180,70,true],[300,90,true],[180,70,true,true],[300,90,true,true]].map(x=>scenario(...x))};console.log(JSON.stringify(report,null,2));if(args.out)await writeFile(args.out,JSON.stringify(report,null,2)+'\n');

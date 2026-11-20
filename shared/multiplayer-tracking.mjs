@@ -18,13 +18,13 @@ const zero=()=>({x:0,y:0,z:0,heading:0});
 // Only the server decides contacts, timing, penalties, tyres and classification.
 export class MultiplayerTracking {
  constructor(track,id,{liveInput=false}={}){
-  Object.assign(this,{track,id,liveInput,frames:[],arrivals:[],interval:50,delay:110,rtt:100,remoteAt:null,session:null,local:null,reference:null,localAt:0,lastAt:0,correction:zero(),controls:[],contactSequences:new Map(),contactLocks:new Map()});
+  Object.assign(this,{track,id,liveInput,frames:[],arrivals:[],interval:50,delay:110,rtt:100,remoteAt:null,session:null,local:null,reference:null,localAt:0,lastAt:0,correction:zero(),controls:[],sentTimes:new Map(),contactSequences:new Map(),contactLocks:new Map()});
  }
  setPing(ms){if(Number.isFinite(ms)&&ms>=0)this.rtt=this.rtt*.7+Math.min(ms,2000)*.3;}
  record(s,now){
   const at=s.elapsed*1000,last=this.frames.at(-1);
   if(this.phase===s.phase&&last&&at<last.at)return;
-  if(this.phase!==s.phase){this.frames=[];this.arrivals=[];this.interval=50;this.delay=110;this.remoteAt=null;}
+  if(this.phase!==s.phase){this.contactSequences.clear();this.contactLocks.clear();this.frames=[];this.arrivals=[];this.interval=50;this.delay=110;this.remoteAt=null;}
   this.phase=s.phase;
   for(const car of s.cars){if((car.contactSequence||0)>(this.contactSequences.get(car.id)||0)){this.contactSequences.set(car.id,car.contactSequence);this.contactLocks.set(car.id,now+300);if(car.lastContactWith)this.contactLocks.set(car.lastContactWith,now+300);}}
   if(this.frames.at(-1)?.at===at){this.frames[this.frames.length-1]={at,cars:s.cars};return;}
@@ -34,6 +34,7 @@ export class MultiplayerTracking {
   if(this.arrivals.length>=6){const jitter=[...this.arrivals].sort((a,b)=>a-b),spread=jitter[Math.floor(jitter.length*.9)]-jitter[0];this.delay+=(Math.min(300,Math.max(110,this.interval*1.5)+spread)-this.delay)*.06;}
   this.frames.push({at,cars:s.cars});if(this.frames.length>90)this.frames.shift();
  }
+ sent(sequence,now){this.sentTimes.set(sequence,now);for(const [key,at]of this.sentTimes)if(at<now-2500)this.sentTimes.delete(key);}
  remember(control,now){
   const last=this.controls.at(-1),next={steer:Number(control.steer)||0,throttle:!!control.throttle,brake:!!control.brake,boost:!!control.boost,park:!!control.park};
   if(!last||Object.keys(next).some(k=>next[k]!==last.control[k]))this.controls.push({at:now,control:next});
@@ -71,7 +72,11 @@ export class MultiplayerTracking {
    stepCar(this.reference,control,this.track,dt,elapsed,Infinity);
    if(this.local.pitState!=='none'||this.reference.pitState!=='none'){this.correction=zero();if(this.local.pitState===this.reference.pitState&&this.local.pitState!=='service'){this.local.pitTravel+=clamp(this.reference.pitTravel-this.local.pitTravel,-.8*dt,.8*dt);Object.assign(this.local,pitPose(this.local,this.track));}continue;}
    const dx=this.reference.x-this.local.x,dz=this.reference.z-this.local.z,length=Math.hypot(dx,dz),gain=Math.min(1.6,3/Math.max(.001,length)),blend=1-Math.exp(-dt*6);
-   const target={x:dx*gain,z:dz*gain,y:clamp((this.reference.y-this.local.y)*2,-1,1),heading:clamp(angleDiff(this.reference.heading,this.local.heading)*2,-.3,.3)};
+   const neutral=Math.abs(control.steer||0)<.03,heading=this.local.motionHeading??this.local.heading,rx=Math.cos(heading),rz=-Math.sin(heading),target={x:dx*gain,z:dz*gain,y:clamp((this.reference.y-this.local.y)*2,-1,1),heading:neutral?0:clamp(angleDiff(this.reference.heading,this.local.heading)*2,-.03,.03)};
+   // A network correction is not a steering command. With centred controls,
+   // preserve the driver's heading and bound only the reconciliation's side
+   // velocity; real physics/impact velocities are untouched.
+   if(neutral){this.correction.heading=0;const lateral=target.x*rx+target.z*rz,trim=lateral-clamp(lateral,-.25,.25);target.x-=rx*trim;target.z-=rz*trim;}
    for(const k of ['x','y','z','heading'])this.correction[k]+=(target[k]-this.correction[k])*blend;
    const before={x:this.local.x,z:this.local.z,heading:this.local.heading};
    this.local.x+=this.correction.x*dt;this.local.y+=this.correction.y*dt;this.local.z+=this.correction.z*dt;
@@ -88,13 +93,18 @@ export class MultiplayerTracking {
   const previous=this.session?.cars.find(car=>car.id===this.id);
   const discontinuity=reset||previous&&((c.contactSequence||0)>(previous.contactSequence||0)||(c.pitState||'none')!==(previous.pitState||'none')||Math.hypot((c.impactVX||0)-(previous.impactVX||0),(c.impactVZ||0)-(previous.impactVZ||0))>4||Math.abs((c.impactYaw||0)-(previous.impactYaw||0))>.6);
   if(this.local&&!discontinuity)this.advance(now);
+  if(reset){this.contactSequences.clear();this.contactLocks.clear();this.sentTimes.clear();}
   this.record(s,receivedAt);this.session=s;this.lastAt=receivedAt;
   this.snapshotAt=s.elapsed*1000+this.clockOffset;
   if(reset)this.controls=[];
   const target=copy(c);target.conditions=s.conditions||c.conditions||'normal';if(s.weather){target.trackWetness=s.weather.wetness;target.rainIntensity=s.weather.rain;}
   // Replay a bounded reference to the local clock. Jitter changes this reference,
   // while the car being displayed continues on its existing physics timeline.
-  const until=this.local&&!discontinuity?this.localAt:now,base=this.snapshotAt-(this.liveInput&&active(s)?clamp(this.rtt,0,250):0);
+  const until=this.local&&!discontinuity?this.localAt:now,ackAt=this.sentTimes.get(c.inputAck),held=Number.isFinite(c.inputAppliedAt)&&c.inputAppliedSequence===c.inputAck?Math.max(0,s.elapsed-c.inputAppliedAt)*1000:NaN;
+  // Map the authoritative pose to the controls the server actually accepted.
+  // Gateway ping alone misses variable room-relay/input delay and replayed old
+  // steering after the driver had already released it.
+  const inputAt=Number.isFinite(ackAt)&&Number.isFinite(held)?Math.min(until,ackAt+held):this.snapshotAt-(this.liveInput&&active(s)?clamp(this.rtt,0,250):0),base=Math.max(until-500,inputAt);
   if(this.liveInput&&active(s))for(let at=Math.max(base,until-500);at<until-1e-6;){const next=Math.min(until,at+1000/60),dt=(next-at)/1000;stepCar(target,this.controlAt(next),this.track,dt,s.elapsed+(next-base)/1000,Infinity);at=next;}
   const distance=this.local?Math.hypot(this.local.x-target.x,this.local.z-target.z):Infinity;
   if(!this.local||discontinuity||distance>Math.max(18,Math.min(45,Math.abs(c.v)*.5))){this.local=copy(target);this.localAt=now;this.correction=zero();this.previousLocal=null;this.previousCorrection=zero();}

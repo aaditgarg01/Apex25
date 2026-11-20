@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.64.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.64.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2270,3 +2270,16 @@ pit's organisation.
 The centreline, car model, multiplayer provider and tyre-service/penalty rules
 are unchanged. Verification and remaining limits are in the
 [release report](docs/MIRROR-CONTACTS-PITS-2.64.0.md).
+
+## 2.64.1 — Keep centred steering under the driver's control
+
+Multiplayer reconciliation no longer adds yaw while steering is centred, and
+its sideways position correction is bounded. Prediction now uses acknowledged
+control timing from the room server rather than gateway ping alone. Actual
+collisions, tyre slip and recovery remain authoritative. This patch includes
+the mirror and pit changes from 2.64.0.
+
+Delayed-update checks cover axis-aligned and diagonal straights, braking, boost
+and released steering. Results and remaining limits are in the
+[steering correction report](docs/STEERING-CORRECTION-2.64.1.md).
+Refresh both browsers and create a new room after updating.

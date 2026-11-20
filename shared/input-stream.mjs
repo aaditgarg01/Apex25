@@ -63,9 +63,9 @@ export class LiveInputStream {
    if(!Array.isArray(c)||c.length!==3||!Number.isSafeInteger(c[0])||c[0]<=previous||!Number.isFinite(c[1])||Math.abs(c[1])>1||!Number.isInteger(c[2])||c[2]<0||c[2]>15)return false;
    previous=c[0];
   }
-  this.command=[...commands.at(-1)];this.received=previous;this.lastCommandAt=elapsed;return true;
+  this.command=[...commands.at(-1)];this.received=previous;this.lastCommandAt=elapsed;car.inputAppliedAt=elapsed;car.inputAppliedSequence=this.received;return true;
  }
- reset(car,elapsed=car.inputTime||0){this.lastCommandAt=null;this.command=[this.received,0,10];car.inputAck=this.received;car.inputEpoch++;car.inputLag=0;car.inputTime=elapsed;}
+ reset(car,elapsed=car.inputTime||0){this.lastCommandAt=null;this.command=[this.received,0,10];car.inputAck=this.received;car.inputEpoch++;car.inputLag=0;car.inputTime=elapsed;car.inputAppliedAt=elapsed;car.inputAppliedSequence=this.received;}
  step(car,_input,track,dt,elapsed,laps){
   if(this.lastCommandAt!==null&&elapsed-this.lastCommandAt>.7)this.reset(car,elapsed);
   stepCar(car,decodeInput(this.command),track,dt,elapsed,laps);
