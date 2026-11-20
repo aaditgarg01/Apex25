@@ -1,0 +1,30 @@
+{
+  "description": "Eight-car actual Monza motion packets through RoomConnection callbacks and mergeMotionState. Five alternating warmed runs; CPU-only, not total game FPS, ping or an internet trial.",
+  "comparedStates": 86,
+  "identicalDecodedStates": true,
+  "parseCallsPerModernPacket": 1,
+  "parsedPacketForwarded": true,
+  "legacyConsumerWorks": true,
+  "performance": {
+    "packetsPerRun": 6000,
+    "runs": {
+      "before": [
+        160.80466700000034,
+        145.8395419999997,
+        142.04241699999966,
+        144.66970899999978,
+        143.83887499999946
+      ],
+      "after": [
+        98.17637500000001,
+        95.10541700000067,
+        94.8563750000003,
+        93.07054100000005,
+        89.99545800000033
+      ]
+    },
+    "beforeMedianMs": 144.66970899999978,
+    "afterMedianMs": 94.8563750000003,
+    "reductionPercent": 34.432456071367056
+  }
+}

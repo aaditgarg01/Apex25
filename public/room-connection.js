@@ -81,7 +81,8 @@ export class RoomConnection extends EventTarget {
     return;
    }
    if (message.type === 'lobby') this.inRoom = true;
-   this.onmessage?.(event);
+   // Pass the parsed packet through; existing one-argument consumers still work.
+   this.onmessage?.(event, message);
   };
 
   socket.onerror = event => { if (current() && !this.reconnecting) this.emit('error', event); };

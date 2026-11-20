@@ -1,0 +1,45 @@
+{
+  "description": "Full frame output equivalence versus previous tracker for ordered, held, reset, duplicate, phase, epoch/pit/finish and trimmed timelines. Targets include exact sample boundaries; no network or GPU measurement.",
+  "runs": [
+    {
+      "mode": "ordered",
+      "identicalPoses": true,
+      "comparedTargets": 305
+    },
+    {
+      "mode": "held-input",
+      "identicalPoses": true,
+      "comparedTargets": 305
+    },
+    {
+      "mode": "clock-reset",
+      "identicalPoses": true,
+      "comparedTargets": 305
+    },
+    {
+      "mode": "duplicate-frame",
+      "identicalPoses": true,
+      "comparedTargets": 305
+    },
+    {
+      "mode": "phase-reset",
+      "identicalPoses": true,
+      "comparedTargets": 305
+    },
+    {
+      "mode": "epoch-pit-finish",
+      "identicalPoses": true,
+      "comparedTargets": 305
+    },
+    {
+      "mode": "trimmed-reset",
+      "identicalPoses": true,
+      "comparedTargets": 305
+    },
+    {
+      "mode": "nonfinite-clock",
+      "identicalPoses": true,
+      "comparedTargets": 305
+    }
+  ]
+}

@@ -43,7 +43,7 @@ try{
   const {RoomConnection}=await import('../public/room-connection.js');
   async function socketPeer(role){
    const p=peer(role),connection=new RoomConnection(args.url||'wss://apex25-eight.vercel.app/api/race-socket');p.connection=connection;
-   connection.onmessage=event=>receive(p,event.data,new TextEncoder().encode(event.data).length);
+   connection.onmessage=(event,parsed)=>receive(p,parsed??event.data,new TextEncoder().encode(event.data).length);
    connection.onresume=()=>{p.metrics.resumes++;};connection.onerror=()=>{};p.send=message=>connection.send(JSON.stringify(message));
    cleanup.push(()=>{p.send({type:'leave'});connection.forgetRoom();connection.socket.close();});await until(()=>p.id);return p;
   }

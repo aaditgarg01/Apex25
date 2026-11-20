@@ -10,7 +10,7 @@ const active=s=>['race','qualifying','practice'].includes(s.phase)&&s.elapsed>=0
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const copy=c=>({...c,tyreSetsUsed:{...c.tyreSetsUsed},sectors:[...(c.sectors||[])],lastSectors:[...(c.lastSectors||[])],bestSectors:[...(c.bestSectors||[])],lapHistory:[...(c.lapHistory||[])],lapValidHistory:[...(c.lapValidHistory||[])]});
 const poseFields=['x','y','z','heading','motionHeading','v','steer','pitch','impactVX','impactVZ','impactYaw'];
-const pose=(source,motion)=>Object.assign({...source,smoothMotion:true,physicsTime:motion.physicsTime??source.physicsTime},Object.fromEntries(poseFields.map(k=>[k,motion[k]??source[k]])));
+const pose=(source,motion)=>{const out={...source,smoothMotion:true,physicsTime:motion.physicsTime??source.physicsTime};for(const key of poseFields)out[key]=motion[key]??source[key];return out;};
 const zero=()=>({x:0,y:0,z:0,heading:0});
 
 // Predict local controls between snapshots, then replay from the full authority
@@ -18,23 +18,23 @@ const zero=()=>({x:0,y:0,z:0,heading:0});
 // Only the server decides contacts, timing, penalties, tyres and classification.
 export class MultiplayerTracking {
  constructor(track,id,{liveInput=false}={}){
-  Object.assign(this,{track,id,liveInput,frames:[],timelines:new Map(),arrivals:[],interval:50,delay:110,rtt:100,remoteAt:null,session:null,local:null,reference:null,localAt:0,lastAt:0,correction:zero(),renderOffset:zero(),renderVelocity:zero(),renderAt:0,reconciliation:null,controls:[],sentTimes:new Map(),contactSequences:new Map(),contactLocks:new Map()});
+  Object.assign(this,{track,id,liveInput,frames:[],timelines:new Map(),unorderedTimelines:new Set(),arrivals:[],interval:50,delay:110,rtt:100,remoteAt:null,session:null,local:null,reference:null,localAt:0,lastAt:0,correction:zero(),renderOffset:zero(),renderVelocity:zero(),renderAt:0,reconciliation:null,controls:[],sentTimes:new Map(),contactSequences:new Map(),contactLocks:new Map()});
  }
  setPing(ms){if(Number.isFinite(ms)&&ms>=0)this.rtt=this.rtt*.7+Math.min(ms,2000)*.3;}
  cacheFrame(frame){
-  for(const car of frame.cars){const at=car.ai?frame.at:Math.min(frame.at,(car.inputTime??frame.at/1000)*1000),samples=this.timelines.get(car.id)||[],point={at,car,frameAt:frame.at};if(samples.at(-1)?.at===at)samples[samples.length-1]=point;else samples.push(point);this.timelines.set(car.id,samples);}
+  for(const car of frame.cars){const at=car.ai?frame.at:Math.min(frame.at,(car.inputTime??frame.at/1000)*1000),samples=this.timelines.get(car.id)||[],point={at,car,frameAt:frame.at};if(samples.at(-1)?.at===at)samples[samples.length-1]=point;else{if(!Number.isFinite(at)||samples.length&&at<samples.at(-1).at)this.unorderedTimelines.add(car.id);samples.push(point);}this.timelines.set(car.id,samples);}
  }
  trimTimelines(){
   const oldest=this.frames[0]?.at??Infinity;
-  for(const [id,samples]of this.timelines){while(samples.length&&samples[0].frameAt<oldest)samples.shift();if(!samples.length)this.timelines.delete(id);}
+  for(const [id,samples]of this.timelines){while(samples.length&&samples[0].frameAt<oldest)samples.shift();if(!samples.length){this.timelines.delete(id);this.unorderedTimelines.delete(id);}}
  }
  record(s,now){
   const at=s.elapsed*1000,last=this.frames.at(-1);
   if(this.phase===s.phase&&last&&at<last.at)return;
-  if(this.phase!==s.phase){this.contactSequences.clear();this.contactLocks.clear();this.frames=[];this.timelines.clear();this.arrivals=[];this.interval=50;this.delay=110;this.remoteAt=null;}
+  if(this.phase!==s.phase){this.contactSequences.clear();this.contactLocks.clear();this.frames=[];this.timelines.clear();this.unorderedTimelines.clear();this.arrivals=[];this.interval=50;this.delay=110;this.remoteAt=null;}
   this.phase=s.phase;
   for(const car of s.cars){if((car.contactSequence||0)>(this.contactSequences.get(car.id)||0)){this.contactSequences.set(car.id,car.contactSequence);this.contactLocks.set(car.id,now+300);if(car.lastContactWith)this.contactLocks.set(car.lastContactWith,now+300);}}
-  if(this.frames.at(-1)?.at===at){if(this.frames.at(-1).cars===s.cars)return;this.frames[this.frames.length-1]={at,cars:s.cars};this.timelines.clear();for(const frame of this.frames)this.cacheFrame(frame);return;}
+  if(this.frames.at(-1)?.at===at){if(this.frames.at(-1).cars===s.cars)return;this.frames[this.frames.length-1]={at,cars:s.cars};this.timelines.clear();this.unorderedTimelines.clear();for(const frame of this.frames)this.cacheFrame(frame);return;}
   if(last&&at>last.at)this.interval+=(clamp(at-last.at,16,150)-this.interval)*.15;
   this.arrivals.push(now-at);if(this.arrivals.length>90)this.arrivals.shift();
   this.clockOffset=Math.min(...this.arrivals);
@@ -161,7 +161,16 @@ export class MultiplayerTracking {
    const samples=this.timelines.get(c.id)||[];
    if(samples.length<2)return {...c,smoothMotion:true};
    const target=this.remoteAt;let a=samples[0],b=a;
-   for(let i=1;i<samples.length;i++){b=samples[i];if(b.at>=target)break;a=b;}
+   if(this.unorderedTimelines.has(c.id)){
+    // Input clocks can reset. Preserve the arrival-order lookup in that case.
+    for(let i=1;i<samples.length;i++){b=samples[i];if(b.at>=target)break;a=b;}
+   }else if(target>samples.at(-1).at){a=b=samples.at(-1);}
+   else{
+    // Find the same bracketing samples without scanning the full history.
+    let low=1,high=samples.length-1;
+    while(low<high){const mid=(low+high)>>>1;if(samples[mid].at>=target)high=mid;else low=mid+1;}
+    a=samples[low-1];b=samples[low];
+   }
    const ca=a.car,cb=b.car,seconds=(b.at-a.at)/1000;
    if(cb.inputEpoch!==ca.inputEpoch||cb.finished!==ca.finished||cb.pitState!==ca.pitState||c.pitState!==cb.pitState||cb.resetTimer>(ca.resetTimer||0)+.3||Math.hypot(cb.x-ca.x,cb.z-ca.z)>Math.max(30,Math.max(Math.abs(ca.v),Math.abs(cb.v))*seconds*1.75+5))return {...c,smoothMotion:true};
    if(c.inputEpoch!==cb.inputEpoch)return {...c,smoothMotion:true};

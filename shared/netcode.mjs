@@ -76,15 +76,22 @@ export const encodeMotion=session=>{
  }
  return JSON.stringify(packet);
 };
+// Index validated rows directly, avoiding temporary filter/map arrays per packet.
+const inputAckIndex=MOTION_FIELDS.indexOf('inputAck');
+function indexMotionRows(rows,length,valid){
+ const index=new Map();
+ if(Array.isArray(rows))for(const row of rows)if(Array.isArray(row)&&row.length===length&&(!valid||valid(row)))index.set(row[0],row);
+ return index;
+}
 export function mergeMotionState(base,packet){
  if(!base||base.phase!==packet.phase||!Number.isFinite(packet.elapsed)||packet.elapsed<base.elapsed||!Array.isArray(packet.cars))return base;
- const poses=new Map(packet.cars.filter(row=>Array.isArray(row)&&row.length===MOTION_FIELDS.length).map(row=>[row[0],row]));
- const inputTiming=new Map((Array.isArray(packet.inputTiming)?packet.inputTiming:[]).filter(row=>Array.isArray(row)&&row.length===3&&Number.isSafeInteger(row[1])&&Number.isFinite(row[2])).map(row=>[row[0],row]));
- const contacts=new Map((Array.isArray(packet.contacts)?packet.contacts:[]).filter(row=>Array.isArray(row)&&row.length===5&&Number.isSafeInteger(row[1])&&row[1]>=0&&Number.isFinite(row[2])&&typeof row[3]==='string'&&Number.isFinite(row[4])).map(row=>[row[0],row]));
+ const poses=indexMotionRows(packet.cars,MOTION_FIELDS.length);
+ const inputTiming=indexMotionRows(packet.inputTiming,3,row=>Number.isSafeInteger(row[1])&&Number.isFinite(row[2]));
+ const contacts=indexMotionRows(packet.contacts,5,row=>Number.isSafeInteger(row[1])&&row[1]>=0&&Number.isFinite(row[2])&&typeof row[3]==='string'&&Number.isFinite(row[4]));
  const merges=Array.isArray(packet.pitMerges)?new Map(packet.pitMerges):null;
- const services=new Map((Array.isArray(packet.pitServices)?packet.pitServices:[]).filter(row=>Array.isArray(row)&&row.length===PIT_SERVICE_FIELDS.length).map(row=>[row[0],row]));
- const finishes=new Map((Array.isArray(packet.raceFinishes)?packet.raceFinishes:[]).filter(row=>Array.isArray(row)&&row.length===4&&row.slice(1).every(Number.isFinite)).map(row=>[row[0],row]));
- const tyreServices=new Map((Array.isArray(packet.pitTyreServices)?packet.pitTyreServices:[]).filter(row=>Array.isArray(row)&&row.length===2&&Number.isFinite(row[1])));
- const strategy=new Map((Array.isArray(packet.strategy)?packet.strategy:[]).filter(row=>Array.isArray(row)&&row.length===STRATEGY_FIELDS.length).map(row=>[row[0],row]));
- return {...base,conditions:packet.conditions||base.conditions,weatherMode:packet.weatherMode||base.weatherMode,weather:packet.weather||base.weather,elapsed:packet.elapsed,cars:base.cars.map(c=>{const row=poses.get(c.id);if(!row)return c;const next={...c};const timing=inputTiming.get(c.id);if(timing&&timing[1]===row[MOTION_FIELDS.indexOf('inputAck')]){next.inputAppliedAt=timing[2];next.inputAppliedSequence=timing[1];}else{delete next.inputAppliedAt;delete next.inputAppliedSequence;}const contact=contacts.get(c.id);if(contact){next.contactSequence=contact[1];next.lastContactAt=contact[2];next.lastContactWith=contact[3];next.lastContactSeverity=contact[4];}const finish=finishes.get(c.id);if(finish){next.finishLaps=finish[1];next.finishTime=finish[2];next.lap=finish[3];}if(tyreServices.has(c.id))next.lastPitTyreService=tyreServices.get(c.id);if(merges)next.pitMerge=merges.get(c.id)||null;if(packet.weather){next.conditions=packet.conditions;next.trackWetness=packet.weather.wetness;next.rainIntensity=packet.weather.rain;}for(let i=1;i<MOTION_FIELDS.length;i++)if(row[i]!==null&&row[i]!==undefined)next[MOTION_FIELDS[i]]=row[i];const tyres=strategy.get(c.id);if(tyres)for(let i=1;i<STRATEGY_FIELDS.length;i++)if(STRATEGY_FIELDS[i]==='pitClearance')next.pitClearance=tyres[i]===null?Infinity:tyres[i];else if(tyres[i]!==null&&tyres[i]!==undefined)next[STRATEGY_FIELDS[i]]=tyres[i];const service=services.get(c.id);if(service)for(let i=1;i<PIT_SERVICE_FIELDS.length;i++)if(Number.isFinite(service[i]))next[PIT_SERVICE_FIELDS[i]]=service[i];return next;})};
+ const services=indexMotionRows(packet.pitServices,PIT_SERVICE_FIELDS.length);
+ const finishes=indexMotionRows(packet.raceFinishes,4,row=>Number.isFinite(row[1])&&Number.isFinite(row[2])&&Number.isFinite(row[3]));
+ const tyreServices=indexMotionRows(packet.pitTyreServices,2,row=>Number.isFinite(row[1]));
+ const strategy=indexMotionRows(packet.strategy,STRATEGY_FIELDS.length);
+ return {...base,conditions:packet.conditions||base.conditions,weatherMode:packet.weatherMode||base.weatherMode,weather:packet.weather||base.weather,elapsed:packet.elapsed,cars:base.cars.map(c=>{const row=poses.get(c.id);if(!row)return c;const next={...c};const timing=inputTiming.get(c.id);if(timing&&timing[1]===row[inputAckIndex]){next.inputAppliedAt=timing[2];next.inputAppliedSequence=timing[1];}else{delete next.inputAppliedAt;delete next.inputAppliedSequence;}const contact=contacts.get(c.id);if(contact){next.contactSequence=contact[1];next.lastContactAt=contact[2];next.lastContactWith=contact[3];next.lastContactSeverity=contact[4];}const finish=finishes.get(c.id);if(finish){next.finishLaps=finish[1];next.finishTime=finish[2];next.lap=finish[3];}if(tyreServices.has(c.id))next.lastPitTyreService=tyreServices.get(c.id)[1];if(merges)next.pitMerge=merges.get(c.id)||null;if(packet.weather){next.conditions=packet.conditions;next.trackWetness=packet.weather.wetness;next.rainIntensity=packet.weather.rain;}for(let i=1;i<MOTION_FIELDS.length;i++)if(row[i]!==null&&row[i]!==undefined)next[MOTION_FIELDS[i]]=row[i];const tyres=strategy.get(c.id);if(tyres)for(let i=1;i<STRATEGY_FIELDS.length;i++)if(STRATEGY_FIELDS[i]==='pitClearance')next.pitClearance=tyres[i]===null?Infinity:tyres[i];else if(tyres[i]!==null&&tyres[i]!==undefined)next[STRATEGY_FIELDS[i]]=tyres[i];const service=services.get(c.id);if(service)for(let i=1;i<PIT_SERVICE_FIELDS.length;i++)if(Number.isFinite(service[i]))next[PIT_SERVICE_FIELDS[i]]=service[i];return next;})};
 }

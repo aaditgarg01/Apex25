@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.65.3**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.65.4**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2365,3 +2365,12 @@ See the [measurements and verification limits](docs/MULTIPLAYER-OPTIMIZATION-2.6
 - The network diagnostic now distinguishes decoded JSON traffic from received WebSocket bytes and reports compression negotiation.
 
 Both build targets, focused syntax/name/import checks, six-circuit authority checks, contact replication, countdown, peer presentation, relay and a local eight-car connection check passed. The game's test suite was neither run nor edited. These checks do not establish real-world improvement on two separate weak connections or GPU frame rate. See the [measurements, reproduction steps and limits](docs/MULTIPLAYER-BANDWIDTH-2.65.3.md).
+
+
+## 2.65.4 — Less client work receiving and displaying multiplayer cars
+
+- Reuse the room connection's parsed message in the game instead of parsing every snapshot twice. One-argument message consumers and older connection paths remain compatible.
+- Decode compact driver rows directly into their indexes, with fewer temporary arrays and the same decoded values.
+- Locate rival interpolation samples with a binary search on ordered histories. Input-clock resets retain the previous arrival-order lookup; phase changes clear the history. Pose assembly also avoids temporary key/value arrays.
+
+The controlled receive benchmark used about 34% less processing time; the synthetic presentation benchmark used about 3% less. These are CPU-only measurements of those paths, not total FPS or internet-ping improvements. Decoder, history-boundary, steering reconciliation, contact, countdown and reconnect checks passed. Both builds and syntax/name/import checks passed; the game test suite was not run or edited. See the [measurements and limits](docs/MULTIPLAYER-CLIENT-2.65.4.md).

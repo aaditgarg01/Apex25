@@ -10,6 +10,6 @@ export class DrivingReport {
   if(this.samples.length>450)this.samples.shift();
  }
  download(){
-  const blob=new Blob([JSON.stringify({schema:'apex25-driving-report-v1',version:'2.65.3',createdAt:new Date().toISOString(),notes:'Local last-45-second driving trace; no room credentials. Authority and predicted/shown positions use different clocks.',samples:this.samples},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='apex25-driving-report.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const blob=new Blob([JSON.stringify({schema:'apex25-driving-report-v1',version:'2.65.4',createdAt:new Date().toISOString(),notes:'Local last-45-second driving trace; no room credentials. Authority and predicted/shown positions use different clocks.',samples:this.samples},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='apex25-driving-report.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
  }
 }

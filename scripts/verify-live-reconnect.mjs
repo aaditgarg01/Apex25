@@ -10,8 +10,8 @@ async function until(check){const end=performance.now()+30000;while(!check()){co
 async function peer(name){
  const p={id:null,lobby:null,elapsed:-Infinity,updates:0,resumes:0},connection=new RoomConnection(args.url||'wss://apex25-eight.vercel.app/api/race-socket');p.connection=connection;peers.push(p);
  connection.onerror=()=>{if(!cleaning&&!connection.reconnecting)p.error=Error('Diagnostic socket failed');};connection.onresume=()=>p.resumes++;
- connection.onmessage=event=>{const m=JSON.parse(event.data);if(m.type==='error')p.error=Error(m.message);if(m.type==='welcome')p.id=m.id;if(m.type==='lobby')p.lobby=m;if(['start','state','motion'].includes(m.type)&&Number.isFinite(m.elapsed)){p.elapsed=m.elapsed;p.updates++;}};
- await until(()=>p.id);p.send=m=>connection.send(JSON.stringify(m));p.name=name;return p;
+ connection.onmessage=(event,parsed)=>{const m=parsed??JSON.parse(event.data);if(m.type==='error')p.error=Error(m.message);if(m.type==='welcome')p.id=m.id;if(m.type==='lobby')p.lobby=m;if(['start','state','motion'].includes(m.type)&&Number.isFinite(m.elapsed)){p.elapsed=m.elapsed;p.updates++;}};
+ await until(()=>p.id);if(!connection.credentials?.token)throw Error('This endpoint does not provide resume credentials. Use the Vercel room gateway for the reconnect check.');p.send=m=>connection.send(JSON.stringify(m));p.name=name;return p;
 }
 try{
  const host=await peer('Reconnect host');host.send({type:'create',name:host.name,trackId:'it-1922',mode:'practice',laps:3,aiCount:0,inputVersion:3,stateVersion:3});await until(()=>host.lobby);
