@@ -2284,7 +2284,7 @@ and released steering. Results and remaining limits are in the
 [steering correction report](docs/STEERING-CORRECTION-2.64.1.md).
 Refresh both browsers and create a new room after updating.
 
-## 2.64.2 — Align Monza starts with the pit straight
+## 2.64.2 — Monza start alignment and countdown prediction
 
 Monza cars could leave the straight with zero steering because their initial
 angles followed varying local tangents of the smoothed road. Grid cars and
@@ -2292,7 +2292,11 @@ markings, practice/qualifying starts, qualifying joiners and straight-section
 recoveries now share the fitted straight axis. The centreline, elevations,
 steering physics and other circuits are unchanged.
 
-The original issue reproduced in all 16 dry baseline runs. All 48 corrected
+Holding acceleration during the countdown also caused the predictor to simulate
+the waiting seconds as driving. Prediction now starts from the live server
+clock at lights out, removing that reproduced 187-metre jump.
+
+The original alignment issue reproduced in all 16 dry baseline runs. All 48 corrected
 grid runs passed across dry/damp/wet conditions, with and without boost. Two
 local multiplayer clients also stayed on the straight. Details and limits are
 in the [Monza release report](docs/MONZA-STRAIGHT-START-2.64.2.md).

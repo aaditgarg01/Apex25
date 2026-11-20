@@ -1,0 +1,5 @@
+{
+  "description": "Real five-second Monza race countdown, throttle/boost held throughout, zero steering, no opponents/network delay; snapshots 20Hz and presentation 60Hz.",
+  "maximumFrameMove": 0.5228267867532307,
+  "maximumReferenceError": 0.5265442942039662
+}

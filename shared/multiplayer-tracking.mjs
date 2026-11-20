@@ -91,7 +91,9 @@ export class MultiplayerTracking {
   const c=s.cars.find(car=>car.id===this.id);if(!c)return;
   if(this.session?.phase===s.phase&&s.elapsed<this.session.elapsed)return;
   const previous=this.session?.cars.find(car=>car.id===this.id);
-  const discontinuity=reset||previous&&((c.contactSequence||0)>(previous.contactSequence||0)||(c.pitState||'none')!==(previous.pitState||'none')||Math.hypot((c.impactVX||0)-(previous.impactVX||0),(c.impactVZ||0)-(previous.impactVZ||0))>4||Math.abs((c.impactYaw||0)-(previous.impactYaw||0))>.6);
+  // Countdown time must never be caught up as driving time at lights out.
+  const started=this.session&&!active(this.session)&&active(s);
+  const discontinuity=reset||started||previous&&((c.contactSequence||0)>(previous.contactSequence||0)||(c.pitState||'none')!==(previous.pitState||'none')||Math.hypot((c.impactVX||0)-(previous.impactVX||0),(c.impactVZ||0)-(previous.impactVZ||0))>4||Math.abs((c.impactYaw||0)-(previous.impactYaw||0))>.6);
   if(this.local&&!discontinuity)this.advance(now);
   if(reset){this.contactSequences.clear();this.contactLocks.clear();this.sentTimes.clear();}
   this.record(s,receivedAt);this.session=s;this.lastAt=receivedAt;
