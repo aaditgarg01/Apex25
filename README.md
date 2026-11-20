@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.64.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.64.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2283,3 +2283,17 @@ Delayed-update checks cover axis-aligned and diagonal straights, braking, boost
 and released steering. Results and remaining limits are in the
 [steering correction report](docs/STEERING-CORRECTION-2.64.1.md).
 Refresh both browsers and create a new room after updating.
+
+## 2.64.2 — Align Monza starts with the pit straight
+
+Monza cars could leave the straight with zero steering because their initial
+angles followed varying local tangents of the smoothed road. Grid cars and
+markings, practice/qualifying starts, qualifying joiners and straight-section
+recoveries now share the fitted straight axis. The centreline, elevations,
+steering physics and other circuits are unchanged.
+
+The original issue reproduced in all 16 dry baseline runs. All 48 corrected
+grid runs passed across dry/damp/wet conditions, with and without boost. Two
+local multiplayer clients also stayed on the straight. Details and limits are
+in the [Monza release report](docs/MONZA-STRAIGHT-START-2.64.2.md).
+Refresh both browsers and create a new room to use the corrected server build.

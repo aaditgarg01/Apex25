@@ -1,3 +1,4 @@
+import {spawnPose} from '/shared/spawn-pose.mjs';
 import {istanbulGround,istanbulSurfaceY,ISTANBUL_TERRAIN_MARGIN,ISTANBUL_TERRAIN_CELL} from '/shared/istanbul.mjs';
 import {portimaoGround,portimaoSurfaceY,PORTIMAO_TERRAIN_MARGIN,PORTIMAO_TERRAIN_CELL} from '/shared/portimao.mjs';
 import {paulRicardGround,paulRicardSurfaceY} from '/shared/paulricard.mjs';
@@ -165,7 +166,7 @@ export class RaceScene{
  const tc=document.createElement('canvas');tc.width=1024;tc.height=128;const ctx=tc.getContext('2d');ctx.fillStyle='#202c35';ctx.fillRect(0,0,1024,128);ctx.fillStyle='#ff5936';ctx.font='italic 900 76px Arial';ctx.textAlign='center';ctx.fillText(track.campus?'VIT VELLORE':'APEX 25',512,93);const tex=new THREE.CanvasTexture(tc),sign=new THREE.Mesh(new THREE.PlaneGeometry(track.width+3,1.4),new THREE.MeshBasicMaterial({map:tex}));sign.position.set(0,7,.32);gantry.add(sign);const back=sign.clone();back.rotation.y=Math.PI;back.position.z=-.32;gantry.add(back);}
  for(let row=0;row<2;row++)for(let col=0;col<16;col++)this.box(track.width/16,.035,1,(row+col)%2?'#dce1dc':'#252d33',-half+(col+.5)*track.width/16,.12,row-1,gantry);
  for(let i=0;i<8;i++){
-  const {s,offset}=gridSlot(i),p=sample(track,s,offset),slot=new THREE.Group();slot.position.set(p.x,p.y+.11,p.z);slot.rotation.set(-p.pitch,p.heading,0,'YXZ');this.group.add(slot);
+  const {s,offset}=gridSlot(i),p=spawnPose(track,s,offset),slot=new THREE.Group();slot.position.set(p.x,p.y+.11,p.z);slot.rotation.set(-p.pitch,p.heading,0,'YXZ');this.group.add(slot);
   this.box(2.8,.025,.12,'#e1e0d5',0,0,2.85,slot);this.box(.12,.025,5.4,'#e1e0d5',offset<0?-1.4:1.4,0,.2,slot);
  }
  clearPitScenery(this.group,track);this.pitLane=addPitLane(this,track);this.wallMesh(trackBarriers(track).walls.filter(w=>w.kind==='pit-divider'||w.kind==='pit-wall'),'#e7e5d9','concrete');this.batchStats=batchBoxes(this.group,['tr-2005','sg-2008'].includes(track.id)?720:['pt-2008','fr-1969','es-2026','my-1999','in-2011','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948'].includes(track.id)?480:['us-2022','br-1940','nl-1948'].includes(track.id)?360:220);batchMapped(this.group,['tr-2005','sg-2008'].includes(track.id)?720:['pt-2008','fr-1969','es-2026','my-1999','in-2011','qa-2004','ae-2009','ca-1978','es-1991','hu-1986','it-1953','us-2012','it-1922','mx-1962','at-1969','gb-1948'].includes(track.id)?480:220);this.setConditions(this.conditions);

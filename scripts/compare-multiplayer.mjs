@@ -3,7 +3,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {resolve as resolvePath} from 'node:path';
 import {performance} from 'node:perf_hooks';
-import {makeTracks,targetSpeed} from '../shared/tracks.mjs';
+import {makeTracks,targetSpeed,nearest,angleDiff} from '../shared/tracks.mjs';
 import {trackBarriers} from '../shared/barriers.mjs';
 import {pitLayout} from '../shared/pits.mjs';
 import {NetworkMotion,mergeMotionState} from '../shared/netcode.mjs';
@@ -20,7 +20,7 @@ const peers=[],cleanup=[];let frameTimer,pingTimer,authorityTimer;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(predicate,timeout=45000){const end=performance.now()+timeout;while(!predicate()){if(performance.now()>end)throw Error('The comparison did not become ready before its timeout.');await sleep(20);}}
 function peer(role){
- const p={id:null,role,metrics:new NetworkLabMetrics(),state:null,motion:null,timingPackets:0,messages:[],send:()=>{},queued:null,lastAt:performance.now()};peers.push(p);return p;
+ const p={id:null,role,metrics:new NetworkLabMetrics(),state:null,motion:null,timingPackets:0,straight:{serverMaxLateral:0,renderMaxLateral:0,serverOfftrack:false,maxHeadingChange:0},messages:[],send:()=>{},queued:null,lastAt:performance.now()};peers.push(p);return p;
 }
 function receive(p,message,bytes=0){
  const now=performance.now(),m=typeof message==='string'?JSON.parse(message):message;p.messages.push(m);if(p.messages.length>40)p.messages.shift();
@@ -33,6 +33,7 @@ function receive(p,message,bytes=0){
  const counted=p.metrics.start!==null;if(counted)p.metrics.received(bytes);
  if(m.elapsed<p.state.elapsed)return;
  const base=p.queued?.state||p.state,next=m.type==='state'?m:mergeMotionState(base,m);if(next===base)return;
+ if(args.drive==='straight'&&next.elapsed>=0){const car=next.cars.find(c=>c.id===p.id);p.straight.serverMaxLateral=Math.max(p.straight.serverMaxLateral,Math.abs(car.lateral));p.straight.serverOfftrack||=car.offtrack;}
  p.motion.record(next,now);p.queued={state:next,at:now};p.metrics.packet(next,next.cars.find(c=>c.id===p.id),now,counted?0:bytes);
 }
 try{
@@ -46,7 +47,7 @@ try{
    connection.onresume=()=>{p.metrics.resumes++;};connection.onerror=()=>{};p.send=message=>connection.send(JSON.stringify(message));
    cleanup.push(()=>{p.send({type:'leave'});connection.forgetRoom();connection.socket.close();});await until(()=>p.id);return p;
   }
-  host=await socketPeer('server-client');host.send({type:'create',name:'Lab host',trackId:track.id,mode:'race',laps:3,aiCount:6,conditions:'normal',inputVersion:3,stateVersion:3});
+  host=await socketPeer('server-client');host.send({type:'create',name:'Lab host',trackId:track.id,mode:'race',laps:3,aiCount:args.drive==='straight'?0:6,conditions:'normal',inputVersion:3,stateVersion:3});
   await until(()=>host.messages.some(m=>m.type==='lobby'));const lobby=host.messages.find(m=>m.type==='lobby');
   guest=await socketPeer('server-client');guest.send({type:'join',code:lobby.code,name:'Lab guest',inputVersion:3,stateVersion:3});
   await until(()=>host.messages.some(m=>m.type==='lobby'&&m.players.length===2));host.send({type:'start'});
@@ -74,13 +75,14 @@ try{
  frameTimer=setInterval(()=>{
   const now=performance.now();for(const p of peers){const dt=Math.min(.1,(now-p.lastAt)/1000);p.lastAt=now;if(!p.motion)continue;
    if(p.queued){p.state=p.queued.state;p.motion.receive(p.state,now,p.queued.at);p.queued=null;}
-   const control=networkLabDrive(track,p.motion.visual||p.state.cars.find(c=>c.id===p.id),p.state.elapsed),cars=p.motion.frame(now,dt,control),car=cars.find(c=>c.id===p.id);p.metrics.rendered(car,now,dt);
+   const control=args.drive==='straight'?{throttle:(p.motion.visual?.progress??0)<450,brake:(p.motion.visual?.progress??0)>=450,park:(p.motion.visual?.progress??0)>=450,steer:0,boost:false}:networkLabDrive(track,p.motion.visual||p.state.cars.find(c=>c.id===p.id),p.state.elapsed),cars=p.motion.frame(now,dt,control),car=cars.find(c=>c.id===p.id);p.metrics.rendered(car,now,dt);if(args.drive==='straight'&&p.state.elapsed>=0){p.initialHeading??=car.heading;p.straight.renderMaxLateral=Math.max(p.straight.renderMaxLateral,Math.abs(nearest(track,car.x,car.z,car.s).offset));p.straight.maxHeadingChange=Math.max(p.straight.maxHeadingChange,Math.abs(angleDiff(car.heading,p.initialHeading)));}
    const message=p.motion.takeCommands(now);if(message){p.metrics.sent(message.commands.at(-1)[0],now);p.send(message);}
   }
  },1000/60);
  pingTimer=setInterval(()=>{for(const p of peers){p.send({type:'ping',time:performance.now()});if(p.client)p.metrics.ping(p.client.stats.roundTripTimeMs);}},1000);
  await until(()=>peers.every(p=>p.metrics.start!==null));await sleep(seconds*1000);
+ if(args.drive==='straight'&&peers.some(p=>p.straight.serverOfftrack||p.straight.renderMaxLateral+1.24>track.width/2||p.straight.maxHeadingChange>.001))throw Error('Straight driving left the Monza ribbon: '+JSON.stringify(peers.map(p=>p.straight)));
  if(args.requireInputTiming==='true'&&peers.some(p=>p.timingPackets===0))throw Error('Live room did not provide acknowledged input timing');
- const now=performance.now(),report={schema:'apex25-network-lab-v1',transport,durationRequested:seconds,authority:transport==='photon'?'Node-hosted emulation of browser-worker prototype':(localEndpoint?'local Node APEX server':'current Vercel APEX server'),limitation:localEndpoint?'Both diagnostic clients and server ran on this machine. This checks integration, not internet latency.':'Both diagnostic clients ran on one machine. Photon simulation host is on that machine; current server is in Singapore. These are not equivalent hosting placements or a two-device weak-link trial.',runs:peers.map(p=>p.metrics.report(now,{transport,role:p.role,inputTimingPackets:p.timingPackets,region:transport==='photon'?region:currentRegion,track:track.id,cars:p.state.cars.length,repeatableDrive:true,snapshotTargetHz:20,renderer:'headless 60 Hz presentation loop; no GPU rendering'}))};
+ const now=performance.now(),report={schema:'apex25-network-lab-v1',transport,durationRequested:seconds,authority:transport==='photon'?'Node-hosted emulation of browser-worker prototype':(localEndpoint?'local Node APEX server':'current Vercel APEX server'),limitation:localEndpoint?'Both diagnostic clients and server ran on this machine. This checks integration, not internet latency.':'Both diagnostic clients ran on one machine. Photon simulation host is on that machine; current server is in Singapore. These are not equivalent hosting placements or a two-device weak-link trial.',runs:peers.map(p=>p.metrics.report(now,{transport,role:p.role,...(args.drive==='straight'?{straightDriving:p.straight}:{}),inputTimingPackets:p.timingPackets,region:transport==='photon'?region:currentRegion,track:track.id,cars:p.state.cars.length,repeatableDrive:true,snapshotTargetHz:20,renderer:'headless 60 Hz presentation loop; no GPU rendering'}))};
  const json=JSON.stringify(report,null,2);if(args.out){const path=pathToFileURL(resolvePath(args.out));await mkdir(new URL('.',path),{recursive:true});await writeFile(path,json+'\n');}console.log(json);
 }finally{clearInterval(frameTimer);clearInterval(pingTimer);clearInterval(authorityTimer);for(const close of cleanup.reverse())close();}
