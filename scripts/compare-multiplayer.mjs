@@ -20,10 +20,11 @@ const peers=[],cleanup=[];let frameTimer,pingTimer,authorityTimer;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(predicate,timeout=45000){const end=performance.now()+timeout;while(!predicate()){if(performance.now()>end)throw Error('The comparison did not become ready before its timeout.');await sleep(20);}}
 function peer(role){
- const p={id:null,role,metrics:new NetworkLabMetrics(),state:null,motion:null,messages:[],send:()=>{},queued:null,lastAt:performance.now()};peers.push(p);return p;
+ const p={id:null,role,metrics:new NetworkLabMetrics(),state:null,motion:null,timingPackets:0,messages:[],send:()=>{},queued:null,lastAt:performance.now()};peers.push(p);return p;
 }
 function receive(p,message,bytes=0){
  const now=performance.now(),m=typeof message==='string'?JSON.parse(message):message;p.messages.push(m);if(p.messages.length>40)p.messages.shift();
+ if(m.type==='motion'&&m.inputTiming?.some(row=>row.length===3&&Number.isFinite(row[2])))p.timingPackets++;
  if(m.type==='welcome')p.id=m.id;
  if(m.type==='error')throw Error(m.message);
  if(m.type==='pong'){if(transport==='current')p.metrics.ping(now-m.time);p.motion?.setPing(now-m.time);}
@@ -79,6 +80,7 @@ try{
  },1000/60);
  pingTimer=setInterval(()=>{for(const p of peers){p.send({type:'ping',time:performance.now()});if(p.client)p.metrics.ping(p.client.stats.roundTripTimeMs);}},1000);
  await until(()=>peers.every(p=>p.metrics.start!==null));await sleep(seconds*1000);
- const now=performance.now(),report={schema:'apex25-network-lab-v1',transport,durationRequested:seconds,authority:transport==='photon'?'Node-hosted emulation of browser-worker prototype':(localEndpoint?'local Node APEX server':'current Vercel APEX server'),limitation:localEndpoint?'Both diagnostic clients and server ran on this machine. This checks integration, not internet latency.':'Both diagnostic clients ran on one machine. Photon simulation host is on that machine; current server is in Singapore. These are not equivalent hosting placements or a two-device weak-link trial.',runs:peers.map(p=>p.metrics.report(now,{transport,role:p.role,region:transport==='photon'?region:currentRegion,track:track.id,cars:p.state.cars.length,repeatableDrive:true,snapshotTargetHz:20,renderer:'headless 60 Hz presentation loop; no GPU rendering'}))};
+ if(args.requireInputTiming==='true'&&peers.some(p=>p.timingPackets===0))throw Error('Live room did not provide acknowledged input timing');
+ const now=performance.now(),report={schema:'apex25-network-lab-v1',transport,durationRequested:seconds,authority:transport==='photon'?'Node-hosted emulation of browser-worker prototype':(localEndpoint?'local Node APEX server':'current Vercel APEX server'),limitation:localEndpoint?'Both diagnostic clients and server ran on this machine. This checks integration, not internet latency.':'Both diagnostic clients ran on one machine. Photon simulation host is on that machine; current server is in Singapore. These are not equivalent hosting placements or a two-device weak-link trial.',runs:peers.map(p=>p.metrics.report(now,{transport,role:p.role,inputTimingPackets:p.timingPackets,region:transport==='photon'?region:currentRegion,track:track.id,cars:p.state.cars.length,repeatableDrive:true,snapshotTargetHz:20,renderer:'headless 60 Hz presentation loop; no GPU rendering'}))};
  const json=JSON.stringify(report,null,2);if(args.out){const path=pathToFileURL(resolvePath(args.out));await mkdir(new URL('.',path),{recursive:true});await writeFile(path,json+'\n');}console.log(json);
 }finally{clearInterval(frameTimer);clearInterval(pingTimer);clearInterval(authorityTimer);for(const close of cleanup.reverse())close();}

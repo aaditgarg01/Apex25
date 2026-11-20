@@ -22,3 +22,11 @@ Reports: `docs/benchmarks/steering*-2.64.1.json`, `contact-sync-2.64.1.json`, `p
 ## Practical limit
 
 The reported two-device drift has not been reproduced on the user's devices. These changes remove two concrete correction paths that can contribute to it; a fresh two-device room remains the acceptance check. Refresh both clients and create a new room so an existing room owner running the previous deployment cannot keep the old simulation code alive. Physics, penalties and actual collision deflections remain server-authoritative.
+
+## Production verification — 20 November 2026
+
+Application revision `eccf17925da056f35a935e11eb6fbcc66acbfcb9` reached Vercel READY on `sin1`, aliased to `apex25-eight.vercel.app`. The multiplayer configuration returned backend 2.64.1 with live controls enabled. Six deployed mirror/pit/tracking/input assets exactly matched the local build. The temporary local pit-preview page returned 404.
+
+A 15-second live Vercel room check with two clients/six AI cars delivered about 20.33 updates/second per client. A separate 10-second check required the new acknowledgement timing and received 211 timing packets per client, about 20.24–20.27 measured updates/second and no reconnections. Both clients ran on one computer; this does not establish two-device smoothness or reproduce the user's own connection.
+
+The production browser showed the rear view above the race HUD. V toggled it off/on; no warnings/errors were recorded in that browser tab. Local visual previews separately confirmed open garage interiors and Singapore pit frontage. Screenshots are retained in the workspace output folder.
