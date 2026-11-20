@@ -62,16 +62,20 @@ export class MultiplayerTracking {
   return c;
  }
  boundRenderOffset(car,value){
-  const heading=car.motionHeading??car.heading,fx=Math.sin(heading),fz=Math.cos(heading),rx=Math.cos(heading),rz=-Math.sin(heading),forward=clamp(value.x*fx+value.z*fz,-12,12),lateral=clamp(value.x*rx+value.z*rz,-1.5,1.5),offset={x:fx*forward+rx*lateral,y:clamp(value.y,-.4,.4),z:fz*forward+rz*lateral,heading:clamp(value.heading,-.08,.08)};
+  // Acknowledgement age can spike independently of ping. Preserve enough
+  // forward display error to absorb that change without clipping a frame;
+  // keep lateral error tight so smoothing cannot preserve a wrong course.
+  const heading=car.motionHeading??car.heading,fx=Math.sin(heading),fz=Math.cos(heading),rx=Math.cos(heading),rz=-Math.sin(heading),forward=clamp(value.x*fx+value.z*fz,-80,80),lateral=clamp(value.x*rx+value.z*rz,-1.5,1.5),offset={x:fx*forward+rx*lateral,y:clamp(value.y,-.4,.4),z:fz*forward+rz*lateral,heading:clamp(value.heading,-.08,.08)};
   // Constrain only display error when the physical body is safely on the road.
   // Real runoff/kerb driving and collision forces remain authoritative.
   const road=nearest(this.track,car.x,car.z,car.s),half=roadHalfWidth(this.track,road.s)-1.3;
   if(!car.offtrack&&Math.abs(road.offset)<=half){const candidate=nearest(this.track,car.x+offset.x,car.z+offset.z,car.s),trim=candidate.offset-clamp(candidate.offset,-half,half);offset.x-=Math.cos(candidate.heading)*trim;offset.z+=Math.sin(candidate.heading)*trim;}
   return offset;
  }
+ renderSpeedLimit(){return 3+Math.min(12,Math.max(0,Math.hypot(this.renderOffset.x,this.renderOffset.z)-8)*.5);}
  decayRenderOffset(now){
   let remaining=Math.min(.1,Math.max(0,now-this.renderAt)/1000);this.renderAt=now;
-  while(remaining>1e-8){const dt=Math.min(remaining,1/120),ax=-64*this.renderOffset.x-16*this.renderVelocity.x,az=-64*this.renderOffset.z-16*this.renderVelocity.z,length=Math.hypot(ax,az),gain=Math.min(1,12/Math.max(length,.001));this.renderVelocity.x+=ax*gain*dt;this.renderVelocity.z+=az*gain*dt;const speed=Math.hypot(this.renderVelocity.x,this.renderVelocity.z),limit=Math.min(1,3/Math.max(speed,.001));this.renderVelocity.x*=limit;this.renderVelocity.z*=limit;this.renderOffset.x+=this.renderVelocity.x*dt;this.renderOffset.z+=this.renderVelocity.z*dt;this.renderOffset.y*=Math.exp(-dt*12);this.renderOffset.heading*=Math.exp(-dt*12);remaining-=dt;}
+  while(remaining>1e-8){const dt=Math.min(remaining,1/120),ax=-64*this.renderOffset.x-16*this.renderVelocity.x,az=-64*this.renderOffset.z-16*this.renderVelocity.z,length=Math.hypot(ax,az),gain=Math.min(1,12/Math.max(length,.001));this.renderVelocity.x+=ax*gain*dt;this.renderVelocity.z+=az*gain*dt;const speed=Math.hypot(this.renderVelocity.x,this.renderVelocity.z),limit=Math.min(1,this.renderSpeedLimit()/Math.max(speed,.001));this.renderVelocity.x*=limit;this.renderVelocity.z*=limit;this.renderOffset.x+=this.renderVelocity.x*dt;this.renderOffset.z+=this.renderVelocity.z*dt;this.renderOffset.y*=Math.exp(-dt*12);this.renderOffset.heading*=Math.exp(-dt*12);remaining-=dt;}
  }
  presentedLocalPose(now){
   const car=this.localPose(now),offset=this.boundRenderOffset(car,this.renderOffset);
@@ -112,7 +116,7 @@ export class MultiplayerTracking {
   // Always reconcile the complete physics state, including heading and slip.
   // Smoothing belongs only to the displayed pose, never to steering/velocity.
   this.local=target;this.localAt=until;this.previousLocal=previousTarget;this.reference=this.local;this.correction=zero();this.previousCorrection=zero();this.renderOffset=zero();this.renderVelocity=zero();
-  if(previousPresentation){const current=this.localPose(now);this.renderOffset=this.boundRenderOffset(current,{x:previousPresentation.x-current.x,y:previousPresentation.y-current.y,z:previousPresentation.z-current.z,heading:angleDiff(previousPresentation.heading,current.heading)});const currentVelocity=velocityOf(current),vx=previousVelocity.x-currentVelocity.x,vz=previousVelocity.z-currentVelocity.z,speed=Math.hypot(vx,vz),scale=Math.min(1,3/Math.max(speed,.001));this.renderVelocity={x:vx*scale,y:0,z:vz*scale,heading:0};}
+  if(previousPresentation){const current=this.localPose(now);this.renderOffset=this.boundRenderOffset(current,{x:previousPresentation.x-current.x,y:previousPresentation.y-current.y,z:previousPresentation.z-current.z,heading:angleDiff(previousPresentation.heading,current.heading)});const currentVelocity=velocityOf(current),vx=previousVelocity.x-currentVelocity.x,vz=previousVelocity.z-currentVelocity.z,speed=Math.hypot(vx,vz),scale=Math.min(1,this.renderSpeedLimit()/Math.max(speed,.001));this.renderVelocity={x:vx*scale,y:0,z:vz*scale,heading:0};}
 
   this.renderAt=now;this.reconciliation={at:now,kind:discontinuity?'event':'snapshot',positionError,replayMilliseconds:active(s)?Math.max(0,until-base):0};
  }
