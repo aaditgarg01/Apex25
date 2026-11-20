@@ -1,0 +1,59 @@
+{
+  "description": "Actual shared circuit physics, source driver following the guide; a 250ms locally predicted steering tap is superseded before transmission, followed by delayed/jittered authoritative updates. This isolates reconciliation from a permanent physical course change. Not a two-device race.",
+  "runs": [
+    {
+      "track": "it-1922",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 83,
+      "maximumError": 25.81496448680258,
+      "maximumPostTapError": 25.81496448680258,
+      "maximumPostTapHeadingErrorDegrees": 16.784328682553642,
+      "maximumFrameMove": 26.600079877249897
+    },
+    {
+      "track": "gb-1948",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 91,
+      "maximumError": 26.941193607581468,
+      "maximumPostTapError": 26.941193607581468,
+      "maximumPostTapHeadingErrorDegrees": 17.102478974145715,
+      "maximumFrameMove": 27.537649989065432
+    },
+    {
+      "track": "bh-2002",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 82,
+      "maximumError": 26.004681455004327,
+      "maximumPostTapError": 26.004681455004327,
+      "maximumPostTapHeadingErrorDegrees": 16.66576569948736,
+      "maximumFrameMove": 26.75596769323178
+    },
+    {
+      "track": "es-1991",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 0,
+      "maximumError": 26.42390579648182,
+      "maximumPostTapError": 26.42390579648182,
+      "maximumPostTapHeadingErrorDegrees": 17.027171747061693,
+      "maximumFrameMove": 27.24844240211813
+    },
+    {
+      "track": "be-1925",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 84,
+      "maximumError": 26.184187878531823,
+      "maximumPostTapError": 26.184187878531823,
+      "maximumPostTapHeadingErrorDegrees": 17.07903235408189,
+      "maximumFrameMove": 26.926526573549626
+    },
+    {
+      "track": "sg-2008",
+      "sourceOnRoadFrames": 480,
+      "wrongOfftrackFrames": 35,
+      "maximumError": 22.365468447683067,
+      "maximumPostTapError": 22.365468447683067,
+      "maximumPostTapHeadingErrorDegrees": 17.04570138460029,
+      "maximumFrameMove": 23.03712551516225
+    }
+  ]
+}

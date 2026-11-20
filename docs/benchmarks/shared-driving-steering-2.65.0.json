@@ -1,0 +1,77 @@
+{
+  "description": "Actual live-input server and local prediction with deliberately misleading gateway ping, delayed/reordered controls and snapshots, steering released after two opposite turns. Synthetic, not two-device internet proof.",
+  "runs": [
+    {
+      "straight": false,
+      "trackHeadingRadians": 0,
+      "uplinkMs": 40,
+      "downlinkMs": 40,
+      "jitter": false,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 0.10940530603352405,
+      "postReleaseSideErrorP95Metres": 0.061915573579259586,
+      "maxHeadingErrorDegrees": 0.3959357713314255,
+      "neutralSteeringExtraYawDegrees": 0.007100910445014528
+    },
+    {
+      "straight": false,
+      "trackHeadingRadians": 0,
+      "uplinkMs": 180,
+      "downlinkMs": 70,
+      "jitter": false,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 0.26790725522269554,
+      "postReleaseSideErrorP95Metres": 0.25209031286426864,
+      "maxHeadingErrorDegrees": 0.45388499072331584,
+      "neutralSteeringExtraYawDegrees": 0.041341051504204925
+    },
+    {
+      "straight": false,
+      "trackHeadingRadians": 0,
+      "uplinkMs": 180,
+      "downlinkMs": 70,
+      "jitter": true,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 2.5007477473860042,
+      "postReleaseSideErrorP95Metres": 2.429508650272231,
+      "maxHeadingErrorDegrees": 1.2743109884967971,
+      "neutralSteeringExtraYawDegrees": 0.017381838382912677
+    },
+    {
+      "straight": false,
+      "trackHeadingRadians": 0,
+      "uplinkMs": 300,
+      "downlinkMs": 90,
+      "jitter": true,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 2.6098310331012176,
+      "postReleaseSideErrorP95Metres": 2.531047027615795,
+      "maxHeadingErrorDegrees": 1.3995114275340788,
+      "neutralSteeringExtraYawDegrees": 0.05172564958598836
+    },
+    {
+      "straight": true,
+      "trackHeadingRadians": 0,
+      "uplinkMs": 180,
+      "downlinkMs": 70,
+      "jitter": true,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 0,
+      "postReleaseSideErrorP95Metres": 0,
+      "maxHeadingErrorDegrees": 0,
+      "neutralSteeringExtraYawDegrees": 0
+    },
+    {
+      "straight": true,
+      "trackHeadingRadians": 0,
+      "uplinkMs": 300,
+      "downlinkMs": 90,
+      "jitter": true,
+      "gatewayPingMs": 80,
+      "maxSideErrorMetres": 0,
+      "postReleaseSideErrorP95Metres": 0,
+      "maxHeadingErrorDegrees": 0,
+      "neutralSteeringExtraYawDegrees": 0
+    }
+  ]
+}

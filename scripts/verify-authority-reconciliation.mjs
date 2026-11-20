@@ -1,0 +1,22 @@
+// Focused cross-circuit reconciliation diagnostic, separate from game suite.
+import assert from 'node:assert/strict';import {readFile,writeFile} from 'node:fs/promises';import {pathToFileURL} from 'node:url';import {makeTracks,nearest,angleDiff} from '../shared/tracks.mjs';import {createCar,stepCar} from '../shared/physics.mjs';import {networkLabDrive} from '../shared/network-lab-drive.mjs';import {encodeMotion,mergeMotionState} from '../shared/netcode.mjs';
+const args=Object.fromEntries(process.argv.slice(2).map(v=>v.replace(/^--/,'').split('='))),{MultiplayerTracking}=await import(args.module?pathToFileURL(args.module):new URL('../shared/multiplayer-tracking.mjs',import.meta.url)),tracks=makeTracks(JSON.parse(await readFile(new URL('../public/data/circuits.geojson',import.meta.url))),JSON.parse(await readFile(new URL('../public/data/elevations.json',import.meta.url))));
+const rows=[];
+for(const id of args.all==='true'?tracks.map(t=>t.id):['it-1922','gb-1948','bh-2002','es-1991','be-1925','sg-2008']){
+ const track=tracks.find(t=>t.id===id),server=createCar(track,'p','Keyboard',0),tracker=new MultiplayerTracking(track,'p',{liveInput:true});server.v=25;server.practice=true;tracker.rtt=100;let canonicalOfftrackFrames=0,maximumCanonicalHeadingError=0;let sequence=0,accepted=0,acceptedAt=1,queue=[],lastElapsed=0,wrongOfftrackFrames=0,maximumError=0,maximumPostTapHeadingError=0,maximumPostTapError=0,maximumFrameMove=0,previous=null,sourceOnRoadFrames=0;
+ const state=elapsed=>({phase:'race',conditions:'normal',elapsed,cars:[structuredClone(server)]});tracker.receive(state(1),0,true);
+ for(let frame=1;frame<=60*8;frame++){
+  const now=frame*1000/60,time=frame/60,elapsed=1+time,drive=networkLabDrive(track,server,elapsed),tap=time>=.5&&time<.75,control=tap?{...drive,steer:.8}:drive;
+  tracker.remember(control,now);
+  // A brief queued tap was superseded by release before reaching the room.
+  if(frame%3===0&&!tap){accepted=++sequence;acceptedAt=elapsed;tracker.sent(accepted,now);}
+  stepCar(server,drive,track,1/60,elapsed,Infinity);server.inputAck=accepted;server.inputAppliedSequence=accepted;server.inputAppliedAt=acceptedAt;server.inputTime=elapsed;
+  if(frame%3===0){const full=state(elapsed),packet=JSON.parse(encodeMotion(full));queue.push({at:now+65+[0,0,25,0,55][frame%5],state:mergeMotionState(full,packet)});}
+  queue.sort((a,b)=>a.at-b.at);while(queue[0]?.at<=now){const packet=queue.shift();if(packet.state.elapsed<lastElapsed)continue;lastElapsed=packet.state.elapsed;tracker.receive(packet.state,now,false,packet.at);}
+  const car=tracker.frame(now,1/60,control)[0],near=nearest(track,server.x,server.z,server.s),renderNear=nearest(track,car.x,car.z,car.s),error=Math.hypot(car.x-server.x,car.z-server.z);maximumError=Math.max(maximumError,error);if(previous)maximumFrameMove=Math.max(maximumFrameMove,Math.hypot(car.x-previous.x,car.z-previous.z));previous=car;
+  if(time>1.5){maximumPostTapError=Math.max(maximumPostTapError,error);maximumCanonicalHeadingError=Math.max(maximumCanonicalHeadingError,Math.abs(angleDiff(tracker.local.heading,server.heading)));if(!server.offtrack&&tracker.local.offtrack)canonicalOfftrackFrames++;maximumPostTapHeadingError=Math.max(maximumPostTapHeadingError,Math.abs(angleDiff(car.heading,server.heading)));}
+  if(!server.offtrack&&near.distance<track.width/2-1.3){sourceOnRoadFrames++;if(renderNear.distance>track.width/2+1)wrongOfftrackFrames++;}
+ }
+ rows.push({canonicalOfftrackFrames,maximumCanonicalHeadingErrorDegrees:maximumCanonicalHeadingError*180/Math.PI,track:id,sourceOnRoadFrames,wrongOfftrackFrames,maximumError,maximumPostTapError,maximumPostTapHeadingErrorDegrees:maximumPostTapHeadingError*180/Math.PI,maximumFrameMove});
+}
+const report={description:'Actual shared circuit physics, source driver following the guide; a 250ms locally predicted steering tap is superseded before transmission, followed by delayed/jittered authoritative updates. This isolates reconciliation from a permanent physical course change. Not a two-device race.',runs:rows};console.log(JSON.stringify(report,null,2));if(args.out)await writeFile(args.out,JSON.stringify(report,null,2)+'\n');if(!args.module)for(const row of rows){assert.equal(row.wrongOfftrackFrames,0,row.track+' phantom display runoff');assert.equal(row.canonicalOfftrackFrames,0,row.track+' stale physics runoff');assert(row.maximumCanonicalHeadingErrorDegrees<2.3,row.track+' stale heading retained');assert(row.maximumPostTapError<3,row.track+' failed to reconcile course');}

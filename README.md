@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.64.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.65.0**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2301,3 +2301,25 @@ grid runs passed across dry/damp/wet conditions, with and without boost. Two
 local multiplayer clients also stayed on the straight. Details and limits are
 in the [Monza release report](docs/MONZA-STRAIGHT-START-2.64.2.md).
 Refresh both browsers and create a new room to use the corrected server build.
+
+
+## 2.65.0 — Reconcile multiplayer driving across every circuit
+
+After a brief steering update was superseded in transit, local prediction could
+keep the wrong heading while the server car stayed on the road. This produced
+phantom runoff followed by a large snap. Each snapshot now rebuilds the complete
+predicted physics state and replays recent controls. Smoothing applies to the
+shown pose separately, rather than nudging the physical heading or velocity.
+Keyboard/touch driving also takes priority over an unused gamepad stick.
+
+The controlled eight-second reproduction passed on all 42 circuits, with zero
+phantom-runoff frames. Countdown, delayed steering release, a two-second update
+outage, and contact replication were checked separately. Both builds passed;
+the game's test suite was neither run nor edited. This does not establish that
+all internet jitter is eliminated or reproduce the user's exact connection.
+
+The online Esc menu includes **Save driving report**, holding up to 45 seconds
+locally for investigating a remaining problem. It excludes driver names, IDs,
+room codes and credentials. Physics rules, circuit geometry, pit collisions and
+the Vercel backend are unchanged. See the [verification report](docs/SHARED-DRIVING-2.65.0.md)
+for the evidence and remaining limits.

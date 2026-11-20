@@ -1,0 +1,105 @@
+{
+  "schema": "apex25-network-lab-v1",
+  "transport": "current",
+  "durationRequested": 10,
+  "authority": "local Node APEX server",
+  "limitation": "Both diagnostic clients and server ran on this machine. This checks integration, not internet latency.",
+  "runs": [
+    {
+      "transport": "current",
+      "role": "server-client",
+      "straightDriving": {
+        "serverMaxLateral": 4.179,
+        "renderMaxLateral": 4.187060363517048,
+        "serverOfftrack": false,
+        "maxHeadingChange": 0,
+        "maximumFrameMove": 1.3420518110806647
+      },
+      "inputTimingPackets": 208,
+      "region": "localhost",
+      "track": "it-1922",
+      "cars": 2,
+      "repeatableDrive": true,
+      "snapshotTargetHz": 20,
+      "renderer": "headless 60 Hz presentation loop; no GPU rendering",
+      "measuredAt": "2026-11-20T10:48:21.458Z",
+      "durationSeconds": 10.02,
+      "updates": 200,
+      "updatesPerSecond": 19.97,
+      "simulationRatio": 1,
+      "decodedKBps": 18.96,
+      "connectionPingMs": {
+        "p50": 0.3,
+        "p95": 0.41
+      },
+      "latestInputAckMs": {
+        "p50": 33.88,
+        "p95": 51.61
+      },
+      "updateGapMs": {
+        "p50": 50.4,
+        "p95": 51.56,
+        "max": 54.63
+      },
+      "frameMs": {
+        "p50": 16.76,
+        "p95": 17.69
+      },
+      "visualJerkP95": 1375.99,
+      "resumes": 0,
+      "measurementNotes": [
+        "Decoded JSON payload is not compressed wire traffic.",
+        "Latest acknowledged command latency is not the latency of every input.",
+        "Visual jerk includes driving actions, collisions and frame-time variation."
+      ]
+    },
+    {
+      "transport": "current",
+      "role": "server-client",
+      "straightDriving": {
+        "serverMaxLateral": 4.301,
+        "renderMaxLateral": 4.298368347962258,
+        "serverOfftrack": false,
+        "maxHeadingChange": 0,
+        "maximumFrameMove": 1.3498054137054545
+      },
+      "inputTimingPackets": 208,
+      "region": "localhost",
+      "track": "it-1922",
+      "cars": 2,
+      "repeatableDrive": true,
+      "snapshotTargetHz": 20,
+      "renderer": "headless 60 Hz presentation loop; no GPU rendering",
+      "measuredAt": "2026-11-20T10:48:21.489Z",
+      "durationSeconds": 10.02,
+      "updates": 200,
+      "updatesPerSecond": 19.97,
+      "simulationRatio": 1,
+      "decodedKBps": 18.96,
+      "connectionPingMs": {
+        "p50": 0.28,
+        "p95": 0.46
+      },
+      "latestInputAckMs": {
+        "p50": 34.53,
+        "p95": 52.07
+      },
+      "updateGapMs": {
+        "p50": 50.42,
+        "p95": 51.59,
+        "max": 54.62
+      },
+      "frameMs": {
+        "p50": 16.76,
+        "p95": 17.69
+      },
+      "visualJerkP95": 1382.55,
+      "resumes": 0,
+      "measurementNotes": [
+        "Decoded JSON payload is not compressed wire traffic.",
+        "Latest acknowledged command latency is not the latency of every input.",
+        "Visual jerk includes driving actions, collisions and frame-time variation."
+      ]
+    }
+  ]
+}

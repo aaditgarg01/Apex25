@@ -19,7 +19,7 @@ function scenario(uplink,downlink,jitter,straight=false){
   if(t>1){maxSideError=Math.max(maxSideError,Math.abs((c.x-ideal.x)*right.x+(c.z-ideal.z)*right.z));maxHeadingError=Math.max(maxHeadingError,Math.abs(angleDiff(c.heading,ideal.heading)));}
   if(t>4){errors.push(Math.abs((c.x-ideal.x)*right.x+(c.z-ideal.z)*right.z));if(oldHeading!==null)neutralYaw+=Math.abs(angleDiff(c.heading,oldHeading));}oldHeading=c.heading;
  }
- if(straight){assert(maxSideError<.05,'Straight zero-input side error '+maxSideError+'m, heading '+maxHeadingError+'rad');assert(maxHeadingError<.00001,'Straight zero-input car turned');}
+ if(straight){assert(maxSideError<.05,'Straight zero-input side error '+maxSideError+'m, heading '+maxHeadingError+'rad');assert(maxHeadingError<.00051,'Straight heading exceeds half-unit packet rounding');}
  const sorted=errors.sort((a,b)=>a-b);return {straight,trackHeadingRadians:rotation,uplinkMs:uplink,downlinkMs:downlink,jitter,gatewayPingMs:80,maxSideErrorMetres:maxSideError,postReleaseSideErrorP95Metres:sorted[Math.floor(sorted.length*.95)],maxHeadingErrorDegrees:maxHeadingError*180/Math.PI,neutralSteeringExtraYawDegrees:neutralYaw*180/Math.PI};
 }
 const report={description:'Actual live-input server and local prediction with deliberately misleading gateway ping, delayed/reordered controls and snapshots, steering released after two opposite turns. Synthetic, not two-device internet proof.',runs:[[40,40,false],[180,70,false],[180,70,true],[300,90,true],[180,70,true,true],[300,90,true,true]].map(x=>scenario(...x))};console.log(JSON.stringify(report,null,2));if(args.out)await writeFile(args.out,JSON.stringify(report,null,2)+'\n');
