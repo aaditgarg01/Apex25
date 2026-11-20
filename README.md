@@ -6,7 +6,7 @@ An original 3D browser racing game inspired by the 2025 open-wheel season. It is
 
 [Play APEX 25 on Vercel](https://apex25-eight.vercel.app/). Free Play runs locally in the browser. Play with Friends uses the same Vercel site with Upstash-backed room storage; Railway is not required.
 
-Current source version: **2.65.1**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
+Current source version: **2.65.2**. Includes dry, damp and wet conditions, scenery and stylized landmarks for all
 42 circuits, improved multiplayer prediction and rendering, and purple sectors
 that compare valid times across the whole field.
 
@@ -2340,3 +2340,18 @@ Each issue has a standalone reproduction and verification, separate from the
 game test suite. The shared drift, countdown and contact diagnostics, both builds
 and a live two-client check are recorded in the [bug audit](docs/BUG-AUDIT-2.65.1.md).
 Circuit geometry, car handling rules and the multiplayer provider are unchanged.
+
+
+## 2.65.2 — Multiplayer presentation and relay optimization
+
+Opponent histories are cached per snapshot instead of rebuilt per paint. The
+controlled eight-car benchmark uses 48% less presentation-processing CPU with
+identical interpolated positions; this is not a whole-game FPS or ping claim.
+Nearby rivals now share the displayed local physics clock, and corner projection
+uses current observed turning rather than a stale full-state value.
+
+A bounded two-publication relay pipeline reduces waiting behind Redis
+acknowledgements while preserving ordered actions and replacing unsent live
+controls. Congested critical messages reconnect rather than silently disappearing.
+The car physics, wire formats and Vercel/Upstash provider remain unchanged.
+See the [measurements and verification limits](docs/MULTIPLAYER-OPTIMIZATION-2.65.2.md).

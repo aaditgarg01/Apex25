@@ -1,0 +1,21 @@
+{
+  "description": "Five alternating warmed CPU runs, each 3,600 presentation frames at a synthetic 120 Hz with 20 Hz snapshots, eight cars and a 90-snapshot window. Not GPU FPS or internet latency.",
+  "poseDifference": 0,
+  "beforeMilliseconds": [
+    131.8520830000001,
+    131.31208300000003,
+    131.57341599999995,
+    131.2813329999999,
+    132.64583300000004
+  ],
+  "afterMilliseconds": [
+    68.37300000000005,
+    67.33795799999996,
+    69.50745800000004,
+    67.89762500000006,
+    69.00937499999986
+  ],
+  "beforeMedian": 131.57341599999995,
+  "afterMedian": 68.37300000000005,
+  "medianReductionPercent": 48.03433544660718
+}

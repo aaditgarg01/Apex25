@@ -1,0 +1,38 @@
+{
+  "description": "Equal-speed cars separated by 25 m; local predicted physics clock leads the snapshot by 80–500 ms while gateway ping stays at 80 ms. Also checks compact-snapshot corner extrapolation against the observed turn rate. Deterministic presentation diagnostics.",
+  "runs": [
+    {
+      "predictionMilliseconds": 80,
+      "gatewayRttMs": 80,
+      "expectedGap": 25,
+      "shownGap": 24.999999999999773,
+      "frameGap": 24.999999999999773,
+      "error": 2.2737367544323206e-13
+    },
+    {
+      "predictionMilliseconds": 300,
+      "gatewayRttMs": 80,
+      "expectedGap": 25,
+      "shownGap": 24.999999999999886,
+      "frameGap": 24.999999999999886,
+      "error": 1.1368683772161603e-13
+    },
+    {
+      "predictionMilliseconds": 400,
+      "gatewayRttMs": 80,
+      "expectedGap": 25,
+      "shownGap": 24.999999999998863,
+      "frameGap": 24.999999999998863,
+      "error": 1.1368683772161603e-12
+    },
+    {
+      "predictionMilliseconds": 500,
+      "gatewayRttMs": 80,
+      "expectedGap": 25,
+      "shownGap": 25.000000000001478,
+      "frameGap": 25.000000000001478,
+      "error": 1.4779288903810084e-12
+    }
+  ],
+  "cornerProjectionError": 5.684515355781502e-13
+}

@@ -10,7 +10,7 @@ const active=s=>['race','qualifying','practice'].includes(s.phase)&&s.elapsed>=0
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const copy=c=>({...c,tyreSetsUsed:{...c.tyreSetsUsed},sectors:[...(c.sectors||[])],lastSectors:[...(c.lastSectors||[])],bestSectors:[...(c.bestSectors||[])],lapHistory:[...(c.lapHistory||[])],lapValidHistory:[...(c.lapValidHistory||[])]});
 const poseFields=['x','y','z','heading','motionHeading','v','steer','pitch','impactVX','impactVZ','impactYaw'];
-const pose=(source,motion)=>Object.assign({...source,smoothMotion:true},Object.fromEntries(poseFields.map(k=>[k,motion[k]??source[k]])));
+const pose=(source,motion)=>Object.assign({...source,smoothMotion:true,physicsTime:motion.physicsTime??source.physicsTime},Object.fromEntries(poseFields.map(k=>[k,motion[k]??source[k]])));
 const zero=()=>({x:0,y:0,z:0,heading:0});
 
 // Predict local controls between snapshots, then replay from the full authority
@@ -18,21 +18,28 @@ const zero=()=>({x:0,y:0,z:0,heading:0});
 // Only the server decides contacts, timing, penalties, tyres and classification.
 export class MultiplayerTracking {
  constructor(track,id,{liveInput=false}={}){
-  Object.assign(this,{track,id,liveInput,frames:[],arrivals:[],interval:50,delay:110,rtt:100,remoteAt:null,session:null,local:null,reference:null,localAt:0,lastAt:0,correction:zero(),renderOffset:zero(),renderVelocity:zero(),renderAt:0,reconciliation:null,controls:[],sentTimes:new Map(),contactSequences:new Map(),contactLocks:new Map()});
+  Object.assign(this,{track,id,liveInput,frames:[],timelines:new Map(),arrivals:[],interval:50,delay:110,rtt:100,remoteAt:null,session:null,local:null,reference:null,localAt:0,lastAt:0,correction:zero(),renderOffset:zero(),renderVelocity:zero(),renderAt:0,reconciliation:null,controls:[],sentTimes:new Map(),contactSequences:new Map(),contactLocks:new Map()});
  }
  setPing(ms){if(Number.isFinite(ms)&&ms>=0)this.rtt=this.rtt*.7+Math.min(ms,2000)*.3;}
+ cacheFrame(frame){
+  for(const car of frame.cars){const at=car.ai?frame.at:Math.min(frame.at,(car.inputTime??frame.at/1000)*1000),samples=this.timelines.get(car.id)||[],point={at,car,frameAt:frame.at};if(samples.at(-1)?.at===at)samples[samples.length-1]=point;else samples.push(point);this.timelines.set(car.id,samples);}
+ }
+ trimTimelines(){
+  const oldest=this.frames[0]?.at??Infinity;
+  for(const [id,samples]of this.timelines){while(samples.length&&samples[0].frameAt<oldest)samples.shift();if(!samples.length)this.timelines.delete(id);}
+ }
  record(s,now){
   const at=s.elapsed*1000,last=this.frames.at(-1);
   if(this.phase===s.phase&&last&&at<last.at)return;
-  if(this.phase!==s.phase){this.contactSequences.clear();this.contactLocks.clear();this.frames=[];this.arrivals=[];this.interval=50;this.delay=110;this.remoteAt=null;}
+  if(this.phase!==s.phase){this.contactSequences.clear();this.contactLocks.clear();this.frames=[];this.timelines.clear();this.arrivals=[];this.interval=50;this.delay=110;this.remoteAt=null;}
   this.phase=s.phase;
   for(const car of s.cars){if((car.contactSequence||0)>(this.contactSequences.get(car.id)||0)){this.contactSequences.set(car.id,car.contactSequence);this.contactLocks.set(car.id,now+300);if(car.lastContactWith)this.contactLocks.set(car.lastContactWith,now+300);}}
-  if(this.frames.at(-1)?.at===at){this.frames[this.frames.length-1]={at,cars:s.cars};return;}
+  if(this.frames.at(-1)?.at===at){if(this.frames.at(-1).cars===s.cars)return;this.frames[this.frames.length-1]={at,cars:s.cars};this.timelines.clear();for(const frame of this.frames)this.cacheFrame(frame);return;}
   if(last&&at>last.at)this.interval+=(clamp(at-last.at,16,150)-this.interval)*.15;
   this.arrivals.push(now-at);if(this.arrivals.length>90)this.arrivals.shift();
   this.clockOffset=Math.min(...this.arrivals);
   if(this.arrivals.length>=6){const jitter=[...this.arrivals].sort((a,b)=>a-b),spread=jitter[Math.floor(jitter.length*.9)]-jitter[0];this.delay+=(Math.min(300,Math.max(110,this.interval*1.5)+spread)-this.delay)*.06;}
-  this.frames.push({at,cars:s.cars});if(this.frames.length>90)this.frames.shift();
+  const frame={at,cars:s.cars};this.frames.push(frame);if(this.frames.length>90)this.frames.shift();this.cacheFrame(frame);this.trimTimelines();
  }
  sent(sequence,now){this.sentTimes.set(sequence,now);for(const [key,at]of this.sentTimes)if(at<now-2500)this.sentTimes.delete(key);}
  remember(control,now){
@@ -47,6 +54,13 @@ export class MultiplayerTracking {
  project(car,dt){
   if(!active(this.session)||dt<=0||car.finished)return;
   if(car.pitState&&car.pitState!=='none'){const plan=pitLayout(this.track),end=car.pitState==='lane'?pitStopStation(plan,car):car.pitState==='service'?car.pitTravel:plan.length;Object.assign(car,pitPose(car,this.track,Math.min(end,car.pitTravel+car.v*dt)));return;}
+  // Compact packets carry current travel direction but not its angular rate.
+  // Derive that rate from fresh samples instead of a stale full-state value.
+  const samples=this.timelines.get(car.id),a=samples?.at(-2),b=samples?.at(-1),seconds=a&&b?(b.at-a.at)/1000:0;
+  if(seconds>0&&seconds<=.35&&a.car.inputEpoch===b.car.inputEpoch&&a.car.pitState==='none'&&b.car.pitState==='none'&&(b.car.resetTimer||0)<=(a.car.resetTimer||0)+.3&&(a.car.contactSequence||0)===(b.car.contactSequence||0)){
+   const from=a.car.motionHeading??a.car.heading,to=b.car.motionHeading??b.car.heading;
+   if(Number.isFinite(from)&&Number.isFinite(to))car.motionYawRate=clamp(angleDiff(to,from)/seconds,-3,3);
+  }
   const before={x:car.x,z:car.z,heading:car.heading};projectMotion(car,dt);moveWithBarriers(car,this.track,before);
  }
  localPose(now){
@@ -57,6 +71,7 @@ export class MultiplayerTracking {
   const a=this.previousLocal,b=this.local,t=clamp((now-this.localAt)/(1000/60),0,1),t2=t*t,t3=t2*t,c=copy(b),va=velocityOf(a),vb=velocityOf(b),dt=1/60;
   for(const k of ['x','z']){const m0=(va[k]+(this.previousCorrection?.[k]||0))*dt,m1=(vb[k]+this.correction[k])*dt;c[k]=(2*t3-3*t2+1)*a[k]+(t3-2*t2+t)*m0+(-2*t3+3*t2)*b[k]+(t3-t2)*m1;}
   for(const k of ['y','pitch','v','steer'])c[k]=(a[k]||0)+((b[k]||0)-(a[k]||0))*t;
+  if(Number.isFinite(a.physicsTime)&&Number.isFinite(b.physicsTime))c.physicsTime=a.physicsTime+(b.physicsTime-a.physicsTime)*t;
   c.heading=a.heading+angleDiff(b.heading,a.heading)*t;c.motionHeading=(a.motionHeading??a.heading)+angleDiff(b.motionHeading??b.heading,a.motionHeading??a.heading)*t;
   const travel=c.motionHeading??c.heading;c.v+=this.correction.x*Math.sin(travel)+this.correction.z*Math.cos(travel);
   return c;
@@ -111,7 +126,7 @@ export class MultiplayerTracking {
   const inputAt=Number.isFinite(ackAt)&&Number.isFinite(held)?Math.min(until,ackAt+held):this.snapshotAt-(this.liveInput&&active(s)?clamp(this.rtt,0,250):0),base=Math.max(until-500,inputAt),previousAt=until-tick;
   let previousTarget=null;
   if(this.liveInput&&active(s))for(let at=base;at<until-1e-6;){let next=Math.min(until,at+tick);if(at<previousAt-1e-6&&next>previousAt)next=previousAt;stepCar(target,this.controlAt(next),this.track,(next-at)/1000,s.elapsed+(next-base)/1000,Infinity);if(Math.abs(next-previousAt)<1e-6)previousTarget=copy(target);at=next;}
-  if(active(s)&&!discontinuity&&!previousTarget){previousTarget=copy(target);projectMotion(previousTarget,-1/60);}
+  if(active(s)&&!discontinuity&&!previousTarget){previousTarget=copy(target);projectMotion(previousTarget,-1/60);if(Number.isFinite(previousTarget.physicsTime))previousTarget.physicsTime-=1/60;}
   const positionError=previousPresentation?Math.hypot(previousPresentation.x-target.x,previousPresentation.z-target.z):0;
   // Always reconcile the complete physics state, including heading and slip.
   // Smoothing belongs only to the displayed pose, never to steering/velocity.
@@ -124,7 +139,8 @@ export class MultiplayerTracking {
   const out={...car,smoothMotion:true},age=clamp((now-this.snapshotAt)/1000,0,.25);
   // A close car is advanced to the same reference clock as the local prediction.
   // A distant contact is shown as a pair on the fresh server timeline instead.
-  this.project(out,Math.min(.5,age+(near?clamp(this.rtt/1000,0,.25):0)));
+  const lead=near&&Number.isFinite(local.physicsTime)&&Number.isFinite(car.physicsTime)?clamp(local.physicsTime-car.physicsTime,0,.5):Math.min(.5,age+(near?clamp(this.rtt/1000,0,.25):0));
+  this.project(out,lead);
   if(near&&this.reference){const dx=local.x-this.reference.x,dz=local.z-this.reference.z,n=Math.hypot(dx,dz),scale=Math.min(1,4/Math.max(n,.001));out.x+=dx*scale;out.z+=dz*scale;out.y+=clamp(local.y-this.reference.y,-.5,.5);}
   return out;
  }
@@ -142,8 +158,7 @@ export class MultiplayerTracking {
    const distance=Math.hypot(c.x-own.x,c.z-own.z),near=distance<60&&Math.abs(c.y-own.y)<3&&c.pitState==='none'&&own.pitState==='none';
    const locked=(this.contactLocks.get(c.id)||0)>now;
    const smoothPose=()=>{
-   const samples=[];
-   for(const f of this.frames){const car=f.cars.find(x=>x.id===c.id);if(!car)continue;const at=car.ai?f.at:Math.min(f.at,(car.inputTime??f.at/1000)*1000),sample={at,car};if(samples.at(-1)?.at===at)samples[samples.length-1]=sample;else samples.push(sample);}
+   const samples=this.timelines.get(c.id)||[];
    if(samples.length<2)return {...c,smoothMotion:true};
    const target=this.remoteAt;let a=samples[0],b=a;
    for(let i=1;i<samples.length;i++){b=samples[i];if(b.at>=target)break;a=b;}

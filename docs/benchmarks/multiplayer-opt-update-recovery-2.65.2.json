@@ -1,0 +1,8 @@
+{
+  "description": "Monza shared physics, zero steering, acceleration/braking/boost; snapshots stop for two seconds then resume. Single-machine deterministic diagnostic.",
+  "frozenMovement": 0,
+  "maximumReplay": 7.003109203651547e-11,
+  "recoveredFrames": 181,
+  "maximumRecoveredPhysicsError": 0,
+  "maximumRecoveredHeadingErrorDegrees": 0
+}

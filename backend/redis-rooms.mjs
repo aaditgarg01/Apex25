@@ -4,6 +4,8 @@ import { serialize, deserialize } from 'node:v8';
 import Redis from 'ioredis';
 import { WebSocket } from 'ws';
 import { createRaceEngine } from './race-engine.mjs';
+import { RelayOutbox } from './relay-outbox.mjs';
+import { sendRoomPacket } from './socket-options.mjs';
 
 const leaseMs = 8000;
 const refreshMs = 2000;
@@ -56,7 +58,6 @@ export function createRoomGateway() {
  const subscriber = redis.duplicate({ enableOfflineQueue: true });
  const sockets = new Map();
  const routes = new Map();
- const outbound = new Map();
  let leader = null;
  let owner = null;
  let engine = null;
@@ -65,56 +66,24 @@ export function createRoomGateway() {
  let lastErrorAt = 0;
  let connecting = null;
  let refreshing = null;
- let flushTimer = null;
  let checkpointTimer = null;
 
- const send = (ws, data) => {
-  if (ws.readyState === WebSocket.OPEN && ws.bufferedAmount < 250000) ws.send(data);
- };
+ const send = sendRoomPacket;
+ const outbound = new RelayOutbox({
+  publish: (worker, batch) => redis.publish(channel(worker), JSON.stringify(batch)),
+  onFailure(worker, batch) {
+   if (batch.some(packet => packet.kind !== 'snapshot' && packet.kind !== 'input')) {
+    for (const entry of sockets.values()) if (entry.leader?.split('.')[0] === worker) entry.ws.close(1012, 'Room connection interrupted');
+   }
+  },
+ });
 
  function dispatch(worker, packet, replaceable = false) {
   if (worker === instanceId) {
    receive(packet);
    return;
   }
-  const queue = outbound.get(worker) || { reliable: [], latest: new Map(), sending: false };
-  if (replaceable) {
-   const key = packet.route + ':' + (packet.kind === 'snapshot' && packet.data.startsWith('{"type":"state"') ? 'state' : packet.kind);
-   queue.latest.delete(key);
-   queue.latest.set(key, packet);
-  }
-  else if (queue.reliable.length < 512) queue.reliable.push(packet);
-  outbound.set(worker, queue);
-  flushTimer ??= setTimeout(flush, 0);
- }
-
- function flush() {
-  flushTimer = null;
-  for (const [worker, queue] of outbound) {
-   if (queue.sending) continue;
-   const batch = queue.reliable.splice(0).concat([...queue.latest.values()]);
-   queue.latest.clear();
-   if (!batch.length) {
-    outbound.delete(worker);
-    continue;
-   }
-   queue.sending = true;
-   redis.publish(channel(worker), JSON.stringify(batch))
-    .catch(() => {
-     // Lost control messages must surface as a reconnect rather than silently
-     // leaving a client in a room it can no longer control.
-     if (batch.some(packet => packet.kind !== 'snapshot' && packet.kind !== 'input')) {
-      for (const entry of sockets.values()) {
-       if (entry.leader?.split('.')[0] === worker) entry.ws.close(1012, 'Room connection interrupted');
-      }
-     }
-    })
-    .finally(() => {
-     queue.sending = false;
-     if (queue.reliable.length || queue.latest.size) flushTimer ??= setTimeout(flush, 0);
-     else outbound.delete(worker);
-    });
-  }
+  outbound.enqueue(worker, packet, replaceable);
  }
 
  function receive(packet) {
@@ -122,7 +91,7 @@ export function createRoomGateway() {
    const entry = sockets.get(packet.route);
    if (!entry || packet.leader !== entry.leader) return;
    if (packet.kind === 'close-socket') entry.ws.close(packet.code, packet.reason);
-   else if (packet.kind === 'reply' || entry.ws.bufferedAmount === 0) send(entry.ws, packet.data);
+   else send(entry.ws, packet.data, {snapshot: packet.kind === 'snapshot'});
    return;
   }
   if (packet.leader !== owner || !engine || Date.now() >= deadline) return;
@@ -316,10 +285,10 @@ export function createRoomGateway() {
    } catch (error) {
     if (Date.now() - lastErrorAt > 10000) {
      lastErrorAt = Date.now();
-     const message = String(error?.message);
-     const reason = message.startsWith('WRONGPASS') ? 'authentication rejected'
-      : message.startsWith('NOAUTH') ? 'authentication required'
-      : /timed? ?out|ETIMEDOUT/i.test(message) ? 'connection or command timed out'
+     const errorMessage = String(error?.message);
+     const reason = errorMessage.startsWith('WRONGPASS') ? 'authentication rejected'
+      : errorMessage.startsWith('NOAUTH') ? 'authentication required'
+      : /timed? ?out|ETIMEDOUT/i.test(errorMessage) ? 'connection or command timed out'
       : 'connection or command failed';
      console.warn('APEX 25 room store: ' + reason);
     }

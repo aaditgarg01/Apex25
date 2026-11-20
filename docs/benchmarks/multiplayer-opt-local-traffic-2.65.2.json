@@ -1,0 +1,91 @@
+{
+  "schema": "apex25-network-lab-v1",
+  "transport": "current",
+  "durationRequested": 15,
+  "authority": "local Node APEX server",
+  "limitation": "Both diagnostic clients and server ran on this machine. This checks integration, not internet latency.",
+  "runs": [
+    {
+      "transport": "current",
+      "role": "server-client",
+      "inputTimingPackets": 305,
+      "region": "localhost",
+      "track": "it-1922",
+      "cars": 8,
+      "repeatableDrive": true,
+      "snapshotTargetHz": 20,
+      "renderer": "headless 60 Hz presentation loop; no GPU rendering",
+      "measuredAt": "2026-11-20T13:56:47.961Z",
+      "durationSeconds": 15.01,
+      "updates": 301,
+      "updatesPerSecond": 20.05,
+      "simulationRatio": 1,
+      "decodedKBps": 54.67,
+      "connectionPingMs": {
+        "p50": 0.36,
+        "p95": 0.7
+      },
+      "latestInputAckMs": {
+        "p50": 19.45,
+        "p95": 36.61
+      },
+      "updateGapMs": {
+        "p50": 50.78,
+        "p95": 52.91,
+        "max": 66.48
+      },
+      "frameMs": {
+        "p50": 17,
+        "p95": 17.71
+      },
+      "visualJerkP95": 40557.41,
+      "resumes": 0,
+      "measurementNotes": [
+        "Decoded JSON payload is not compressed wire traffic.",
+        "Latest acknowledged command latency is not the latency of every input.",
+        "Visual jerk includes driving actions, collisions and frame-time variation."
+      ]
+    },
+    {
+      "transport": "current",
+      "role": "server-client",
+      "inputTimingPackets": 305,
+      "region": "localhost",
+      "track": "it-1922",
+      "cars": 8,
+      "repeatableDrive": true,
+      "snapshotTargetHz": 20,
+      "renderer": "headless 60 Hz presentation loop; no GPU rendering",
+      "measuredAt": "2026-11-20T13:56:47.966Z",
+      "durationSeconds": 15.01,
+      "updates": 301,
+      "updatesPerSecond": 20.05,
+      "simulationRatio": 1,
+      "decodedKBps": 54.66,
+      "connectionPingMs": {
+        "p50": 0.35,
+        "p95": 0.7
+      },
+      "latestInputAckMs": {
+        "p50": 19.79,
+        "p95": 21.58
+      },
+      "updateGapMs": {
+        "p50": 50.82,
+        "p95": 52.9,
+        "max": 66.48
+      },
+      "frameMs": {
+        "p50": 17,
+        "p95": 17.71
+      },
+      "visualJerkP95": 49362.6,
+      "resumes": 0,
+      "measurementNotes": [
+        "Decoded JSON payload is not compressed wire traffic.",
+        "Latest acknowledged command latency is not the latency of every input.",
+        "Visual jerk includes driving actions, collisions and frame-time variation."
+      ]
+    }
+  ]
+}
